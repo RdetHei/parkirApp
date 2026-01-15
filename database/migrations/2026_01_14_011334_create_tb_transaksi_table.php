@@ -27,7 +27,7 @@ public function up(): void
         // Foreign Keys
         $table->foreign('id_kendaraan')->references('id_kendaraan')->on('tb_kendaraan')->onDelete('cascade');
         $table->foreign('id_tarif')->references('id_tarif')->on('tb_tarif')->onDelete('cascade');
-        $table->foreign('id_user')->references('id_user')->on('tb_user')->onDelete('cascade');
+        $table->foreign('id_user')->references('id')->on('tb_user')->onDelete('cascade');
         $table->foreign('id_area')->references('id_area')->on('tb_area_parkir')->onDelete('cascade');
     });
 }

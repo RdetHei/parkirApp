@@ -18,7 +18,7 @@ public function up(): void
         $table->dateTime('waktu_aktivitas');
         $table->timestamps();
 
-        $table->foreign('id_user')->references('id_user')->on('tb_user')->onDelete('cascade');
+        $table->foreign('id_user')->references('id')->on('tb_user')->onDelete('cascade');
     });
 }
 

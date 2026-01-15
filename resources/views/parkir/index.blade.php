@@ -1,0 +1,145 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard')
+
+@section('content')
+    <div class="container mx-auto px-6 py-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">+12%</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-1">Total User</p>
+                        <p class="text-2xl font-bold text-gray-900">0</p>
+                        <p class="text-xs text-gray-400 mt-2">Admin: 0 • Petugas: 0</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Aktif</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-1">Kendaraan</p>
+                        <p class="text-2xl font-bold text-gray-900">0</p>
+                        <p class="text-xs text-gray-400 mt-2">Motor: 0 • Mobil: 0</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">0% Full</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-1">Area Parkir</p>
+                        <p class="text-2xl font-bold text-gray-900">0</p>
+                        <p class="text-xs text-gray-400 mt-2">Kapasitas: 0 • Terisi: 0</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-semibold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">Today</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-1">Pendapatan</p>
+                        <p class="text-2xl font-bold text-gray-900">Rp 0</p>
+                        <p class="text-xs text-gray-400 mt-2">0 transaksi</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-gray-900">Kendaraan Parkir</h2>
+                            <button class="text-sm font-semibold text-green-600">Lihat Semua</button>
+                        </div>
+                        <div class="p-6 text-center py-16">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-900 font-semibold mb-1">Tidak Ada Kendaraan</p>
+                            <p class="text-sm text-gray-500">Belum ada kendaraan parkir</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h2 class="text-lg font-bold text-gray-900">Quick Actions</h2>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <button class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-xl">Tambah User</button>
+                            <button class="w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-xl border border-gray-200">Daftar Kendaraan</button>
+                            <button class="w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-xl border border-gray-200">Kelola Area</button>
+                            <button class="w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-xl border border-gray-200">Atur Tarif</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-white rounded-2xl border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-gray-900">Log Aktivitas</h2>
+                            <button class="text-sm font-semibold text-green-600">Lihat Semua</button>
+                        </div>
+                        <div class="p-6 text-center py-12">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-900 font-semibold mb-1">Belum Ada Aktivitas</p>
+                            <p class="text-sm text-gray-500">Log aktivitas kosong</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-gray-900">Tarif Parkir</h2>
+                            <button class="text-sm font-semibold text-green-600">Edit</button>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="font-semibold text-gray-900">Motor</p>
+                                    <p class="text-xs text-gray-500">Per jam</p>
+                                </div>
+                                <p class="text-lg font-bold text-gray-900">-</p>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="font-semibold text-gray-900">Mobil</p>
+                                    <p class="text-xs text-gray-500">Per jam</p>
+                                </div>
+                                <p class="text-lg font-bold text-gray-900">-</p>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="font-semibold text-gray-900">Lainnya</p>
+                                    <p class="text-xs text-gray-500">Per jam</p>
+                                </div>
+                                <p class="text-lg font-bold text-gray-900">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+@endsection

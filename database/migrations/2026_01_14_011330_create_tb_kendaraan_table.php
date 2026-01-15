@@ -21,7 +21,7 @@ public function up(): void
         $table->timestamps();
 
         // Foreign Key
-        $table->foreign('id_user')->references('id_user')->on('tb_user')->onDelete('cascade');
+        $table->foreign('id_user')->references('id')->on('tb_user')->onDelete('cascade');
     });
 }
 
