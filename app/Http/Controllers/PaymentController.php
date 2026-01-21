@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Pembayaran;
 use App\Models\Transaksi;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -15,7 +17,12 @@ class PaymentController extends Controller
      */
     public function selectTransaction()
     {
+        // Hanya ambil transaksi yang sedang 'masuk' dan belum dibayar
         $transaksis = Transaksi::where('status', 'masuk')
+            ->where(function($q) {
+                $q->whereNull('status_pembayaran')
+                  ->orWhere('status_pembayaran', '<>', 'sudah_bayar');
+            })
             ->with(['kendaraan', 'tarif', 'user', 'area'])
             ->orderBy('waktu_masuk', 'desc')
             ->get();
@@ -49,6 +56,10 @@ class PaymentController extends Controller
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->findOrFail($id_parkir);
 
+        if ($transaksi->status_pembayaran === 'sudah_bayar') {
+            return back()->with('error', 'Transaksi ini sudah dibayar');
+        }
+
         return view('payment.manual-confirm', compact('transaksi'));
     }
 
@@ -71,26 +82,29 @@ class PaymentController extends Controller
                 return back()->with('error', 'Transaksi ini sudah dibayar');
             }
 
-            // Buat record pembayaran
-            $pembayaran = Pembayaran::create([
-                'id_parkir' => $id_parkir,
-                'nominal' => $request->nominal,
-                'metode' => 'manual',
-                'status' => 'berhasil',
-                'keterangan' => $request->keterangan ?? 'Pembayaran manual oleh petugas',
-                'id_user' => Auth::id(),
-                'waktu_pembayaran' => Carbon::now(),
-            ]);
+            DB::transaction(function () use ($id_parkir, $request, $transaksi) {
+                // Buat record pembayaran
+                $pembayaran = Pembayaran::create([
+                    'id_parkir' => $id_parkir,
+                    'nominal' => $request->nominal,
+                    'metode' => 'manual',
+                    'status' => 'berhasil',
+                    'keterangan' => $request->keterangan ?? 'Pembayaran manual oleh petugas',
+                    'id_user' => Auth::id() ?? null,
+                    'waktu_pembayaran' => Carbon::now(),
+                ]);
 
-            // Update transaksi
-            $transaksi->update([
-                'status_pembayaran' => 'sudah_bayar',
-                'id_pembayaran' => $pembayaran->id_pembayaran,
-            ]);
+                // Update transaksi
+                $transaksi->update([
+                    'status_pembayaran' => 'sudah_bayar',
+                    'id_pembayaran' => $pembayaran->id_pembayaran,
+                ]);
+            });
 
             return redirect()->route('payment.success', $id_parkir)
                 ->with('success', 'Pembayaran berhasil diproses');
         } catch (\Exception $e) {
+            Log::error('manual_process pembayaran gagal', ['id_parkir' => $id_parkir, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
         }
     }
@@ -102,6 +116,10 @@ class PaymentController extends Controller
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif'])
             ->findOrFail($id_parkir);
+
+        if ($transaksi->status_pembayaran === 'sudah_bayar') {
+            return back()->with('error', 'Transaksi ini sudah dibayar');
+        }
 
         return view('payment.qr-scan', compact('transaksi'));
     }
@@ -121,22 +139,25 @@ class PaymentController extends Controller
                 ]);
             }
 
-            // Buat record pembayaran
-            $pembayaran = Pembayaran::create([
-                'id_parkir' => $id_parkir,
-                'nominal' => $transaksi->biaya_total,
-                'metode' => 'qr_scan',
-                'status' => 'berhasil',
-                'keterangan' => 'Pembayaran otomatis via scan QR oleh pengendara',
-                'id_user' => Auth::id(),
-                'waktu_pembayaran' => Carbon::now(),
-            ]);
 
-            // Update transaksi
-            $transaksi->update([
-                'status_pembayaran' => 'sudah_bayar',
-                'id_pembayaran' => $pembayaran->id_pembayaran,
-            ]);
+            DB::transaction(function () use ($id_parkir, $transaksi) {
+                // Buat record pembayaran
+                $pembayaran = Pembayaran::create([
+                    'id_parkir' => $id_parkir,
+                    'nominal' => $transaksi->biaya_total,
+                    'metode' => 'qr_scan',
+                    'status' => 'berhasil',
+                    'keterangan' => 'Pembayaran otomatis via scan QR oleh pengendara',
+                    'id_user' => Auth::id() ?? null,
+                    'waktu_pembayaran' => Carbon::now(),
+                ]);
+
+                // Update transaksi
+                $transaksi->update([
+                    'status_pembayaran' => 'sudah_bayar',
+                    'id_pembayaran' => $pembayaran->id_pembayaran,
+                ]);
+            });
 
             return response()->json([
                 'success' => true,

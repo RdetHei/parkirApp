@@ -3,8 +3,7 @@
         <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden lg:flex flex-col relative z-50">
             <div class="h-16 border-b border-gray-200 flex items-center px-6">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-green-600 rounded-lg"></div>
-                    <span class="text-lg font-bold text-gray-900">ParkHub</span>
+                    <img src="{{ asset('images/parked-logo.png') }}" alt="Parked" class="h-8 object-contain">
                 </div>
             </div>
 

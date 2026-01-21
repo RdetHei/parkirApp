@@ -7,7 +7,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
 
         {{-- Slot kosong untuk judul, dengan judul default 'Parkir App' --}}
-        <title>@yield('title', 'Parkir App')</title>
+        <title>PARKED</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
