@@ -11,19 +11,32 @@ use Carbon\Carbon;
 class PaymentController extends Controller
 {
     /**
+     * Halaman untuk memilih transaksi yang akan dibayar
+     */
+    public function selectTransaction()
+    {
+        $transaksis = Transaksi::where('status', 'masuk')
+            ->with(['kendaraan', 'tarif', 'user', 'area'])
+            ->orderBy('waktu_masuk', 'desc')
+            ->get();
+
+        return view('payment.select-transaction', compact('transaksis'));
+    }
+
+    /**
      * Tampil form pembayaran untuk transaksi
      */
-    public function create($id_parkit)
+    public function create($id_parkir)
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
-            ->findOrFail($id_parkit);
+            ->findOrFail($id_parkir);
 
         // Cek apakah sudah ada pembayaran
         if ($transaksi->status_pembayaran === 'sudah_bayar') {
             return back()->with('error', 'Transaksi ini sudah dibayar');
         }
 
-        $qr_data = route('payment.confirm-qr', $id_parkit);
+        $qr_data = route('payment.confirm-qr', $id_parkir);
 
         return view('payment.create', compact('transaksi', 'qr_data'));
     }
@@ -31,10 +44,10 @@ class PaymentController extends Controller
     /**
      * Pembayaran Manual - Form Konfirmasi
      */
-    public function manual_confirm($id_parkit)
+    public function manual_confirm($id_parkir)
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
-            ->findOrFail($id_parkit);
+            ->findOrFail($id_parkir);
 
         return view('payment.manual-confirm', compact('transaksi'));
     }
@@ -42,9 +55,9 @@ class PaymentController extends Controller
     /**
      * Proses Pembayaran Manual
      */
-    public function manual_process(Request $request, $id_parkit)
+    public function manual_process(Request $request, $id_parkir)
     {
-        $transaksi = Transaksi::findOrFail($id_parkit);
+        $transaksi = Transaksi::findOrFail($id_parkir);
 
         $request->validate([
             'nominal' => 'required|numeric|min:' . ($transaksi->biaya_total ?? 0),
@@ -60,7 +73,7 @@ class PaymentController extends Controller
 
             // Buat record pembayaran
             $pembayaran = Pembayaran::create([
-                'id_parkit' => $id_parkit,
+                'id_parkir' => $id_parkir,
                 'nominal' => $request->nominal,
                 'metode' => 'manual',
                 'status' => 'berhasil',
@@ -75,7 +88,7 @@ class PaymentController extends Controller
                 'id_pembayaran' => $pembayaran->id_pembayaran,
             ]);
 
-            return redirect()->route('payment.success', $id_parkit)
+            return redirect()->route('payment.success', $id_parkir)
                 ->with('success', 'Pembayaran berhasil diproses');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
@@ -85,10 +98,10 @@ class PaymentController extends Controller
     /**
      * Halaman pembayaran via QR Scan
      */
-    public function qr_scan($id_parkit)
+    public function qr_scan($id_parkir)
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif'])
-            ->findOrFail($id_parkit);
+            ->findOrFail($id_parkir);
 
         return view('payment.qr-scan', compact('transaksi'));
     }
@@ -96,10 +109,10 @@ class PaymentController extends Controller
     /**
      * Konfirmasi pembayaran via QR Scan
      */
-    public function confirm_qr($id_parkit)
+    public function confirm_qr($id_parkir)
     {
         try {
-            $transaksi = Transaksi::findOrFail($id_parkit);
+            $transaksi = Transaksi::findOrFail($id_parkir);
 
             if ($transaksi->status_pembayaran === 'sudah_bayar') {
                 return response()->json([
@@ -110,7 +123,7 @@ class PaymentController extends Controller
 
             // Buat record pembayaran
             $pembayaran = Pembayaran::create([
-                'id_parkit' => $id_parkit,
+                'id_parkir' => $id_parkir,
                 'nominal' => $transaksi->biaya_total,
                 'metode' => 'qr_scan',
                 'status' => 'berhasil',
@@ -128,7 +141,7 @@ class PaymentController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Pembayaran berhasil diproses',
-                'redirect' => route('payment.success', $id_parkit)
+                'redirect' => route('payment.success', $id_parkir)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -141,10 +154,10 @@ class PaymentController extends Controller
     /**
      * Halaman sukses pembayaran
      */
-    public function success($id_parkit)
+    public function success($id_parkir)
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'pembayaran', 'user', 'area'])
-            ->findOrFail($id_parkit);
+            ->findOrFail($id_parkir);
 
         return view('payment.success', compact('transaksi'));
     }

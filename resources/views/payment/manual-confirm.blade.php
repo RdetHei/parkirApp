@@ -31,7 +31,7 @@
         </div>
 
         <!-- Form Pembayaran -->
-        <form action="{{ route('payment.manual-process', $transaksi->id_parkit) }}" method="POST">
+        <form action="{{ route('payment.manual-process', $transaksi->id_parkir) }}" method="POST">
             @csrf
 
             <div class="mb-5">
@@ -66,7 +66,7 @@
 
             <!-- Tombol -->
             <div class="flex gap-3">
-                <a href="{{ route('payment.create', $transaksi->id_parkit) }}" 
+                <a href="{{ route('payment.create', $transaksi->id_parkir) }}" 
                    class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold text-center">
                     ← Kembali
                 </a>

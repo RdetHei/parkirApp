@@ -5,7 +5,7 @@
 @section('content')
 <div class="max-w-4xl mx-auto px-4">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-3xl font-bold text-gray-800">Detail Transaksi #{{ str_pad($item->id_parkit, 8, '0', STR_PAD_LEFT) }}</h2>
+        <h2 class="text-3xl font-bold text-gray-800">Detail Transaksi #{{ str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT) }}</h2>
         <a href="{{ route('transaksi.index') }}" class="text-gray-600 hover:text-gray-800">← Kembali</a>
     </div>
 
@@ -115,12 +115,12 @@
 
     <!-- Actions -->
     <div class="flex justify-end gap-3 mt-6">
-        <a href="{{ route('transaksi.edit', $item->id_parkit) }}" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            ✏️ Edit
+        <a href="{{ route('transaksi.edit', $item->id_parkir) }}" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Edit
         </a>
         @if($item->status === 'keluar')
-            <a href="{{ route('transaksi.print', $item->id_parkit) }}" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                🖨️ Cetak Struk
+            <a href="{{ route('transaksi.print', $item->id_parkir) }}" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                Cetak Struk
             </a>
         @endif
     </div>

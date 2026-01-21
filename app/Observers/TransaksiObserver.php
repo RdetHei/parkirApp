@@ -17,7 +17,7 @@ class TransaksiObserver
         if (Auth::check()) {
             LogAktifitas::create([
                 'id_user' => Auth::id(),
-                'aktivitas' => 'Membuat transaksi parkir #' . str_pad($transaksi->id_parkit, 8, '0', STR_PAD_LEFT),
+                'aktivitas' => 'Membuat transaksi parkir #' . str_pad($transaksi->id_parkir, 8, '0', STR_PAD_LEFT),
                 'waktu_aktivitas' => Carbon::now(),
             ]);
         }
@@ -29,10 +29,10 @@ class TransaksiObserver
     public function updated(Transaksi $transaksi): void
     {
         if (Auth::check()) {
-            $activity = 'Mengupdate transaksi parkir #' . str_pad($transaksi->id_parkit, 8, '0', STR_PAD_LEFT);
+            $activity = 'Mengupdate transaksi parkir #' . str_pad($transaksi->id_parkir, 8, '0', STR_PAD_LEFT);
             
             if ($transaksi->isDirty('status') && $transaksi->status === 'keluar') {
-                $activity = 'Mencatat kendaraan keluar parkir #' . str_pad($transaksi->id_parkit, 8, '0', STR_PAD_LEFT);
+                $activity = 'Mencatat kendaraan keluar parkir #' . str_pad($transaksi->id_parkir, 8, '0', STR_PAD_LEFT);
             }
             
             LogAktifitas::create([
@@ -51,7 +51,7 @@ class TransaksiObserver
         if (Auth::check()) {
             LogAktifitas::create([
                 'id_user' => Auth::id(),
-                'aktivitas' => 'Menghapus transaksi parkir #' . str_pad($transaksi->id_parkit, 8, '0', STR_PAD_LEFT),
+                'aktivitas' => 'Menghapus transaksi parkir #' . str_pad($transaksi->id_parkir, 8, '0', STR_PAD_LEFT),
                 'waktu_aktivitas' => Carbon::now(),
             ]);
         }

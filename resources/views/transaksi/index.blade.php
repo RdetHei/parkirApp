@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-3xl font-bold text-gray-800">Riwayat Transaksi Parkir</h2>
         <a href="{{ route('transaksi.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            ➕ Tambah Manual
+            Tambah Manual
         </a>
     </div>
 
@@ -42,7 +42,7 @@
                 @foreach($items as $item)
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 text-sm font-bold text-blue-600">
-                        #{{ str_pad($item->id_parkit, 8, '0', STR_PAD_LEFT) }}
+                        #{{ str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT) }}
                     </td>
                     <td class="px-6 py-4 text-sm font-semibold text-gray-800">
                         {{ $item->kendaraan->plat_nomor ?? '-' }}
@@ -79,18 +79,18 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 text-sm space-x-2">
-                        <a href="{{ route('transaksi.show', $item->id_parkit) }}" class="text-blue-600 hover:text-blue-800 font-semibold">
+                        <a href="{{ route('transaksi.show', $item->id_parkir) }}" class="text-blue-600 hover:text-blue-800 font-semibold">
                             👁️ Lihat
                         </a>
-                        <a href="{{ route('transaksi.edit', $item->id_parkit) }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">
+                        <a href="{{ route('transaksi.edit', $item->id_parkir) }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">
                             ✏️ Edit
                         </a>
                         @if($item->status === 'keluar')
-                            <a href="{{ route('transaksi.print', $item->id_parkit) }}" class="text-purple-600 hover:text-purple-800 font-semibold">
+                            <a href="{{ route('transaksi.print', $item->id_parkir) }}" class="text-purple-600 hover:text-purple-800 font-semibold">
                                 🖨️ Struk
                             </a>
                         @endif
-                        <form action="{{ route('transaksi.destroy', $item->id_parkit) }}" method="POST" class="inline" 
+                        <form action="{{ route('transaksi.destroy', $item->id_parkir) }}" method="POST" class="inline"
                               onsubmit="return confirm('Yakin hapus transaksi ini?')">
                             @csrf
                             @method('DELETE')

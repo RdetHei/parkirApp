@@ -15,7 +15,7 @@
         <div class="grid grid-cols-2 gap-4 mb-6 pb-4 border-b border-gray-200">
             <div>
                 <p class="text-sm text-gray-600">No. Transaksi</p>
-                <p class="text-lg font-bold text-gray-800">#{{ str_pad($transaksi->id_parkit, 8, '0', STR_PAD_LEFT) }}</p>
+                <p class="text-lg font-bold text-gray-800">#{{ str_pad($transaksi->id_parkir, 8, '0', STR_PAD_LEFT) }}</p>
             </div>
             <div>
                 <p class="text-sm text-gray-600">Tanggal Cetak</p>
@@ -118,16 +118,16 @@
         <!-- Footer -->
         <div class="text-center py-4 text-sm text-gray-600">
             <p>Terima kasih telah menggunakan layanan parkir kami</p>
-            <p class="mt-2">{{ now()->format('d MMMM Y') }}</p>
+            <p class="mt-2">{{ now()->format('d M Y') }}</p>
         </div>
 
         <!-- Print Button -->
         <div class="flex justify-between mt-8 pt-4 border-t border-gray-200">
             <a href="javascript:window.print()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                🖨️ Cetak Struk
+                Cetak Struk
             </a>
-            <a href="{{ route('parkir.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
-                ← Kembali
+            <a href="{{ route('transaksi.parkir.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
+                Kembali
             </a>
         </div>
     </div>

@@ -18,7 +18,7 @@
         </div>
     @endif
 
-    <form action="{{ route('parkir.store') }}" method="POST" class="bg-white p-6 rounded shadow-lg">
+    <form action="{{ route('transaksi.checkIn') }}" method="POST" class="bg-white p-6 rounded shadow-lg">
         @csrf
 
         <div class="mb-5">
@@ -61,7 +61,7 @@
         </div>
 
         <div class="flex justify-end gap-3 pt-6 border-t">
-            <a href="{{ route('parkir.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('transaksi.parkir.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                 ← Batal
             </a>
             <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">

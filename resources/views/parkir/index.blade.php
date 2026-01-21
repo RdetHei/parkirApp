@@ -6,8 +6,8 @@
 <div class="max-w-7xl mx-auto px-4">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-3xl font-bold text-gray-800">Kendaraan Parkir Aktif</h2>
-        <a href="{{ route('parkir.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            ➕ Tambah Parkir
+        <a href="{{ route('transaksi.checkIn.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Tambah Parkir
         </a>
     </div>
 
@@ -42,7 +42,7 @@
                 @foreach($transaksis as $transaksi)
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 text-sm font-bold text-blue-600">
-                        #{{ str_pad($transaksi->id_parkit, 8, '0', STR_PAD_LEFT) }}
+                        #{{ str_pad($transaksi->id_parkir, 8, '0', STR_PAD_LEFT) }}
                     </td>
                     <td class="px-6 py-4 text-sm font-bold text-gray-800">
                         {{ $transaksi->kendaraan->plat_nomor ?? '-' }}
@@ -68,17 +68,17 @@
                         {{ $transaksi->user->name ?? '-' }}
                     </td>
                     <td class="px-6 py-4 text-sm space-x-2">
-                        <form action="{{ route('parkir.update', $transaksi->id_parkit) }}" method="POST" class="inline">
+                        <form action="{{ route('transaksi.checkOut', $transaksi->id_parkir) }}" method="POST" class="inline">
                             @csrf
                             @method('PUT')
-                            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs" 
+                            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
                                     onclick="return confirm('Catat kendaraan keluar?')">
-                                🚗 Keluar
+                                Keluar
                             </button>
                         </form>
-                        <a href="{{ route('parkir.print', $transaksi->id_parkit) }}" 
+                        <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs inline-block">
-                            🖨️ Struk
+                            Struk
                         </a>
                     </td>
                 </tr>

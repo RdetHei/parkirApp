@@ -12,7 +12,7 @@ return new class extends Migration
 public function up(): void
 {
     Schema::create('tb_transaksi', function (Blueprint $table) {
-        $table->id('id_parkit'); // Mengikuti nama di SQL Anda 'id_parkit'
+        $table->id('id_parkir');
         $table->unsignedBigInteger('id_kendaraan');
         $table->dateTime('waktu_masuk');
         $table->dateTime('waktu_keluar')->nullable();

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto px-4">
-    <h2 class="text-3xl font-bold mb-6 text-gray-800">Edit Transaksi #{{ str_pad($item->id_parkit, 8, '0', STR_PAD_LEFT) }}</h2>
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">Edit Transaksi #{{ str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT) }}</h2>
 
     @if($errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -16,7 +16,7 @@
         </div>
     @endif
 
-    <form action="{{ route('transaksi.update', $item->id_parkit) }}" method="POST" class="bg-white p-6 rounded shadow-lg">
+    <form action="{{ route('transaksi.update', $item->id_parkir) }}" method="POST" class="bg-white p-6 rounded shadow-lg">
         @csrf
         @method('PUT')
 

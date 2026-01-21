@@ -9,7 +9,7 @@ class Pembayaran extends Model
     protected $table = 'tb_pembayaran';
     protected $primaryKey = 'id_pembayaran';
     protected $fillable = [
-        'id_parkit',
+        'id_parkir',
         'nominal',
         'metode',
         'status',
@@ -25,7 +25,7 @@ class Pembayaran extends Model
     // Relationships
     public function transaksi()
     {
-        return $this->belongsTo(Transaksi::class, 'id_parkit', 'id_parkit');
+        return $this->belongsTo(Transaksi::class, 'id_parkir', 'id_parkir');
     }
 
     public function petugas()

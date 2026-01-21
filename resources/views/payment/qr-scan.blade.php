@@ -20,7 +20,7 @@
             
             <!-- Generate QR Code -->
             <div id="qrcode" class="flex justify-center">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode(route('payment.confirm-qr', $transaksi->id_parkit)) }}" 
+                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode(route('payment.confirm-qr', $transaksi->id_parkir)) }}" 
                      alt="QR Code" class="border-4 border-gray-300 rounded-lg">
             </div>
         </div>
@@ -48,7 +48,7 @@
         <script>
             let checkCount = 0;
             function checkPaymentStatus() {
-                fetch('{{ route('payment.confirm-qr', $transaksi->id_parkit) }}', {
+                fetch('{{ route('payment.confirm-qr', $transaksi->id_parkir) }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -76,7 +76,7 @@
 
         <!-- Tombol Kembali -->
         <div class="flex gap-3">
-            <a href="{{ route('payment.create', $transaksi->id_parkit) }}" 
+            <a href="{{ route('payment.create', $transaksi->id_parkir) }}" 
                class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold text-center">
                 ← Ganti Metode
             </a>
@@ -87,7 +87,7 @@
     <div class="mt-8 bg-yellow-50 border-2 border-yellow-300 p-4 rounded-lg">
         <p class="text-sm text-yellow-900 font-semibold mb-2">⚠️ Belum mendapat akses QR?</p>
         <p class="text-sm text-yellow-800 mb-3">Gunakan pembayaran manual melalui petugas parkir</p>
-        <a href="{{ route('payment.manual-confirm', $transaksi->id_parkit) }}" 
+        <a href="{{ route('payment.manual-confirm', $transaksi->id_parkir) }}" 
            class="block px-4 py-2 bg-yellow-600 text-white rounded text-center hover:bg-yellow-700 font-semibold">
             Pilih Pembayaran Manual
         </a>

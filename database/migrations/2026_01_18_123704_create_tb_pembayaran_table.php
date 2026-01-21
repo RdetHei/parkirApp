@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tb_pembayaran', function (Blueprint $table) {
             $table->id('id_pembayaran');
-            $table->unsignedBigInteger('id_parkit');
+            $table->unsignedBigInteger('id_parkir');
             $table->decimal('nominal', 10, 0);
             $table->enum('metode', ['manual', 'qr_scan'])->default('manual');
             $table->enum('status', ['pending', 'berhasil', 'gagal'])->default('pending');
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign Keys
-            $table->foreign('id_parkit')->references('id_parkit')->on('tb_transaksi')->onDelete('cascade');
+            $table->foreign('id_parkir')->references('id_parkir')->on('tb_transaksi')->onDelete('cascade');
             $table->foreign('id_user')->references('id')->on('tb_user')->onDelete('set null');
         });
     }

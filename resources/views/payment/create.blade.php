@@ -33,7 +33,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Pembayaran Manual -->
         <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-purple-500 hover:shadow-lg transition cursor-pointer" 
-             onclick="document.location.href='{{ route('payment.manual-confirm', $transaksi->id_parkit) }}'">
+             onclick="document.location.href='{{ route('payment.manual-confirm', $transaksi->id_parkir) }}'">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@
 
         <!-- Pembayaran QR Scan -->
         <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-green-500 hover:shadow-lg transition cursor-pointer" 
-             onclick="document.location.href='{{ route('payment.qr-scan', $transaksi->id_parkit) }}'">
+             onclick="document.location.href='{{ route('payment.qr-scan', $transaksi->id_parkir) }}'">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +92,7 @@
 
     <!-- Tombol Kembali -->
     <div class="flex justify-center mt-8">
-        <a href="{{ route('parkir.index') }}" class="text-gray-600 hover:text-gray-800">
+        <a href="{{ route('transaksi.parkir.index') }}" class="text-gray-600 hover:text-gray-800">
             ← Kembali ke Dashboard
         </a>
     </div>

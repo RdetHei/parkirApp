@@ -34,7 +34,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/parkir');
+            return redirect()->intended(route('transaksi.parkir.index'));
         }
 
         return back()->withErrors([
