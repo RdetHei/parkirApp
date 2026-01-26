@@ -143,6 +143,15 @@ class TransaksiController extends Controller
         return redirect()->route('transaksi.index')->with('success','Transaksi manual berhasil dibuat');
     }
 
+    public function create()
+    {
+        $kendaraans = Kendaraan::orderBy('plat_nomor')->get();
+        $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
+        $users = User::orderBy('name')->get();
+        $areas = AreaParkir::orderBy('nama_area')->get();
+        return view('transaksi.create', compact('kendaraans','tarifs','users','areas'));
+    }
+
     public function show($id)
     {
         $item = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])->findOrFail($id);
