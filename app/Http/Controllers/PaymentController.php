@@ -9,6 +9,7 @@ use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class PaymentController extends Controller
 {
@@ -69,7 +70,10 @@ class PaymentController extends Controller
      */
     public function manual_process(Request $request, $id_parkir)
     {
-        $transaksi = Transaksi::findOrFail($id_parkir);
+        // Ambil transaksi untuk validasi awal (non-lock) supaya message bisa ditampilkan
+        if (is_null($transaksi->biaya_total)) {
+            return back()->with('error', 'Gagal memproses pembayaran: Biaya total tidak tersedia. Silakan hubungi administrator.');
+        }
 
         $request->validate([
             'nominal' => 'required|numeric|min:' . ($transaksi->biaya_total ?? 0),
@@ -79,11 +83,16 @@ class PaymentController extends Controller
         ]);
 
         try {
-            if ($transaksi->status_pembayaran === 'berhasil') {
-                return back()->with('error', 'Transaksi ini sudah dibayar');
-            }
+            // Gunakan transaction + row lock untuk mencegah double-payment
+            DB::transaction(function () use ($id_parkir, $request) {
+                // Re-fetch transaksi dengan lock
+                $transaksi = Transaksi::lockForUpdate()->findOrFail($id_parkir);
 
-            DB::transaction(function () use ($id_parkir, $request, $transaksi) {
+                if ($transaksi->status_pembayaran === 'berhasil') {
+                    // Jika sudah dibayar, batalkan
+                    throw new \Exception('Transaksi ini sudah dibayar');
+                }
+
                 // Buat record pembayaran
                 $pembayaran = Pembayaran::create([
                     'id_parkir' => $id_parkir,
@@ -122,7 +131,54 @@ class PaymentController extends Controller
             return back()->with('error', 'Transaksi ini sudah dibayar');
         }
 
-        return view('payment.qr-scan', compact('transaksi'));
+        // Buat temporary signed URL untuk konfirmasi QR (kedaluwarsa)
+        $signedUrl = URL::temporarySignedRoute(
+            'payment.confirm-qr.signed',
+            now()->addMinutes(15),
+            ['id_parkir' => $id_parkir]
+        );
+
+        return view('payment.qr-scan', compact('transaksi', 'signedUrl'));
+    }
+
+    /**
+     * Konfirmasi pembayaran via QR Scan (signed URL - public)
+     * Route is public but requires a valid signature.
+     */
+    public function confirm_qr_signed($id_parkir)
+    {
+        try {
+            // Gunakan transaction + lock untuk mencegah double-payment
+            DB::transaction(function () use ($id_parkir) {
+                $transaksi = Transaksi::lockForUpdate()->findOrFail($id_parkir);
+
+                if ($transaksi->status_pembayaran === 'berhasil') {
+                    throw new \Exception('Transaksi ini sudah dibayar');
+                }
+
+                // Buat record pembayaran
+                $pembayaran = Pembayaran::create([
+                    'id_parkir' => $id_parkir,
+                    'nominal' => $transaksi->biaya_total,
+                    'metode' => 'qr_scan',
+                    'status' => 'berhasil',
+                    'keterangan' => 'Pembayaran otomatis via scan QR (signed URL)',
+                    'id_user' => Auth::id() ?? null,
+                    'waktu_pembayaran' => Carbon::now(),
+                ]);
+
+                // Update transaksi
+                $transaksi->update([
+                    'status_pembayaran' => 'berhasil',
+                    'id_pembayaran' => $pembayaran->id_pembayaran,
+                ]);
+            });
+
+            return redirect()->route('payment.success', $id_parkir)->with('success', 'Pembayaran berhasil diproses');
+        } catch (\Exception $e) {
+            Log::error('confirm_qr_signed gagal', ['id_parkir' => $id_parkir, 'error' => $e->getMessage()]);
+            return redirect()->route('payment.create', $id_parkir)->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -131,17 +187,14 @@ class PaymentController extends Controller
     public function confirm_qr($id_parkir)
     {
         try {
-            $transaksi = Transaksi::findOrFail($id_parkir);
+            // Gunakan transaction + lock untuk mencegah double-payment
+            DB::transaction(function () use ($id_parkir, &$response) {
+                $transaksi = Transaksi::lockForUpdate()->findOrFail($id_parkir);
 
-            if ($transaksi->status_pembayaran === 'berhasil') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Transaksi ini sudah dibayar'
-                ]);
-            }
+                if ($transaksi->status_pembayaran === 'berhasil') {
+                    throw new \Exception('Transaksi ini sudah dibayar');
+                }
 
-
-            DB::transaction(function () use ($id_parkir, $transaksi) {
                 // Buat record pembayaran
                 $pembayaran = Pembayaran::create([
                     'id_parkir' => $id_parkir,

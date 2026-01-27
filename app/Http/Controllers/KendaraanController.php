@@ -60,7 +60,15 @@ class KendaraanController extends Controller
 
     public function destroy($id)
     {
-        Kendaraan::destroy($id);
+        $kendaraan = Kendaraan::findOrFail($id);
+
+        // Cek apakah kendaraan masih digunakan di transaksi
+        if ($kendaraan->transaksis()->exists()) {
+            return redirect()->route('kendaraan.index')->with('error', 'Kendaraan tidak dapat dihapus karena masih digunakan dalam transaksi.');
+        }
+
+        $kendaraan->delete();
+        
         return redirect()->route('kendaraan.index')->with('success','Kendaraan deleted');
     }
 }

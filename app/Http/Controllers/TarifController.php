@@ -48,7 +48,15 @@ class TarifController extends Controller
 
     public function destroy($id)
     {
-        Tarif::destroy($id);
+        $tarif = Tarif::findOrFail($id);
+
+        // Cek apakah tarif masih digunakan di transaksi
+        if ($tarif->transaksis()->exists()) {
+            return redirect()->route('tarif.index')->with('error', 'Tarif tidak dapat dihapus karena masih digunakan dalam transaksi.');
+        }
+
+        $tarif->delete();
+
         return redirect()->route('tarif.index')->with('success','Tarif deleted');
     }
 }

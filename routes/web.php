@@ -11,6 +11,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Public signed QR confirmation (no auth required, but requires valid signature)
+Route::get('/payment/{id_parkir}/confirm-qr/signed', [\App\Http\Controllers\PaymentController::class, 'confirm_qr_signed'])
+    ->name('payment.confirm-qr.signed')
+    ->middleware('signed');
+
 // Auth Routes
 Route::get('/register', [RegisterController::class, 'create'])->name('register.create');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
@@ -25,14 +30,14 @@ Route::middleware(['auth'])->group(function () {
 
     // Parkir Routes
     Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.parkir.index')->defaults('status', 'masuk');
-    Route::get('/transaksi/check-in/create', function() {
+    Route::get('/transaksi/create-check-in', function() {
         $kendaraans = \App\Models\Kendaraan::orderBy('plat_nomor')->get();
         $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
         $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
         return view('parkir.create', compact('kendaraans', 'tarifs', 'areas'));
-    })->name('transaksi.checkIn.create');
+    })->name('transaksi.create-check-in');
     Route::post('/transaksi/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
-    Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
+    Route::put('/transaksi/{id}/create-check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.create-check-out');
     Route::resource('transaksi', \App\Http\Controllers\TransaksiController::class);
     Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
 

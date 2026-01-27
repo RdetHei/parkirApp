@@ -18,11 +18,12 @@
         <div class="mb-6">
             <p class="text-center text-gray-700 mb-4 font-semibold">Gunakan aplikasi pembayaran untuk scan QR di bawah ini</p>
             
-            <!-- Generate QR Code -->
+            <!-- Generate QR Code (signed, temporary URL) -->
             <div id="qrcode" class="flex justify-center">
-                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode(route('payment.confirm-qr', $transaksi->id_parkir)) }}" 
+                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={{ urlencode($signedUrl) }}" 
                      alt="QR Code" class="border-4 border-gray-300 rounded-lg">
             </div>
+            <p class="text-xs text-gray-500 text-center mt-2">QR valid sampai {{ now()->addMinutes(15)->format('H:i') }} (atau sesuai waktu server)</p>
         </div>
 
         <!-- Status -->

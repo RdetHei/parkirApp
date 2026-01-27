@@ -153,11 +153,10 @@ class ReportController extends Controller
 
         $transaksis = $query->orderBy('waktu_masuk', 'desc')->get();
 
-        $filename = 'transaksi_' . date('Y-m-d_H-i-s') . '.csv';
-
         $headers = array(
             'Content-Type' => 'text/csv; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Accept-Language' => "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
         );
 
         $callback = function() use ($transaksis) {

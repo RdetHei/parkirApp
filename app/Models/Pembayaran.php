@@ -23,6 +23,7 @@ class Pembayaran extends Model
 
     protected $casts = [
         'waktu_pembayaran' => 'datetime',
+        'nominal' => 'decimal:2',
     ];
 
     // Relationships

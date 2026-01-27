@@ -83,6 +83,10 @@ class TransaksiController extends Controller
                 // Kalkulasi durasi dan biaya
                 $waktu_keluar = Carbon::now();
                 $durasi_jam = ceil($waktu_keluar->diffInMinutes($transaksi->waktu_masuk) / 60);
+                
+                if (!$transaksi->tarif) {
+                    return back()->with('error', 'Tarif tidak ditemukan untuk transaksi ini.');
+                }
                 $biaya_total = $durasi_jam * $transaksi->tarif->tarif_perjam;
 
                 // Update transaksi

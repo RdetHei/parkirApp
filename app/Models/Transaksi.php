@@ -29,6 +29,8 @@ class Transaksi extends Model
     protected $casts = [
         'waktu_masuk' => 'datetime',
         'waktu_keluar' => 'datetime',
+        'biaya_total' => 'decimal:2',
+        'durasi_jam' => 'integer',
     ];
 
     // Relationships

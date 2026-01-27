@@ -51,7 +51,13 @@
                     </div>
                     <div class="border-t-2 border-green-300 pt-3 mt-3 flex justify-between text-lg">
                         <span class="font-bold text-green-800">Total Dibayar:</span>
-                        <span class="font-bold text-green-600">Rp {{ number_format($transaksi->pembayaran->nominal, 0, ',', '.') }}</span>
+                        <span class="font-bold text-green-600">Rp 
+                            @if($transaksi->pembayaran)
+                                {{ number_format($transaksi->pembayaran->nominal, 0, ',', '.') }}
+                            @else
+                                {{ number_format($transaksi->biaya_total ?? 0, 0, ',', '.') }}
+                            @endif
+                        </span>
                     </div>
                 </div>
             </div>
@@ -70,16 +76,24 @@
                     <p class="font-bold">{{ $transaksi->waktu_keluar->format('d/m/Y H:i') }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-600">Waktu Pembayaran</p>
-                    <p class="font-bold">{{ $transaksi->pembayaran->waktu_pembayaran->format('d/m/Y H:i') }}</p>
+                        <p class="text-gray-600">Waktu Pembayaran</p>
+                        <p class="font-bold">
+                            @if($transaksi->pembayaran && $transaksi->pembayaran->waktu_pembayaran)
+                                {{ $transaksi->pembayaran->waktu_pembayaran->format('d/m/Y H:i') }}
+                            @else
+                                -
+                            @endif
+                        </p>
                 </div>
                 <div class="md:col-span-3">
                     <p class="text-gray-600">Metode Pembayaran</p>
                     <p class="font-bold">
-                        @if($transaksi->pembayaran->metode === 'manual')
+                        @if($transaksi->pembayaran && $transaksi->pembayaran->metode === 'manual')
                             <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded">Manual - Petugas</span>
-                        @else
+                        @elseif($transaksi->pembayaran && $transaksi->pembayaran->metode)
                             <span class="px-3 py-1 bg-green-100 text-green-800 rounded">QR Scan - Otomatis</span>
+                        @else
+                            <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded">Belum Dibayar</span>
                         @endif
                     </p>
                 </div>
@@ -87,7 +101,7 @@
         </div>
 
         <!-- Keterangan Pembayaran -->
-        @if($transaksi->pembayaran->keterangan)
+        @if($transaksi->pembayaran && $transaksi->pembayaran->keterangan)
         <div class="bg-gray-100 p-4 rounded-lg mb-8">
             <p class="text-sm text-gray-600">Keterangan:</p>
             <p class="text-gray-800">{{ $transaksi->pembayaran->keterangan }}</p>
