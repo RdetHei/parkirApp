@@ -8,10 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('throttle:5,1')->only('store');
-    }
+
 
     /**
      * Display the login view.

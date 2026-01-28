@@ -66,6 +66,7 @@ class TransaksiSeeder extends Seeder
             'updated_at' => Carbon::now()->subHours(6),
         ]);
 
+       
         // decrement/increment area terisi values are handled by observer in app, but ensure area terisi is realistic
         AreaParkir::where('id_area',$area1->id_area)->increment('terisi', 1);
     }

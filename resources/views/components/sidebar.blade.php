@@ -9,7 +9,7 @@
 
             <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
                 <!-- Dashboard -->
-                <a href="{{ route('dashboard') }}" 
+                <a href="{{ route('dashboard') }}"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-green-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -21,7 +21,7 @@
                 </a>
 
                 <!-- Catat Masuk -->
-                <a href="{{ route('transaksi.checkIn.create') }}" 
+                <a href="{{ route('transaksi.create-check-in') }}"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('transaksi.checkIn.create') ? 'bg-blue-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -33,7 +33,7 @@
                 </a>
 
                 <!-- Parkir Aktif -->
-                <a href="{{ route('transaksi.parkir.index') }}" 
+                <a href="{{ route('transaksi.parkir.index') }}"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('transaksi.parkir.index') ? 'bg-orange-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -45,7 +45,7 @@
                 </a>
 
                 <!-- Riwayat Transaksi -->
-                <a href="{{ route('transaksi.index') }}" 
+                <a href="{{ route('transaksi.index') }}"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('transaksi.index', 'transaksi.show', 'transaksi.edit', 'transaksi.create') ? 'bg-indigo-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
@@ -57,7 +57,7 @@
                 </a>
 
                 <!-- Riwayat Pembayaran -->
-                <a href="{{ route('payment.index') }}" 
+                <a href="{{ route('payment.index') }}"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('payment.index') ? 'bg-purple-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -69,7 +69,7 @@
                 </a>
 
                 <!-- Proses Pembayaran -->
-                <a href="{{ route('payment.select-transaction') }}" 
+                <a href="{{ route('payment.select-transaction') }}"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('payment.select-transaction', 'payment.create', 'payment.manual-confirm', 'payment.qr-scan') ? 'bg-pink-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -84,7 +84,7 @@
                     <p class="text-xs font-semibold text-gray-500 uppercase px-3 mb-3 tracking-wider">Master Data</p>
 
                     <!-- Kelola User -->
-                    <a href="{{ route('users.index') }}" 
+                    <a href="{{ route('users.index') }}"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('users.index', 'users.create', 'users.edit', 'users.show') ? 'bg-cyan-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -96,7 +96,7 @@
                     </a>
 
                     <!-- Tarif Parkir -->
-                    <a href="{{ route('tarif.index') }}" 
+                    <a href="{{ route('tarif.index') }}"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('tarif.index', 'tarif.create', 'tarif.edit', 'tarif.show') ? 'bg-yellow-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -108,7 +108,7 @@
                     </a>
 
                     <!-- Area Parkir -->
-                    <a href="{{ route('area-parkir.index') }}" 
+                    <a href="{{ route('area-parkir.index') }}"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('area-parkir.index', 'area-parkir.create', 'area-parkir.edit', 'area-parkir.show') ? 'bg-red-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -121,7 +121,7 @@
                     </a>
 
                     <!-- Kendaraan -->
-                    <a href="{{ route('kendaraan.index') }}" 
+                    <a href="{{ route('kendaraan.index') }}"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('kendaraan.index', 'kendaraan.create', 'kendaraan.edit', 'kendaraan.show') ? 'bg-amber-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
@@ -133,7 +133,7 @@
                     </a>
 
                     <!-- Log Aktivitas -->
-                    <a href="{{ route('log-aktivitas.index') }}" 
+                    <a href="{{ route('log-aktivitas.index') }}"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('log-aktivitas.index') ? 'bg-slate-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

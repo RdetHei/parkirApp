@@ -20,7 +20,7 @@ Route::get('/payment/{id_parkir}/confirm-qr/signed', [\App\Http\Controllers\Paym
 Route::get('/register', [RegisterController::class, 'create'])->name('register.create');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 Route::get('/login', [LoginController::class, 'create'])->name('login.create');
-Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware('throttle:5,1');
 
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {

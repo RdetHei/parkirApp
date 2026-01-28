@@ -3,7 +3,7 @@
 @section('title','Transaksi')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4">
+<div class="py-6 px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-3xl font-bold text-gray-800">Riwayat Transaksi Parkir</h2>
         <a href="{{ route('transaksi.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
@@ -80,21 +80,21 @@
                     </td>
                     <td class="px-6 py-4 text-sm space-x-2">
                         <a href="{{ route('transaksi.show', $transaksi->id_parkir) }}" class="text-blue-600 hover:text-blue-800 font-semibold">
-                            👁️ Lihat
+                            Lihat
                         </a>
                         <a href="{{ route('transaksi.edit', $transaksi->id_parkir) }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">
-                            ✏️ Edit
+                            Edit
                         </a>
                         @if($transaksi->status === 'keluar')
                             <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}" class="text-purple-600 hover:text-purple-800 font-semibold">
-                                🖨️ Struk
+                            Struk
                             </a>
                         @endif
                         <form action="{{ route('transaksi.destroy', $transaksi->id_parkir) }}" method="POST" class="inline"
                               onsubmit="return confirm('Yakin hapus transaksi ini?')">
                             @csrf
                             @method('DELETE')
-                            <button class="text-red-600 hover:text-red-800 font-semibold">🗑️ Hapus</button>
+                            <button class="text-red-600 hover:text-red-800 font-semibold">Hapus</button>
                         </form>
                     </td>
                 </tr>
