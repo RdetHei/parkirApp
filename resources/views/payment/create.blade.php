@@ -3,8 +3,13 @@
 @section('title', 'Pilih Metode Pembayaran')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4">
-    <h2 class="text-3xl font-bold mb-6 text-gray-800">Pilih Metode Pembayaran</h2>
+@extends('layouts.app')
+
+@section('title', 'Pilih Metode Pembayaran')
+
+@section('content')
+<div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Pilih Metode Pembayaran</h2>
 
     <!-- Ringkasan Transaksi -->
     <div class="bg-blue-50 border border-blue-300 rounded-lg p-6 mb-6">
@@ -30,17 +35,17 @@
     </div>
 
     <!-- Pilihan Metode -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6"> {{-- Changed from md:grid-cols-2 to grid-cols-1 to fit max-w-2xl better --}}
         <!-- Pembayaran Manual -->
-        <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-purple-500 hover:shadow-lg transition cursor-pointer" 
+        <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-indigo-500 hover:shadow-lg transition cursor-pointer"
              onclick="document.location.href='{{ route('payment.manual-confirm', $transaksi->id_parkir) }}'">
             <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-full">PETUGAS</span>
+                <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">PETUGAS</span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">Pembayaran Manual</h3>
             <p class="text-gray-600 mb-4">Petugas parkir akan memproses pembayaran secara manual</p>
@@ -55,21 +60,21 @@
                     <span class="text-green-600">•</span> Dapat diskon atau promosi
                 </li>
             </ul>
-            <div class="bg-purple-50 p-3 rounded text-purple-900 font-semibold text-center">
+            <div class="bg-indigo-50 p-3 rounded text-indigo-900 font-semibold text-center">
                 Lanjut ke Pembayaran Manual
             </div>
         </div>
 
         <!-- Pembayaran QR Scan -->
-        <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-green-500 hover:shadow-lg transition cursor-pointer" 
+        <div class="bg-white border-2 border-gray-300 rounded-lg p-8 hover:border-indigo-500 hover:shadow-lg transition cursor-pointer"
              onclick="document.location.href='{{ route('payment.qr-scan', $transaksi->id_parkir) }}'">
             <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full">OTOMATIS</span>
+                <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">OTOMATIS</span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">Pembayaran QR Scan</h3>
             <p class="text-gray-600 mb-4">Pengendara langsung scan QR untuk membayar otomatis</p>
@@ -84,7 +89,7 @@
                     <span class="text-green-600">•</span> Riwayat digital otomatis
                 </li>
             </ul>
-            <div class="bg-green-50 p-3 rounded text-green-900 font-semibold text-center">
+            <div class="bg-indigo-50 p-3 rounded text-indigo-900 font-semibold text-center">
                 Lanjut ke QR Scan
             </div>
         </div>
@@ -92,9 +97,10 @@
 
     <!-- Tombol Kembali -->
     <div class="flex justify-center mt-8">
-        <a href="{{ route('transaksi.parkir.index') }}" class="text-gray-600 hover:text-gray-800">
+        <a href="{{ route('transaksi.parkir.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             Kembali ke Dashboard
         </a>
     </div>
 </div>
 @endsection
+

@@ -3,28 +3,43 @@
 @section('title','Create Area Parkir')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
-    <h2 class="text-2xl font-bold mb-4">Create Area Parkir</h2>
+@extends('layouts.app')
 
-    <form action="{{ route('area-parkir.store') }}" method="POST" class="bg-white p-6 rounded shadow">
+@section('title','Create Area Parkir')
+
+@section('content')
+<div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Create Area Parkir</h2>
+
+    <form action="{{ route('area-parkir.store') }}" method="POST" class="space-y-4">
         @csrf
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Nama Area</label>
-            <input type="text" name="nama_area" value="{{ old('nama_area') }}" class="mt-1 block w-full border-gray-300 rounded-md">
-            @error('nama_area')<div class="text-red-600 text-sm">{{ $message }}</div>@enderror
-        </div>
+        <x-form-input
+            name="nama_area"
+            label="Nama Area"
+            type="text"
+            :value="old('nama_area')"
+            placeholder="Masukkan nama area parkir"
+        />
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700">Kapasitas</label>
-            <input type="number" name="kapasitas" value="{{ old('kapasitas') }}" class="mt-1 block w-full border-gray-300 rounded-md">
-            @error('kapasitas')<div class="text-red-600 text-sm">{{ $message }}</div>@enderror
-        </div>
+        <x-form-input
+            name="kapasitas"
+            label="Kapasitas"
+            type="number"
+            :value="old('kapasitas')"
+            placeholder="Masukkan kapasitas area parkir"
+        />
 
-        <div class="flex justify-end">
-            <a href="{{ route('area-parkir.index') }}" class="mr-2">Cancel</a>
-            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Create</button>
+        <div class="flex justify-end space-x-2">
+            <a href="{{ route('area-parkir.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Cancel
+            </a>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Create
+            </button>
         </div>
     </form>
 </div>
+@endsection
+
 @endsection
