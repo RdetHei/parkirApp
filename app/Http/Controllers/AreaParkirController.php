@@ -10,12 +10,14 @@ class AreaParkirController extends Controller
     public function index()
     {
         $areas = AreaParkir::orderBy('id_area','desc')->paginate(15);
-        return view('area_parkir.index', compact('areas'));
+        $title = 'Data Area Parkir';
+        return view('area_parkir.index', compact('areas', 'title'));
     }
 
     public function create()
     {
-        return view('area_parkir.create');
+        $title = 'Tambah Area Parkir';
+        return view('area_parkir.create', compact('title'));
     }
 
     public function store(Request $request)
@@ -33,7 +35,8 @@ class AreaParkirController extends Controller
     public function edit($id)
     {
         $area = AreaParkir::findOrFail($id);
-        return view('area_parkir.edit', compact('area'));
+        $title = 'Edit Area Parkir';
+        return view('area_parkir.edit', compact('area', 'title'));
     }
 
     public function update(Request $request, $id)

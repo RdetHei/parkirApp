@@ -126,7 +126,7 @@
             <a href="javascript:window.print()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
                 Cetak Struk
             </a>
-            <a href="{{ route('transaksi.parkir.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
+            <a href="{{ route('transaksi.index', ['status' => 'masuk']) }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
                 Kembali
             </a>
         </div>

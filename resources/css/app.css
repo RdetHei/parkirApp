@@ -9,3 +9,225 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* ============================================
+   SIDEBAR STYLES - IMPROVED & PROFESSIONAL
+   ============================================ */
+
+/* Base Transitions for Smooth Animations */
+#app-sidebar {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-label,
+.sidebar-section-title,
+.sidebar-profile-details,
+.sidebar-brand-text,
+.sidebar-chevron {
+    transition: opacity 0.2s ease-in-out,
+                max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0.2s ease-in-out;
+}
+
+#app-sidebar .w-1\.5.h-1\.5 {
+    transition: opacity 0.2s ease-in-out,
+                transform 0.2s ease-in-out;
+}
+
+/* Scrollbar Styling */
+.sidebar-nav::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ============================================
+   COLLAPSED STATE STYLES
+   ============================================ */
+
+/* Sidebar Width when Collapsed */
+html[data-sidebar="collapsed"] #app-sidebar {
+    width: 4.5rem; /* 72px - slightly wider for better icon spacing */
+}
+
+/* Hide Text Elements Smoothly */
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-label,
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-profile-details,
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-brand-text,
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-chevron {
+    opacity: 0;
+    max-width: 0;
+    visibility: hidden;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Completely hide section title when collapsed */
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-section-title {
+    display: none;
+}
+
+/* Hide Active Indicator Dots */
+html[data-sidebar="collapsed"] #app-sidebar .w-1\.5.h-1\.5 {
+    opacity: 0;
+    transform: scale(0);
+}
+
+/* Adjust Navigation Padding */
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-nav {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+/* Center Icons in Collapsed State */
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-item {
+    /* justify-content: center; -- REMOVED FOR MORE STABLE CENTERING */
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+    width: 100%;
+}
+html[data-sidebar="collapsed"] #app-sidebar .sidebar-item svg {
+    margin: 0 auto; /* ADDED FOR STABLE ICON CENTERING */
+}
+
+/* Hide Toggle Button when Collapsed */
+html[data-sidebar="collapsed"] #sidebar-toggle {
+    display: none;
+}
+
+/* Remove section spacing when collapsed */
+html[data-sidebar="collapsed"] .sidebar-nav > div {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+}
+
+/* ============================================
+   SIDEBAR HEADER ADJUSTMENTS
+   ============================================ */
+
+/* Collapsed Header Styling */
+html[data-sidebar="collapsed"] .sidebar-header {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    justify-content: center;
+}
+
+/* Logo Behavior in Collapsed State */
+html[data-sidebar="collapsed"] #logo-toggle {
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    margin: 0 auto;
+    display: block;
+    object-fit: contain;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html[data-sidebar="collapsed"] #logo-toggle:hover {
+    transform: scale(1.15);
+    filter: brightness(1.1);
+}
+
+/* Logo in Expanded State */
+html[data-sidebar="expanded"] #logo-toggle {
+    cursor: default;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   FOOTER / PROFILE SECTION
+   ============================================ */
+
+/* Center profile avatar when collapsed */
+html[data-sidebar="collapsed"] .sidebar-footer .flex.items-center {
+    justify-content: center;
+    padding: 0.5rem;
+}
+
+html[data-sidebar="collapsed"] .sidebar-footer .w-10.h-10 {
+    margin: 0;
+}
+
+/* ============================================
+   ENHANCED HOVER EFFECTS
+   ============================================ */
+
+/* Remove hover translate when collapsed (icons only) */
+html[data-sidebar="collapsed"] .sidebar-item:hover {
+    transform: none;
+}
+
+/* Enhanced tooltip on hover for collapsed state (optional future implementation) */
+html[data-sidebar="collapsed"] .sidebar-item {
+    position: relative;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+/* Ensure smooth transitions on mobile */
+@media (max-width: 1023px) {
+    #app-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html[data-sidebar="expanded"] #app-sidebar {
+        transform: translateX(0);
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Focus states for keyboard navigation */
+.sidebar-item:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+#sidebar-toggle:focus-visible,
+#logo-toggle:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    #app-sidebar,
+    .sidebar-label,
+    .sidebar-section-title,
+    .sidebar-profile-details,
+    .sidebar-brand-text,
+    .sidebar-chevron,
+    #app-sidebar .w-1\.5.h-1\.5,
+    .sidebar-item,
+    #logo-toggle {
+        transition: none;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    #app-sidebar {
+        display: none;
+    }
+}

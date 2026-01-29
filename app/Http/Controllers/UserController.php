@@ -12,12 +12,14 @@ class UserController extends Controller
     public function index()
     {
         $users = User::orderBy('id', 'desc')->paginate(15);
-        return view('users.index', compact('users'));
+        $title = 'Data Pengguna';
+        return view('users.index', compact('users', 'title'));
     }
 
     public function create()
     {
-        return view('users.create');
+        $title = 'Tambah User';
+        return view('users.create', compact('title'));
     }
 
     public function store(Request $request)
@@ -39,13 +41,15 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::findOrFail($id);
-        return view('users.show', compact('user'));
+        $title = 'Detail User';
+        return view('users.show', compact('user', 'title'));
     }
 
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        return view('users.edit', compact('user'));
+        $title = 'Edit User';
+        return view('users.edit', compact('user', 'title'));
     }
 
     public function update(Request $request, $id)

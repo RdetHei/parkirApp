@@ -11,13 +11,15 @@ class KendaraanController extends Controller
     public function index()
     {
         $items = Kendaraan::orderBy('id_kendaraan','desc')->paginate(15);
-        return view('kendaraan.index', compact('items'));
+        $title = 'Data Kendaraan';
+        return view('kendaraan.index', compact('items', 'title'));
     }
 
     public function create()
     {
         $users = User::orderBy('name')->get();
-        return view('kendaraan.create', compact('users'));
+        $title = 'Tambah Kendaraan';
+        return view('kendaraan.create', compact('users', 'title'));
     }
 
     public function store(Request $request)
@@ -27,7 +29,7 @@ class KendaraanController extends Controller
             'jenis_kendaraan' => 'required|string|max:20',
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
-            'id_user' => 'required|exists:tb_user,id',
+            'id_user' => 'nullable|exists:tb_user,id',
         ]);
 
         Kendaraan::create($data);
@@ -39,7 +41,8 @@ class KendaraanController extends Controller
     {
         $item = Kendaraan::findOrFail($id);
         $users = User::orderBy('name')->get();
-        return view('kendaraan.edit', compact('item','users'));
+        $title = 'Edit Kendaraan';
+        return view('kendaraan.edit', compact('item','users', 'title'));
     }
 
     public function update(Request $request, $id)
@@ -50,7 +53,7 @@ class KendaraanController extends Controller
             'jenis_kendaraan' => 'required|string|max:20',
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
-            'id_user' => 'required|exists:tb_user,id',
+            'id_user' => 'nullable|exists:tb_user,id',
         ]);
 
         $item->update($data);
@@ -68,7 +71,7 @@ class KendaraanController extends Controller
         }
 
         $kendaraan->delete();
-        
+
         return redirect()->route('kendaraan.index')->with('success','Kendaraan deleted');
     }
 }

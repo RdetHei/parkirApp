@@ -1,20 +1,27 @@
+
 @extends('layouts.app')
 
 @section('title','Create Tarif')
 
 @section('content')
-<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
-    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Create Tarif</h2>
-
-    <form action="{{ route('tarif.store') }}" method="POST" class="space-y-4">
-        @csrf
-
+    @component('components.form-card', [
+        'backUrl' => route('tarif.index'),
+        'title' => 'Buat Tarif Baru',
+        'description' => 'Tambahkan data tarif parkir baru ke sistem',
+        'cardIcon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>',
+        'cardTitle' => 'Form Tarif',
+        'cardDescription' => 'Lengkapi detail tarif',
+        'action' => route('tarif.store'),
+        'method' => 'POST',
+        'submitText' => 'Buat'
+    ])
         <div class="mb-4">
-            <label for="jenis_kendaraan" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label for="jenis_kendaraan" class="block text-sm font-medium text-white">
                 Jenis Kendaraan
             </label>
-            <select name="jenis_kendaraan" id="jenis_kendaraan" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="jenis_kendaraan" id="jenis_kendaraan" class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="motor" {{ old('jenis_kendaraan') == 'motor' ? 'selected' : '' }}>Motor</option>
                 <option value="mobil" {{ old('jenis_kendaraan') == 'mobil' ? 'selected' : '' }}>Mobil</option>
                 <option value="lainnya" {{ old('jenis_kendaraan') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
@@ -31,16 +38,5 @@
             :value="old('tarif_perjam')"
             placeholder="Masukkan tarif per jam"
         />
-
-        <div class="flex justify-end space-x-2">
-            <a href="{{ route('tarif.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                Cancel
-            </a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Create
-            </button>
-        </div>
-    </form>
-    </div>
-</div>
+    @endcomponent
 @endsection

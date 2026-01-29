@@ -3,13 +3,20 @@
 @section('title','Create Area Parkir')
 
 @section('content')
-<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
-    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Create Area Parkir</h2>
-
-    <form action="{{ route('area-parkir.store') }}" method="POST" class="space-y-4">
-        @csrf
-
+    @component('components.form-card', [
+        'backUrl' => route('area-parkir.index'),
+        'title' => 'Buat Area Parkir Baru',
+        'description' => 'Tambahkan data area parkir baru ke sistem',
+        'cardIcon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>',
+        'cardTitle' => 'Form Area Parkir',
+        'cardDescription' => 'Lengkapi detail area parkir',
+        'action' => route('area-parkir.store'),
+        'method' => 'POST',
+        'submitText' => 'Buat'
+    ])
         <x-form-input
             name="nama_area"
             label="Nama Area"
@@ -25,16 +32,5 @@
             :value="old('kapasitas')"
             placeholder="Masukkan kapasitas area parkir"
         />
-
-        <div class="flex justify-end space-x-2">
-            <a href="{{ route('area-parkir.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                Cancel
-            </a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Create
-            </button>
-        </div>
-    </form>
-    </div>
-</div>
+    @endcomponent
 @endsection

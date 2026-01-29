@@ -1,16 +1,22 @@
+
 @extends('layouts.app')
 
 @section('title', 'Edit User')
 
 @section('content')
-<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
-    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Edit User</h2>
-
-    <form action="{{ route('users.update', $user) }}" method="POST" class="space-y-4">
-        @csrf
-        @method('PUT')
-
+    @component('components.form-card', [
+        'backUrl' => route('users.index'),
+        'title' => 'Edit User',
+        'description' => 'Ubah data user yang sudah ada di sistem',
+        'cardIcon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>',
+        'cardTitle' => 'Form Edit User',
+        'cardDescription' => 'Sesuaikan informasi user',
+        'action' => route('users.update', $user),
+        'method' => 'PUT',
+        'submitText' => 'Update'
+    ])
         <x-form-input
             name="name"
             label="Name"
@@ -45,7 +51,7 @@
             <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Role
             </label>
-            <select name="role" id="role" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="role" id="role" class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User</option>
                 <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                 <option value="petugas" {{ old('role', $user->role) == 'petugas' ? 'selected' : '' }}>Petugas</option>
@@ -54,16 +60,6 @@
                 <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
         </div>
-
-        <div class="flex justify-end space-x-2">
-            <a href="{{ route('users.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                Cancel
-            </a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Update
-            </button>
-        </div>
-    </form>
-    </div>
-</div>
+    @endcomponent
 @endsection
+

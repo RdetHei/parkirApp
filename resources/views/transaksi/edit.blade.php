@@ -1,40 +1,35 @@
+
 @extends('layouts.app')
 
 @section('title','Edit Transaksi')
 
 @section('content')
-<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
-    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Edit Transaksi #{{ str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT) }}</h2>
-
-    @if($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong class="font-bold">Oops!</strong>
-            <span class="block sm:inline">Ada beberapa masalah dengan input Anda.</span>
-            <ul class="mt-3 list-disc list-inside text-sm">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form action="{{ route('transaksi.update', $item->id_parkir) }}" method="POST" class="space-y-4">
-        @csrf
-        @method('PUT')
-
+    @component('components.form-card', [
+        'backUrl' => route('transaksi.index'),
+        'title' => 'Edit Transaksi #'.str_pad($item->id_parkir, 8, '0', STR_PAD_LEFT),
+        'description' => 'Ubah detail transaksi parkir',
+        'cardIcon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>',
+        'cardTitle' => 'Form Edit Transaksi',
+        'cardDescription' => 'Sesuaikan informasi transaksi',
+        'action' => route('transaksi.update', $item->id_parkir),
+        'method' => 'PUT',
+        'submitText' => 'Update'
+    ])
         <x-form-input
             name="waktu_keluar"
             label="Waktu Keluar"
             type="datetime-local"
             :value="old('waktu_keluar', optional($item->waktu_keluar)->format('Y-m-d\TH:i'))"
+            class="bg-gray-800 text-white border-gray-600 focus:ring-green-500 focus:border-green-500"
         />
 
         <div class="mb-4">
             <label for="id_kendaraan" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Kendaraan
             </label>
-            <select name="id_kendaraan" id="id_kendaraan" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="id_kendaraan" id="id_kendaraan" class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="">-- Pilih Kendaraan --</option>
                 @foreach($kendaraans as $k)
                     <option value="{{ $k->id_kendaraan }}" {{ (old('id_kendaraan', $item->id_kendaraan) == $k->id_kendaraan) ? 'selected' : '' }}>
@@ -51,7 +46,7 @@
             <label for="id_tarif" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Tarif
             </label>
-            <select name="id_tarif" id="id_tarif" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="id_tarif" id="id_tarif" class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="">-- Pilih Tarif --</option>
                 @foreach($tarifs as $t)
                     <option value="{{ $t->id_tarif }}" {{ (old('id_tarif', $item->id_tarif) == $t->id_tarif) ? 'selected' : '' }}>
@@ -68,7 +63,7 @@
             <label for="id_user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 User
             </label>
-            <select name="id_user" id="id_user" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="id_user" id="id_user" class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="">-- Pilih User --</option>
                 @foreach($users as $u)
                     <option value="{{ $u->id }}" {{ (old('id_user', $item->id_user) == $u->id) ? 'selected' : '' }}>
@@ -85,7 +80,7 @@
             <label for="id_area" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Area
             </label>
-            <select name="id_area" id="id_area" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="id_area" id="id_area" class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="">-- Pilih Area --</option>
                 @foreach($areas as $a)
                     <option value="{{ $a->id_area }}" {{ (old('id_area', $item->id_area) == $a->id_area) ? 'selected' : '' }}>
@@ -116,7 +111,7 @@
             <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Status
             </label>
-            <select name="status" id="status" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="status" id="status" required class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="masuk" {{ (old('status', $item->status) == 'masuk')?'selected':'' }}>Masuk</option>
                 <option value="keluar" {{ (old('status', $item->status) == 'keluar')?'selected':'' }}>Keluar</option>
             </select>
@@ -124,17 +119,6 @@
                 <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
             @enderror
         </div>
-
-        <div class="flex justify-end space-x-2 pt-4 border-t border-gray-200">
-            <a href="{{ route('transaksi.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                Batal
-            </a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Update
-            </button>
-        </div>
-    </form>
-    </div>
-</div>
+    @endcomponent
 @endsection
 

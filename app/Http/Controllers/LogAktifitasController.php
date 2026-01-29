@@ -11,13 +11,15 @@ class LogAktifitasController extends Controller
     public function index()
     {
         $items = LogAktifitas::with('user')->orderBy('id_log','desc')->paginate(15);
-        return view('log_aktivitas.index', compact('items'));
+        $title = 'Data Log Aktivitas';
+        return view('log_aktivitas.index', compact('items', 'title'));
     }
 
     public function create()
     {
         $users = User::orderBy('name')->get();
-        return view('log_aktivitas.create', compact('users'));
+        $title = 'Tambah Log Aktivitas';
+        return view('log_aktivitas.create', compact('users', 'title'));
     }
 
     public function store(Request $request)
@@ -35,14 +37,16 @@ class LogAktifitasController extends Controller
     public function show($id)
     {
         $item = LogAktifitas::with('user')->findOrFail($id);
-        return view('log_aktivitas.show', compact('item'));
+        $title = 'Detail Log Aktivitas';
+        return view('log_aktivitas.show', compact('item', 'title'));
     }
 
     public function edit($id)
     {
         $item = LogAktifitas::findOrFail($id);
         $users = User::orderBy('name')->get();
-        return view('log_aktivitas.edit', compact('item', 'users'));
+        $title = 'Edit Log Aktivitas';
+        return view('log_aktivitas.edit', compact('item', 'users', 'title'));
     }
 
     public function update(Request $request, $id)

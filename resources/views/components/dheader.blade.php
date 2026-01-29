@@ -1,12 +1,37 @@
- <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 relative z-0">
-                <h1 class="text-xl font-bold text-gray-900">Dashboard</h1>
-                <div class="flex items-center gap-4">
-                    <button class="relative p-2 text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                        </svg>
-                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">AD</div>
-                </div>
-            </header>
+<header class="h-16 bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="h-16 w-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-3 min-w-0">
+            <!-- (Moved) Sidebar toggle now lives in the sidebar component -->
+
+            <h1 class="text-xl font-bold text-gray-900 truncate">{{ $title ?? 'Dashboard' }}</h1>
+        </div>
+
+        <div class="flex items-center gap-4">
+            @if(request()->routeIs('users.index'))
+                <a href="{{ route('users.create') }}" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Tambah User
+                </a>
+            @elseif(request()->routeIs('kendaraan.index'))
+                <a href="{{ route('kendaraan.create') }}" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Tambah Kendaraan
+                </a>
+            @elseif(request()->routeIs('area-parkir.index'))
+                <a href="{{ route('area-parkir.create') }}" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Tambah Area Parkir
+                </a>
+            @elseif(request()->routeIs('tarif.index'))
+                <a href="{{ route('tarif.create') }}" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Tambah Tarif
+                </a>
+            @elseif(request()->routeIs('log-aktivitas.index'))
+                <a href="{{ route('log-aktivitas.create') }}" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Tambah Log Aktivitas
+                </a>
+            @elseif(request()->routeIs('transaksi.index'))
+                <a href="{{ route('transaksi.create') }}" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Tambah Transaksi
+                </a>
+            @endif
+        </div>
+    </div>
+</header>

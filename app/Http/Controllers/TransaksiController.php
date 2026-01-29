@@ -49,7 +49,6 @@ class TransaksiController extends Controller
                     'waktu_masuk' => Carbon::now(),
                     'status' => 'masuk',
                     'catatan' => $request->catatan,
-                    'status_pembayaran' => null,
                 ]);
 
                 // Update kapasitas dengan atomic increment
@@ -58,7 +57,7 @@ class TransaksiController extends Controller
                 return $transaksi;
             });
 
-            return redirect()->route('transaksi.parkir.index')
+            return redirect()->route('transaksi.index', ['status' => 'masuk'])
                 ->with('success', 'Kendaraan berhasil dicatat masuk parkir. ID Transaksi: ' . $transaksi->id_parkir);
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Gagal mencatat transaksi: ' . $e->getMessage());
@@ -83,7 +82,7 @@ class TransaksiController extends Controller
                 // Kalkulasi durasi dan biaya
                 $waktu_keluar = Carbon::now();
                 $durasi_jam = ceil($waktu_keluar->diffInMinutes($transaksi->waktu_masuk) / 60);
-                
+
                 if (!$transaksi->tarif) {
                     return back()->with('error', 'Tarif tidak ditemukan untuk transaksi ini.');
                 }
@@ -122,13 +121,15 @@ class TransaksiController extends Controller
                 ->where('status', 'masuk')
                 ->orderBy('waktu_masuk', 'desc')
                 ->paginate(15);
-            return view('parkir.index', ['transaksis' => $items]);
+            $title = 'Parkir Aktif';
+            return view('parkir.index', ['transaksis' => $items, 'title' => $title]);
         }
 
         $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->orderBy('id_parkir','desc')
             ->paginate(15);
-        return view('transaksi.index', ['transaksis' => $items]);
+        $title = 'Data Transaksi';
+        return view('transaksi.index', ['transaksis' => $items, 'title' => $title]);
     }
 
     public function store(Request $request)
@@ -153,13 +154,15 @@ class TransaksiController extends Controller
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
         $users = User::orderBy('name')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
-        return view('transaksi.create', compact('kendaraans','tarifs','users','areas'));
+        $title = 'Tambah Transaksi';
+        return view('transaksi.create', compact('kendaraans','tarifs','users','areas', 'title'));
     }
 
     public function show($id)
     {
         $item = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])->findOrFail($id);
-        return view('transaksi.show', compact('item'));
+        $title = 'Detail Transaksi';
+        return view('transaksi.show', compact('item', 'title'));
     }
 
     public function edit($id)
@@ -169,7 +172,8 @@ class TransaksiController extends Controller
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
         $users = User::orderBy('name')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
-        return view('transaksi.edit', compact('item','kendaraans','tarifs','users','areas'));
+        $title = 'Edit Transaksi';
+        return view('transaksi.edit', compact('item','kendaraans','tarifs','users','areas', 'title'));
     }
 
     public function update(Request $request, $id)

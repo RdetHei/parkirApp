@@ -24,12 +24,17 @@ Route::post('/login', [LoginController::class, 'store'])->name('login.store')->m
 
 // Protected Routes - Require Authentication
 Route::middleware(['auth'])->group(function () {
+    // API for Parking Map (SVG 2D)
+    Route::get('/api/parking-slots', [\App\Http\Controllers\Api\ParkingMapController::class, 'index'])->name('api.parking-slots');
+    Route::post('/api/parking-slots/{area_id}/bookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])->name('api.parking-slots.bookmark');
+    Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     // Parkir Routes
-    Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.parkir.index')->defaults('status', 'masuk');
+    Route::get('/parking-map', [\App\Http\Controllers\Api\ParkingMapController::class, 'showMap'])->name('parking.map.index');
     Route::get('/transaksi/create-check-in', function() {
         $kendaraans = \App\Models\Kendaraan::orderBy('plat_nomor')->get();
         $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();

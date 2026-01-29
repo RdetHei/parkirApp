@@ -42,7 +42,10 @@ class DashboardController extends Controller
         // Transaksi hari ini
         $transaksiHariIni = Transaksi::whereDate('waktu_masuk', Carbon::today())->count();
 
+        $title = 'Dashboard';
+
         return view('dashboard', compact(
+            'title',
             'totalKendaraan',
             'totalTransaksi',
             'transaksiAktif',

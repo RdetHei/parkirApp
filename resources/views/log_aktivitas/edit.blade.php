@@ -3,19 +3,29 @@
 @section('title','Edit Log Aktivitas')
 
 @section('content')
-<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
-    <div class="max-w-2xl w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Edit Log Aktivitas</h2>
+@extends('layouts.app')
 
-    <form action="{{ route('log-aktivitas.update', $item->id_log) }}" method="POST" class="space-y-4">
-        @csrf
-        @method('PUT')
+@section('title','Edit Log Aktivitas')
 
+@section('content')
+    @component('components.form-card', [
+        'backUrl' => route('log-aktivitas.index'),
+        'title' => 'Edit Log Aktivitas',
+        'description' => 'Ubah detail log aktivitas',
+        'cardIcon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>',
+        'cardTitle' => 'Form Edit Log Aktivitas',
+        'cardDescription' => 'Sesuaikan informasi log aktivitas',
+        'action' => route('log-aktivitas.update', $item->id_log),
+        'method' => 'PUT',
+        'submitText' => 'Simpan Perubahan'
+    ])
         <div class="mb-4">
             <label for="id_user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 User
             </label>
-            <select name="id_user" id="id_user" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <select name="id_user" id="id_user" class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm bg-gray-800 text-white">
                 <option value="">-- Pilih User --</option>
                 @foreach($users as $user)
                     <option value="{{ $user->id }}" {{ old('id_user', $item->id_user) == $user->id ? 'selected' : '' }}>
@@ -42,16 +52,5 @@
             type="datetime-local"
             :value="old('waktu_aktivitas', $item->waktu_aktivitas?->format('Y-m-d\TH:i'))"
         />
-
-        <div class="flex justify-end space-x-2">
-            <a href="{{ route('log-aktivitas.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-transparent rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                Batal
-            </a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Simpan Perubahan
-            </button>
-        </div>
-    </form>
-    </div>
-</div>
+    @endcomponent
 @endsection

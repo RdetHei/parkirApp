@@ -18,4 +18,14 @@ class Kendaraan extends Model
         'pemilik',
         'id_user',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
+
+    public function transaksis()
+    {
+        return $this->hasMany(Transaksi::class, 'id_kendaraan', 'id_kendaraan');
+    }
 }

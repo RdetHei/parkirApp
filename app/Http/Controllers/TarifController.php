@@ -10,12 +10,14 @@ class TarifController extends Controller
     public function index()
     {
         $items = Tarif::orderBy('id_tarif','desc')->paginate(15);
-        return view('tarif.index', compact('items'));
+        $title = 'Data Tarif';
+        return view('tarif.index', compact('items', 'title'));
     }
 
     public function create()
     {
-        return view('tarif.create');
+        $title = 'Tambah Tarif';
+        return view('tarif.create', compact('title'));
     }
 
     public function store(Request $request)
@@ -32,7 +34,8 @@ class TarifController extends Controller
     public function edit($id)
     {
         $item = Tarif::findOrFail($id);
-        return view('tarif.edit', compact('item'));
+        $title = 'Edit Tarif';
+        return view('tarif.edit', compact('item', 'title'));
     }
 
     public function update(Request $request, $id)

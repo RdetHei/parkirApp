@@ -41,8 +41,8 @@ class ReportController extends Controller
         $total_nominal = (clone $query)->sum('nominal');
         $count_pembayaran = (clone $query)->count();
         $avg_nominal = $count_pembayaran > 0 ? $total_nominal / $count_pembayaran : 0;
-
-        return view('report.pembayaran', compact('pembayarans', 'total_nominal', 'count_pembayaran', 'avg_nominal'));
+        $title = 'Laporan Pembayaran';
+        return view('report.pembayaran', compact('pembayarans', 'total_nominal', 'count_pembayaran', 'avg_nominal', 'title'));
     }
 
     /**
@@ -77,8 +77,8 @@ class ReportController extends Controller
         $total_transaksi = (clone $query)->count();
         $total_biaya = (clone $query)->sum('biaya_total');
         $durasi_rata = (clone $query)->avg('durasi_jam');
-
-        return view('report.transaksi', compact('transaksis', 'total_transaksi', 'total_biaya', 'durasi_rata'));
+        $title = 'Laporan Transaksi';
+        return view('report.transaksi', compact('transaksis', 'total_transaksi', 'total_biaya', 'durasi_rata', 'title'));
     }
 
     /**

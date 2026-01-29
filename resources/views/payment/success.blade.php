@@ -51,7 +51,7 @@
                     </div>
                     <div class="border-t-2 border-green-300 pt-3 mt-3 flex justify-between text-lg">
                         <span class="font-bold text-green-800">Total Dibayar:</span>
-                        <span class="font-bold text-green-600">Rp 
+                        <span class="font-bold text-green-600">Rp
                             @if($transaksi->pembayaran)
                                 {{ number_format($transaksi->pembayaran->nominal, 0, ',', '.') }}
                             @else
@@ -114,7 +114,7 @@
                class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-center">
                 Cetak Struk & Bukti Pembayaran
             </a>
-            <a href="{{ route('transaksi.parkir.index') }}"
+            <a href="{{ route('transaksi.index', ['status' => 'masuk']) }}"
                class="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-center">
                 Kembali ke Dashboard
             </a>
