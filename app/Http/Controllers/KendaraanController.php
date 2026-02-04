@@ -11,15 +11,13 @@ class KendaraanController extends Controller
     public function index()
     {
         $items = Kendaraan::orderBy('id_kendaraan','desc')->paginate(15);
-        $title = 'Data Kendaraan';
-        return view('kendaraan.index', compact('items', 'title'));
+        return view('kendaraan.index', compact('items'));
     }
 
     public function create()
     {
         $users = User::orderBy('name')->get();
-        $title = 'Tambah Kendaraan';
-        return view('kendaraan.create', compact('users', 'title'));
+        return view('kendaraan.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -41,8 +39,7 @@ class KendaraanController extends Controller
     {
         $item = Kendaraan::findOrFail($id);
         $users = User::orderBy('name')->get();
-        $title = 'Edit Kendaraan';
-        return view('kendaraan.edit', compact('item','users', 'title'));
+        return view('kendaraan.edit', compact('item','users'));
     }
 
     public function update(Request $request, $id)

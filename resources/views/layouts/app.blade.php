@@ -5,24 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>PARKED</title>
-    <link rel="icon" href="{{ asset('images/parked.ico') }}" type="image/x-icon">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
     <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
-    {{-- This script prevents FOUC by setting the sidebar state before the page renders --}}
-    <script>
-        (function() {
-            const STORAGE_KEY = 'parkirapp.sidebar';
-            const savedState = localStorage.getItem(STORAGE_KEY);
-            if (savedState === 'collapsed' || savedState === 'expanded') {
-                document.documentElement.setAttribute('data-sidebar', savedState);
-            } else {
-                document.documentElement.setAttribute('data-sidebar', 'expanded');
-            }
-        })();
-    </script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100" data-sidebar="expanded">
         {{-- Layout wrapper: sidebar + main content --}}
         <div class="min-h-screen flex">
             @include('components.sidebar')
@@ -38,25 +24,27 @@
 
         <script>
             (function () {
-                const burgerToggle = document.getElementById('sidebar-toggle');
-                const logoToggle = document.getElementById('logo-toggle');
-                const htmlEl = document.documentElement;
+                const body = document.body;
+                const toggleBtn = document.getElementById('sidebar-toggle');
 
-                if (!burgerToggle || !logoToggle) return;
+                if (!toggleBtn) return;
 
                 const STORAGE_KEY = 'parkirapp.sidebar';
 
-                burgerToggle.addEventListener('click', function () {
-                    htmlEl.setAttribute('data-sidebar', 'collapsed');
-                    localStorage.setItem(STORAGE_KEY, 'collapsed');
-                });
+                const applyState = (state) => {
+                    body.setAttribute('data-sidebar', state);
+                };
 
-                logoToggle.addEventListener('click', function () {
-                    const isCollapsed = htmlEl.getAttribute('data-sidebar') === 'collapsed';
-                    if (isCollapsed) {
-                        htmlEl.setAttribute('data-sidebar', 'expanded');
-                        localStorage.setItem(STORAGE_KEY, 'expanded');
-                    }
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved === 'collapsed' || saved === 'expanded') {
+                    applyState(saved);
+                }
+
+                toggleBtn.addEventListener('click', function () {
+                    const current = body.getAttribute('data-sidebar') || 'expanded';
+                    const next = current === 'collapsed' ? 'expanded' : 'collapsed';
+                    applyState(next);
+                    localStorage.setItem(STORAGE_KEY, next);
                 });
             })();
         </script>

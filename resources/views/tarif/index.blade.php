@@ -4,19 +4,6 @@
 
 @section('content')
 <div class="p-4 sm:p-6 lg:p-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">Tarif Parkir</h1>
-            <p class="text-sm text-gray-500">Kelola tarif parkir per jenis kendaraan</p>
-        </div>
-        <a href="{{ route('tarif.create') }}" class="inline-flex items-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Tambah Tarif
-        </a>
-    </div>
 
     <!-- Success Alert -->
     @if(session('success'))

@@ -57,7 +57,7 @@ class TransaksiController extends Controller
                 return $transaksi;
             });
 
-            return redirect()->route('transaksi.index', ['status' => 'masuk'])
+            return redirect()->route('transaksi.index')
                 ->with('success', 'Kendaraan berhasil dicatat masuk parkir. ID Transaksi: ' . $transaksi->id_parkir);
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Gagal mencatat transaksi: ' . $e->getMessage());
@@ -121,15 +121,13 @@ class TransaksiController extends Controller
                 ->where('status', 'masuk')
                 ->orderBy('waktu_masuk', 'desc')
                 ->paginate(15);
-            $title = 'Parkir Aktif';
-            return view('parkir.index', ['transaksis' => $items, 'title' => $title]);
+            return view('parkir.index', ['transaksis' => $items]);
         }
 
         $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->orderBy('id_parkir','desc')
             ->paginate(15);
-        $title = 'Data Transaksi';
-        return view('transaksi.index', ['transaksis' => $items, 'title' => $title]);
+        return view('transaksi.index', ['transaksis' => $items]);
     }
 
     public function store(Request $request)
@@ -154,15 +152,13 @@ class TransaksiController extends Controller
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
         $users = User::orderBy('name')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
-        $title = 'Tambah Transaksi';
-        return view('transaksi.create', compact('kendaraans','tarifs','users','areas', 'title'));
+        return view('transaksi.create', compact('kendaraans','tarifs','users','areas'));
     }
 
     public function show($id)
     {
         $item = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])->findOrFail($id);
-        $title = 'Detail Transaksi';
-        return view('transaksi.show', compact('item', 'title'));
+        return view('transaksi.show', compact('item'));
     }
 
     public function edit($id)
@@ -172,8 +168,7 @@ class TransaksiController extends Controller
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
         $users = User::orderBy('name')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
-        $title = 'Edit Transaksi';
-        return view('transaksi.edit', compact('item','kendaraans','tarifs','users','areas', 'title'));
+        return view('transaksi.edit', compact('item','kendaraans','tarifs','users','areas'));
     }
 
     public function update(Request $request, $id)

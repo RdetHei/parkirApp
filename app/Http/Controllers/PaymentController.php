@@ -28,8 +28,8 @@ class PaymentController extends Controller
             ->with(['kendaraan', 'tarif', 'user', 'area'])
             ->orderBy('waktu_keluar', 'desc')
             ->get();
-        $title = 'Pilih Transaksi Pembayaran';
-        return view('payment.select-transaction', compact('transaksis', 'title'));
+
+        return view('payment.select-transaction', compact('transaksis'));
     }
 
     /**
@@ -46,8 +46,8 @@ class PaymentController extends Controller
         }
 
         $qr_data = route('payment.confirm-qr', $id_parkir);
-        $title = 'Form Pembayaran';
-        return view('payment.create', compact('transaksi', 'qr_data', 'title'));
+
+        return view('payment.create', compact('transaksi', 'qr_data'));
     }
 
     /**
@@ -61,8 +61,8 @@ class PaymentController extends Controller
         if ($transaksi->status_pembayaran === 'berhasil') {
             return back()->with('error', 'Transaksi ini sudah dibayar');
         }
-        $title = 'Konfirmasi Pembayaran Manual';
-        return view('payment.manual-confirm', compact('transaksi', 'title'));
+
+        return view('payment.manual-confirm', compact('transaksi'));
     }
 
     /**
@@ -150,8 +150,8 @@ class PaymentController extends Controller
             now()->addMinutes(15),
             ['id_parkir' => $id_parkir]
         );
-        $title = 'Scan QR Pembayaran';
-        return view('payment.qr-scan', compact('transaksi', 'signedUrl', 'title'));
+
+        return view('payment.qr-scan', compact('transaksi', 'signedUrl'));
     }
 
     /**
@@ -239,8 +239,8 @@ class PaymentController extends Controller
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'pembayaran', 'user', 'area'])
             ->findOrFail($id_parkir);
-        $title = 'Pembayaran Berhasil';
-        return view('payment.success', compact('transaksi', 'title'));
+
+        return view('payment.success', compact('transaksi'));
     }
 
     /**
@@ -251,7 +251,7 @@ class PaymentController extends Controller
         $pembayarans = Pembayaran::with(['transaksi', 'petugas'])
             ->orderBy('id_pembayaran', 'desc')
             ->paginate(15);
-        $title = 'Riwayat Pembayaran';
-        return view('payment.index', compact('pembayarans', 'title'));
+
+        return view('payment.index', compact('pembayarans'));
     }
 }
