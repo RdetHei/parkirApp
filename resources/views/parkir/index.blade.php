@@ -230,7 +230,7 @@
                     maxY = Math.max(maxY, config.y + config.height);
                 }
             });
-            
+
             const svgWidth = maxX > 0 ? maxX + 20 : 300; // Default if no areas, or add padding
             const svgHeight = maxY > 0 ? maxY + 20 : 200; // Default if no areas, or add padding
 
@@ -308,7 +308,7 @@
                     vehicleIconSvg.innerHTML = svgVehicleIcons[area.vehicle.jenis_kendaraan.toLowerCase()] || svgVehicleIcons['mobil']; // Use specific or default
                     vehicleIconSvg.classList.add("vehicle-icon");
                     g.appendChild(vehicleIconSvg);
-                    
+
                     const plateText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     plateText.setAttribute("x", config.x + config.width / 2);
                     plateText.setAttribute("y", config.y + config.height / 2 + 25); // Below the icon
@@ -330,7 +330,7 @@
             // - If empty: Offer to bookmark or check-in
             // - If bookmarked: Offer to check-in or unbookmark
             // - If occupied: Show vehicle details, offer check-out
-            
+
             // Example: Change status (for testing, not persistent yet)
             // This would typically involve an AJAX call to update the backend
             // For now, let's just re-fetch and re-render (which would reset changes)
@@ -341,7 +341,7 @@
         fetchParkingData();
 
         // Optional: Set up polling for real-time updates (e.g., every 5 seconds)
-        setInterval(fetchParkingData, 5000); 
+        setInterval(fetchParkingData, 5000);
     });
 </script>
 @endpush

@@ -5,6 +5,8 @@ use App\Http\Controllers\ParkirController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OwnerDashboardController;
+use App\Http\Controllers\PetugasDashboardController;
 
 // Public Routes
 Route::get('/', function () {
@@ -32,6 +34,17 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    // Owner Dashboard
+    Route::get('/owner/dashboard', [OwnerDashboardController::class, 'index'])->name('owner.dashboard')->middleware('role:owner');
+
+    // Petugas Dashboard
+    Route::get('/petugas/dashboard', [PetugasDashboardController::class, 'index'])->name('petugas.dashboard')->middleware('role:petugas');
+
+    // User Dashboard
+    Route::get('/user/dashboard', function () {
+        return view('user.dashboard');
+    })->name('user.dashboard');
 
     // Parkir Routes
     Route::get('/parking-map', [\App\Http\Controllers\Api\ParkingMapController::class, 'showMap'])->name('parking.map.index');

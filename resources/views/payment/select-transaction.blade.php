@@ -1,12 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="p-6">
-        <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">Pembayaran Parkir</h1>
-            <p class="text-sm text-gray-500">Pilih transaksi untuk melakukan pembayaran</p>
-        </div>
+    <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto px-4">
 
         <!-- Card Container -->
         <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -133,7 +128,7 @@
                 const newDoc = parser.parseFromString(html, 'text/html');
                 const newRows = newDoc.querySelectorAll('tbody tr[data-transaksi-id]');
                 const currentRows = document.querySelectorAll('tbody tr[data-transaksi-id]');
-                
+
                 // Jika jumlah row berkurang, refresh halaman
                 if (newRows.length < currentRows.length) {
                     location.reload();

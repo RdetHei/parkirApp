@@ -3,10 +3,8 @@
 @section('title', 'Riwayat Pembayaran')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-3xl font-bold text-gray-800">Riwayat Pembayaran</h2>
-    </div>
+<div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto px-4">
+
 
     @if($message = Session::get('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">

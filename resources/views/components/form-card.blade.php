@@ -1,14 +1,6 @@
 <div class="p-6">
     <!-- Header -->
     <div class="mb-6">
-        <div class="flex items-center gap-3 mb-2">
-            <a href="{{ $backUrl ?? '#' }}" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-            </a>
-            <h1 class="text-2xl font-bold text-gray-900">{{ $title ?? 'Form' }}</h1>
-        </div>
         <p class="text-sm text-gray-500 ml-9">{{ $description ?? '' }}</p>
     </div>
 

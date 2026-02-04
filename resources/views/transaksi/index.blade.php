@@ -4,12 +4,6 @@
 
 @section('content')
 <div class="p-4 sm:p-6 lg:p-8">
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-3xl font-bold text-gray-800">Riwayat Transaksi Parkir</h2>
-        <a href="{{ route('transaksi.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            Tambah Manual
-        </a>
-    </div>
 
     @if($message = Session::get('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">

@@ -1,7 +1,6 @@
 <header class="h-16 bg-white border-b border-gray-200 sticky top-0 z-40">
     <div class="h-16 w-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-3 min-w-0">
-            <!-- (Moved) Sidebar toggle now lives in the sidebar component -->
 
             <h1 class="text-xl font-bold text-gray-900 truncate">{{ $title ?? 'Dashboard' }}</h1>
         </div>

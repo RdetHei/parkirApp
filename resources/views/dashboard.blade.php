@@ -2,11 +2,6 @@
 
 @section('content')
     <div class="p-6">
-        <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">Dashboard</h1>
-            <p class="text-sm text-gray-500">Selamat datang di sistem parkir ParkHub</p>
-        </div>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

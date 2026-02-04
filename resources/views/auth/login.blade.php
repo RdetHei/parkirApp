@@ -42,6 +42,14 @@
                 @enderror
             </div>
 
+            <!-- Remember Me -->
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                    Remember me
+                </label>
+            </div>
+
             <button type="submit">
                 Login
             </button>

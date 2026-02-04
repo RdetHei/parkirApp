@@ -12,8 +12,6 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Informasi Kendaraan -->
         <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500">Informasi Kendaraan</h3>
-            <div class="space-y-3">
                 <div>
                     <p class="text-sm text-gray-600">Plat Nomor</p>
                     <p class="text-lg font-semibold text-gray-800">{{ $item->kendaraan->plat_nomor ?? '-' }}</p>

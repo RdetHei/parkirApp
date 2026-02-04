@@ -33,10 +33,23 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $remember = $request->filled('remember');
+
+        if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('transaksi.parkir.index'));
+            $user = Auth::user();
+
+            switch ($user->role) {
+                case 'admin':
+                    return redirect()->intended(route('dashboard'));
+                case 'owner':
+                    return redirect()->intended(route('owner.dashboard'));
+                case 'petugas':
+                    return redirect()->intended(route('petugas.dashboard'));
+                default:
+                    return redirect()->intended(route('transaksi.create-check-in'));
+            }
         }
 
         return back()->withErrors([
