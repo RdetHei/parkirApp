@@ -7,7 +7,9 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
 
         {{-- Slot kosong untuk judul, dengan judul default 'Parkir App' --}}
-        <title>PARKED</title>
+        <title>NESTON</title>
+        <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
+        <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

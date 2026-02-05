@@ -5,10 +5,8 @@
                 <!-- Company Info -->
                 <div>
                     <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-                            <span class="text-2xl font-bold text-white">P</span>
-                        </div>
-                        <span class="text-2xl font-bold">PARKED</span>
+                        <img src="{{ asset('images/neston.png') }}" alt="NESTON" class="w-12 h-12 rounded-xl">
+                        <span class="text-2xl font-bold">NESTON</span>
                     </div>
                     <p class="text-gray-400 leading-relaxed mb-6">
                         Solusi parkir modern dan efisien untuk kehidupan urban yang lebih baik.
@@ -79,7 +77,7 @@
             <!-- Footer Bottom -->
             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-400 text-sm mb-4 md:mb-0">
-                    &copy; 2024 PARKED. All rights reserved.
+                    &copy; 2024 NESTON. All rights reserved.
                 </p>
                 <div class="flex space-x-6 text-sm text-gray-400">
                     <a href="#" class="hover:text-primary-400 transition-colors">Terms of Service</a>

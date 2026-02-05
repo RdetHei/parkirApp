@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>PARKED</title>
+    <title>NESTON</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
     @vite('resources/css/app.css')
     <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
 </head>

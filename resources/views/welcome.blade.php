@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parkir App - Solusi Parkir Modern</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -58,10 +60,8 @@
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <a href="#" class="flex items-center space-x-3 group">
-                    <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                        <span class="text-2xl font-bold text-white">P</span>
-                    </div>
-                    <span class="text-2xl font-bold text-white">PARKED</span>
+                    <img src="{{ asset('images/neston.png') }}" alt="NESTON" class="w-12 h-12 rounded-xl shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                    <span class="text-2xl font-bold text-white">NESTON</span>
                 </a>
 
                 <!-- Desktop Navigation -->
@@ -104,7 +104,7 @@
                         </span>
                     </div>
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                        Parkir Lebih Mudah dengan <span class="gradient-text">PARKED</span>
+                        Parkir Lebih Mudah dengan <span class="gradient-text">NESTON</span>
                     </h1>
                     <p class="text-xl text-gray-600 mb-8 leading-relaxed">
                         Temukan, pesan, dan bayar parkir dalam satu aplikasi. Hemat waktu dan nikmati pengalaman parkir yang efisien.
@@ -157,9 +157,9 @@
 
                                 <div class="text-center z-10">
                                     <div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-                                        <span class="text-5xl font-bold text-primary-600">P</span>
+                                        <img src="{{ asset('images/neston.png') }}" alt="NESTON" class="w-16 h-16 rounded-2xl">
                                     </div>
-                                    <h3 class="text-3xl font-bold mb-2">PARKED</h3>
+                                    <h3 class="text-3xl font-bold mb-2">NESTON</h3>
                                     <p class="text-lg text-primary-100 mb-8">Smart Parking Solution</p>
 
                                     <div class="space-y-3 w-full">
@@ -219,7 +219,7 @@
             <div class="text-center mb-16">
                 <span class="text-primary-600 font-semibold text-sm uppercase tracking-wider">FITUR UNGGULAN</span>
                 <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mt-3 mb-4">
-                    Mengapa Memilih PARKED?
+                    Mengapa Memilih NESTON?
                 </h2>
                 <p class="text-xl text-gray-600 max-w-2xl mx-auto">
                     Solusi lengkap untuk semua kebutuhan parkir Anda dengan teknologi terkini

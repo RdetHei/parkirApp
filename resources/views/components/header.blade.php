@@ -1,8 +1,8 @@
 <header class="bg-gray-900">
   <nav aria-label="Global" class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
     <div class="flex lg:flex-1">
-        <span class="sr-only">Your Company</span>
-        <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="" class="h-8 w-auto" />
+        <span class="sr-only">NESTON</span>
+        <img src="{{ asset('images/neston.png') }}" alt="NESTON" class="h-8 w-auto" />
       </a>
     </div>
     <div class="flex lg:hidden">
@@ -37,8 +37,8 @@
       <div tabindex="0" class="fixed inset-0 focus:outline-none">
         <el-dialog-panel class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-gray-900 p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-100/10">
           <div class="flex items-center justify-between">
-              <span class="sr-only">Your Company</span>
-              <img src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="" class="h-8 w-auto" />
+              <span class="sr-only">NESTON</span>
+              <img src="{{ asset('images/neston.png') }}" alt="NESTON" class="h-8 w-auto" />
             </a>
             <button type="button" command="close" commandfor="mobile-menu" class="-m-2.5 rounded-md p-2.5 text-gray-400">
               <span class="sr-only">Close menu</span>
