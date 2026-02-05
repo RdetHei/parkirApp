@@ -11,7 +11,9 @@
         $addButton = ['label' => 'Tambah Parkir', 'route' => route('transaksi.create-check-in'), 'routeName' => 'transaksi.create-check-in'];
     } elseif (request()->routeIs('transaksi.index') || request()->routeIs('transaksi.show') || request()->routeIs('transaksi.edit')) {
         $headerTitle = 'Riwayat Transaksi';
-        $addButton = ['label' => 'Tambah Transaksi', 'route' => route('transaksi.create'), 'routeName' => 'transaksi.create'];
+        if ((auth()->user()->role ?? null) === 'admin') {
+            $addButton = ['label' => 'Tambah Transaksi', 'route' => route('transaksi.create'), 'routeName' => 'transaksi.create'];
+        }
     } elseif (request()->routeIs('transaksi.create')) {
         $headerTitle = 'Tambah Transaksi';
     } elseif (request()->routeIs('users.index') || request()->routeIs('users.show') || request()->routeIs('users.edit')) {

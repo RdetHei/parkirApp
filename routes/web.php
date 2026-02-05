@@ -46,48 +46,64 @@ Route::middleware(['auth'])->group(function () {
         return view('user.dashboard');
     })->name('user.dashboard');
 
-    // Parkir Routes
+    // Peta Parkir (semua role yang login)
     Route::get('/parking-map', [\App\Http\Controllers\Api\ParkingMapController::class, 'showMap'])->name('parking.map.index');
-    Route::get('/transaksi/create-check-in', function() {
-        $kendaraans = \App\Models\Kendaraan::orderBy('plat_nomor')->get();
-        $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
-        $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
-        return view('parkir.create', compact('kendaraans', 'tarifs', 'areas'));
-    })->name('transaksi.create-check-in');
-    Route::post('/transaksi/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
-    Route::put('/transaksi/{id}/create-check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.create-check-out');
-    Route::resource('transaksi', \App\Http\Controllers\TransaksiController::class);
-    Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
 
-    // Admin Routes - User Management
+    // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
+    // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
-    });
-
-    // Admin Routes - Sistem Management
-    Route::middleware(['role:admin,petugas'])->group(function () {
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);
         Route::resource('kendaraan', \App\Http\Controllers\KendaraanController::class);
         Route::resource('tarif', \App\Http\Controllers\TarifController::class);
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
+        Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
     });
 
-    // Payment Routes
-    Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
-    Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
-    Route::get('/payment/{id_parkir}/manual', [\App\Http\Controllers\PaymentController::class, 'manual_confirm'])->name('payment.manual-confirm');
-    Route::post('/payment/{id_parkir}/manual', [\App\Http\Controllers\PaymentController::class, 'manual_process'])->name('payment.manual-process');
-    Route::get('/payment/{id_parkir}/qr', [\App\Http\Controllers\PaymentController::class, 'qr_scan'])->name('payment.qr-scan');
-    Route::post('/payment/{id_parkir}/confirm-qr', [\App\Http\Controllers\PaymentController::class, 'confirm_qr'])->name('payment.confirm-qr');
-    Route::get('/payment/{id_parkir}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
-    Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
-
-    // Report Routes
+    // Transaksi: index & show untuk Admin dan Petugas (lihat riwayat tanpa edit/hapus)
     Route::middleware(['role:admin,petugas'])->group(function () {
+        Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.index');
+        Route::get('/transaksi/create-check-in', function () {
+            $kendaraans = \App\Models\Kendaraan::orderBy('plat_nomor')->get();
+            $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
+            $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
+            return view('parkir.create', compact('kendaraans', 'tarifs', 'areas'));
+        })->name('transaksi.create-check-in');
+        Route::post('/transaksi/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
+        Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])
+            ->whereNumber('transaksi')
+            ->name('transaksi.show');
+    });
+
+    // Transaksi: CRUD hanya untuk Admin
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/transaksi/create', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create');
+        Route::post('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'store'])->name('transaksi.store');
+        Route::get('/transaksi/{transaksi}/edit', [\App\Http\Controllers\TransaksiController::class, 'edit'])->name('transaksi.edit');
+        Route::put('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'update'])->name('transaksi.update');
+        Route::delete('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'destroy'])->name('transaksi.destroy');
+    });
+
+    // ========== PETUGAS ONLY (sesuai SPK: Transaksi) ==========
+    // Petugas: Transaksi (catat masuk, parkir aktif, checkout, pembayaran)
+    Route::middleware(['role:petugas'])->group(function () {
+        Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.parkir.index')->defaults('status', 'masuk');
+        Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
+        Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
+        Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
+        Route::get('/payment/{id_parkir}/manual', [\App\Http\Controllers\PaymentController::class, 'manual_confirm'])->name('payment.manual-confirm');
+        Route::post('/payment/{id_parkir}/manual', [\App\Http\Controllers\PaymentController::class, 'manual_process'])->name('payment.manual-process');
+        Route::get('/payment/{id_parkir}/qr', [\App\Http\Controllers\PaymentController::class, 'qr_scan'])->name('payment.qr-scan');
+        Route::post('/payment/{id_parkir}/confirm-qr', [\App\Http\Controllers\PaymentController::class, 'confirm_qr'])->name('payment.confirm-qr');
+        Route::get('/payment/{id_parkir}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
+        Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
+    });
+
+    // ========== OWNER ONLY (sesuai SPK: Rekap transaksi sesuai waktu) ==========
+    Route::middleware(['role:owner'])->group(function () {
         Route::get('/report/pembayaran', [\App\Http\Controllers\ReportController::class, 'pembayaran'])->name('report.pembayaran');
         Route::get('/report/transaksi', [\App\Http\Controllers\ReportController::class, 'transaksi'])->name('report.transaksi');
         Route::get('/report/pembayaran/export/csv', [\App\Http\Controllers\ReportController::class, 'exportPembayaranCSV'])->name('report.pembayaran.export-csv');
         Route::get('/report/transaksi/export/csv', [\App\Http\Controllers\ReportController::class, 'exportTransaksiCSV'])->name('report.transaksi.export-csv');
     });
 });
-

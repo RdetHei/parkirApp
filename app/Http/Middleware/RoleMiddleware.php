@@ -12,7 +12,7 @@ class RoleMiddleware
      * Handle an incoming request.
      * Usage: ->middleware(['auth','role:admin']) or ->middleware(['auth','role:admin,petugas'])
      */
-    public function handle(Request $request, Closure $next, string $roles)
+    public function handle(Request $request, Closure $next, string ...$roles)
     {
         if (! Auth::check()) {
             return redirect()->route('login.create');
@@ -20,11 +20,13 @@ class RoleMiddleware
 
         $user = Auth::user();
 
-        // Split roles by comma and trim whitespace
-        $allowedRoles = array_map('trim', explode(',', $roles));
+        $allowedRoles = array_map(function ($r) {
+            return strtolower(trim($r));
+        }, $roles);
 
         // Check if user's role is in allowed roles
-        if (!in_array($user->role, $allowedRoles)) {
+        $userRole = strtolower(trim($user->role ?? ''));
+        if (!in_array($userRole, $allowedRoles)) {
             abort(403, 'Unauthorized - Insufficient permissions');
         }
 

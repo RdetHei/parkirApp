@@ -119,14 +119,35 @@ class TransaksiController extends Controller
         if (request()->has('status') && request('status') == 'masuk') {
             $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
                 ->where('status', 'masuk')
+                ->whereNull('waktu_keluar')
                 ->orderBy('waktu_masuk', 'desc')
                 ->paginate(15);
             return view('parkir.index', ['transaksis' => $items]);
         }
 
-        $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
-            ->orderBy('id_parkir','desc')
-            ->paginate(15);
+        $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
+            ->where('status', 'keluar')
+            ->where('status_pembayaran', 'berhasil');
+
+        if (request()->filled('q')) {
+            $q = request('q');
+            $query->whereHas('kendaraan', function($sub) use ($q) {
+                $sub->where('plat_nomor', 'like', '%' . $q . '%');
+            });
+        }
+
+        if (request()->filled('tanggal_dari')) {
+            $query->whereDate('waktu_keluar', '>=', request('tanggal_dari'));
+        }
+        if (request()->filled('tanggal_sampai')) {
+            $query->whereDate('waktu_keluar', '<=', request('tanggal_sampai'));
+        }
+
+        if (request()->filled('id_area')) {
+            $query->where('id_area', request('id_area'));
+        }
+
+        $items = $query->orderBy('waktu_keluar', 'desc')->paginate(15);
         return view('transaksi.index', ['transaksis' => $items]);
     }
 
@@ -197,4 +218,3 @@ class TransaksiController extends Controller
         return redirect()->route('transaksi.index')->with('success','Transaksi berhasil dihapus');
     }
 }
-

@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\LogAktifitas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-
-
     /**
      * Display the login view.
      *
@@ -40,6 +39,18 @@ class LoginController extends Controller
 
             $user = Auth::user();
 
+            // Catat login ke log aktivitas (siapa yang login)
+            $roleLabel = ucfirst($user->role ?? 'user');
+            $aktivitas = sprintf('Login ke sistem - %s (%s)', $user->name, $roleLabel);
+            if (strlen($aktivitas) > 100) {
+                $aktivitas = substr($aktivitas, 0, 97) . '...';
+            }
+            LogAktifitas::create([
+                'id_user' => $user->id,
+                'aktivitas' => $aktivitas,
+                'waktu_aktivitas' => now(),
+            ]);
+
             switch ($user->role) {
                 case 'admin':
                     return redirect()->intended(route('dashboard'));
@@ -65,11 +76,27 @@ class LoginController extends Controller
      */
     public function destroy(Request $request)
     {
+        $user = Auth::user();
+
         Auth::logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
+        // Catat logout ke log aktivitas (setelah logout, pakai data user yang masih di memory)
+        if ($user) {
+            $roleLabel = ucfirst($user->role ?? 'user');
+            $aktivitas = sprintf('Logout - %s (%s)', $user->name, $roleLabel);
+            if (strlen($aktivitas) > 100) {
+                $aktivitas = substr($aktivitas, 0, 97) . '...';
+            }
+            LogAktifitas::create([
+                'id_user' => $user->id,
+                'aktivitas' => $aktivitas,
+                'waktu_aktivitas' => now(),
+            ]);
+        }
 
         return redirect('/');
     }

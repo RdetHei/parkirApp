@@ -120,7 +120,7 @@
         <a href="{{ route('transaksi.edit', $item->id_parkir) }}" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             Edit
         </a>
-        @if($item->status === 'keluar')
+        @if($item->status === 'keluar' && auth()->user()->role === 'admin')
             <a href="{{ route('transaksi.print', $item->id_parkir) }}" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
                 Cetak Struk
             </a>

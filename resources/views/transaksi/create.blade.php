@@ -6,7 +6,6 @@
     @component('components.form-card', [
         'backUrl' => route('transaksi.index'),
         'title' => 'Buat Transaksi Baru',
-        'description' => 'Tambahkan transaksi parkir baru ke sistem',
         'cardIcon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>',
@@ -28,7 +27,8 @@
                     </svg>
                 </div>
                 <select name="id_kendaraan" id="id_kendaraan" required
-                                                class="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm bg-gray-800 text-white @error('id_kendaraan') border-red-500 @enderror">                    <option value="">-- Pilih Kendaraan --</option>
+                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('id_kendaraan') border-red-500 @enderror">
+                    <option value="">-- Pilih Kendaraan --</option>
                     @foreach($kendaraans as $k)
                         <option value="{{ $k->id_kendaraan }}" {{ old('id_kendaraan') == $k->id_kendaraan ? 'selected' : '' }}>
                             {{ $k->plat_nomor }} — {{ ucfirst($k->jenis_kendaraan) }}
@@ -53,7 +53,8 @@
                     </svg>
                 </div>
                 <input type="datetime-local" name="waktu_masuk" id="waktu_masuk" value="{{ old('waktu_masuk') }}" required
-                                               class="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm bg-gray-800 text-white @error('waktu_masuk') border-red-500 @enderror">            </div>
+                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('waktu_masuk') border-red-500 @enderror">
+            </div>
             @error('waktu_masuk')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
@@ -71,7 +72,8 @@
                     </svg>
                 </div>
                 <select name="id_tarif" id="id_tarif" required
-                                                class="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm bg-gray-800 text-white @error('id_tarif') border-red-500 @enderror">                    <option value="">-- Pilih Tarif --</option>
+                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('id_tarif') border-red-500 @enderror">
+                    <option value="">-- Pilih Tarif --</option>
                     @foreach($tarifs as $t)
                         <option value="{{ $t->id_tarif }}" {{ old('id_tarif') == $t->id_tarif ? 'selected' : '' }}>
                             {{ ucfirst($t->jenis_kendaraan) }} — Rp {{ number_format($t->tarif_perjam, 0, ',', '.') }}/jam
@@ -96,7 +98,8 @@
                     </svg>
                 </div>
                 <select name="id_user" id="id_user" required
-                                                class="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm bg-gray-800 text-white @error('id_user') border-red-500 @enderror">                    <option value="">-- Pilih User --</option>
+                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('id_user') border-red-500 @enderror">
+                    <option value="">-- Pilih User --</option>
                     @foreach($users as $u)
                         <option value="{{ $u->id }}" {{ old('id_user') == $u->id ? 'selected' : '' }}>
                             {{ $u->name }} ({{ $u->email }})
@@ -122,7 +125,8 @@
                     </svg>
                 </div>
                 <select name="id_area" id="id_area" required
-                                                class="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm bg-gray-800 text-white @error('id_area') border-red-500 @enderror">                    <option value="">-- Pilih Area --</option>
+                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('id_area') border-red-500 @enderror">
+                    <option value="">-- Pilih Area --</option>
                     @foreach($areas as $a)
                         <option value="{{ $a->id_area }}" {{ old('id_area') == $a->id_area ? 'selected' : '' }}>
                             {{ $a->nama_area ?? 'Area '.$a->id_area }}
@@ -147,7 +151,8 @@
                     </svg>
                 </div>
                 <select name="status" id="status" required
-                                                class="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm bg-gray-800 text-white @error('status') border-red-500 @enderror">                    <option value="masuk" {{ old('status') == 'masuk' ? 'selected' : '' }}>Masuk</option>
+                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('status') border-red-500 @enderror">
+                    <option value="masuk" {{ old('status') == 'masuk' ? 'selected' : '' }}>Masuk</option>
                     <option value="keluar" {{ old('status') == 'keluar' ? 'selected' : '' }}>Keluar</option>
                 </select>
             </div>

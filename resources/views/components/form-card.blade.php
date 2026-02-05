@@ -42,7 +42,7 @@
             </div>
 
             <!-- Form Body -->
-            <form action="{{ $action ?? '#' }}" method="{{ $method ?? 'POST' }}" class="p-6 space-y-6">
+            <form action="{{ $action ?? '#' }}" method="POST" class="p-6 space-y-6">
                 @csrf
                 @if(isset($method) && ($method == 'PUT' || $method == 'PATCH'))
                     @method($method)

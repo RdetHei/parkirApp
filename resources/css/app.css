@@ -10,9 +10,53 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* Sidebar collapse behavior */
+/* Sidebar: smooth width & overflow for animation */
+#app-sidebar.sidebar-animate {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+#app-sidebar .sidebar-label,
+#app-sidebar .sidebar-section-title,
+#app-sidebar .sidebar-profile-details,
+#app-sidebar .sidebar-header-brand {
+    transition: opacity 0.2s ease, max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade in text slightly after sidebar expands */
+body[data-sidebar="expanded"] #app-sidebar .sidebar-label,
+body[data-sidebar="expanded"] #app-sidebar .sidebar-section-title,
+body[data-sidebar="expanded"] #app-sidebar .sidebar-profile-details,
+body[data-sidebar="expanded"] #app-sidebar .sidebar-header-brand {
+    transition-delay: 0.08s;
+}
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-label,
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-section-title,
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-profile-details,
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand {
+    transition-delay: 0s;
+}
+
+#app-sidebar .sidebar-nav {
+    transition: padding-left 0.28s ease, padding-right 0.28s ease;
+}
+
+#app-sidebar .sidebar-item {
+    transition: padding-left 0.28s ease, padding-right 0.28s ease, justify-content 0.25s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+#app-sidebar .sidebar-header {
+    transition: justify-content 0.28s ease;
+}
+
+/* Burger: slide from current position to center when collapsed */
+#app-sidebar .sidebar-toggle-btn {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsed state */
 body[data-sidebar="collapsed"] #app-sidebar {
-    width: 4rem; /* w-16 */
+    width: 4rem;
 }
 
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-label,
@@ -20,11 +64,22 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-section-title,
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-profile-details,
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand,
 body[data-sidebar="collapsed"] #app-sidebar .ml-auto.w-2.h-2 {
-    display: none !important;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    pointer-events: none;
+    white-space: nowrap;
 }
 
-body[data-sidebar="collapsed"] #app-sidebar .sidebar-header {
-    justify-content: center;
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand {
+    min-width: 0;
+}
+
+/* Jangan ubah justify-content agar burger ikut slide (tetap di ujung kanan brand yang menyusut) */
+/* Saat collapse: burger geser ke tengah dengan translateX */
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-toggle-btn {
+    /* Posisi alami saat collapse (justify-between, brand 0) = kanan; tengah = 2rem - 1.25rem = 0.75rem; dari kanan 1rem → geser kiri 0.25rem */
+    transform: translateX(-0.25rem);
 }
 
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-nav {
@@ -38,7 +93,19 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-item {
     padding-right: 0.5rem;
 }
 
-/* Account popup: when sidebar collapsed, show popup to the right of sidebar */
+/* Account popup: smooth open/close */
+.sidebar-account-popup {
+    transition: opacity 0.2s ease, transform 0.2s ease, left 0.28s ease, right 0.28s ease, bottom 0.28s ease, top 0.28s ease, margin 0.28s ease;
+}
+.sidebar-account-popup:not(.sidebar-account-popup-open) {
+    opacity: 0;
+    transform: scale(0.95);
+}
+.sidebar-account-popup.sidebar-account-popup-open {
+    opacity: 1;
+    transform: scale(1);
+}
+
 body[data-sidebar="collapsed"] #app-sidebar #sidebar-account-popup {
     left: 100%;
     right: auto;

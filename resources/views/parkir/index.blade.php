@@ -80,10 +80,12 @@
                                 Keluar
                             </button>
                         </form>
+                        @if(auth()->user()->role === 'admin')
                         <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs inline-block">
                             Struk
                         </a>
+                        @endif
                     </td>
                 </tr>
                 @endforeach
