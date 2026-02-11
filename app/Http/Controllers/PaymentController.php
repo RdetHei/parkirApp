@@ -247,12 +247,20 @@ class PaymentController extends Controller
     }
 
     /**
-     * Halaman sukses pembayaran
+     * Halaman sukses pembayaran.
+     * Jika transaksi belum tercatat berhasil dan ada midtrans_order_id, sinkron status dari API Midtrans
+     * (agar pembayaran via Midtrans tetap tercatat meskipun notifikasi server tidak sampai, misal di localhost).
      */
     public function success($id_parkir)
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'pembayaran', 'user', 'area'])
             ->findOrFail($id_parkir);
+
+        if ($transaksi->status_pembayaran !== 'berhasil' && !empty($transaksi->midtrans_order_id)) {
+            $this->syncMidtransPaymentStatus((int) $id_parkir);
+            $transaksi->refresh();
+            $transaksi->load(['kendaraan', 'tarif', 'pembayaran', 'user', 'area']);
+        }
 
         return view('payment.success', compact('transaksi'));
     }
@@ -319,6 +327,9 @@ class PaymentController extends Controller
 
             $order_id = 'PARKIR-' . $id_parkir . '-' . time();
             $gross_amount = (int) round((float) $transaksi->biaya_total);
+
+            // Simpan order_id agar halaman success bisa sinkron status dari API Midtrans jika notifikasi tidak sampai
+            $transaksi->update(['midtrans_order_id' => $order_id]);
 
             $params = [
                 'transaction_details' => [
@@ -391,6 +402,7 @@ class PaymentController extends Controller
         }
 
         $transaction_status = $statusResponse->transaction_status ?? null;
+        $transaction_status = is_string($transaction_status) ? strtolower($transaction_status) : $transaction_status;
         $transaction_id = $statusResponse->transaction_id ?? $payload['transaction_id'] ?? null;
         $payment_type = $statusResponse->payment_type ?? $payload['payment_type'] ?? null;
         $gross_amount = (float) ($statusResponse->gross_amount ?? $payload['gross_amount'] ?? 0);
@@ -402,41 +414,94 @@ class PaymentController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount) {
-                $transaksi = Transaksi::lockForUpdate()->find($id_parkir);
-                if (!$transaksi) {
-                    return;
-                }
-                if ($transaksi->status_pembayaran === 'berhasil') {
-                    return;
-                }
-                if ($transaksi->status !== 'keluar' || is_null($transaksi->biaya_total)) {
-                    return;
-                }
-
-                $pembayaran = Pembayaran::create([
-                    'id_parkir' => $id_parkir,
-                    'order_id' => $order_id,
-                    'transaction_id' => $transaction_id,
-                    'payment_type' => $payment_type,
-                    'nominal' => $gross_amount,
-                    'metode' => 'midtrans',
-                    'status' => 'berhasil',
-                    'keterangan' => 'Pembayaran Midtrans (' . ($payment_type ?? 'online') . ')',
-                    'id_user' => null,
-                    'waktu_pembayaran' => Carbon::now(),
-                ]);
-
-                $transaksi->update([
-                    'status_pembayaran' => 'berhasil',
-                    'id_pembayaran' => $pembayaran->id_pembayaran,
-                ]);
-            });
+            $this->applyMidtransSuccess($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount);
         } catch (\Exception $e) {
             Log::error('Midtrans notification handler error', ['order_id' => $order_id, 'error' => $e->getMessage()]);
             return response()->json(['message' => 'Processing error'], 500);
         }
 
         return response()->json(['received' => true]);
+    }
+
+    /**
+     * Menerapkan pembayaran Midtrans berhasil: buat record Pembayaran dan update Transaksi (idempotent).
+     */
+    private function applyMidtransSuccess(int $id_parkir, string $order_id, ?string $transaction_id, ?string $payment_type, float $gross_amount): void
+    {
+        DB::transaction(function () use ($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount) {
+            $transaksi = Transaksi::lockForUpdate()->find($id_parkir);
+            if (!$transaksi) {
+                return;
+            }
+            if ($transaksi->status_pembayaran === 'berhasil') {
+                return;
+            }
+            if ($transaksi->status !== 'keluar' || is_null($transaksi->biaya_total)) {
+                return;
+            }
+
+            $pembayaran = Pembayaran::create([
+                'id_parkir' => $id_parkir,
+                'order_id' => $order_id,
+                'transaction_id' => $transaction_id,
+                'payment_type' => $payment_type,
+                'nominal' => $gross_amount,
+                'metode' => 'midtrans',
+                'status' => 'berhasil',
+                'keterangan' => 'Pembayaran Midtrans (' . ($payment_type ?? 'online') . ')',
+                'id_user' => null,
+                'waktu_pembayaran' => Carbon::now(),
+            ]);
+
+            $transaksi->update([
+                'status_pembayaran' => 'berhasil',
+                'id_pembayaran' => $pembayaran->id_pembayaran,
+            ]);
+        });
+    }
+
+    /**
+     * Sinkron status pembayaran dari API Midtrans (untuk kasus notifikasi server tidak sampai, misal localhost).
+     * Dipanggil saat user membuka halaman success setelah bayar via Midtrans.
+     */
+    private function syncMidtransPaymentStatus(int $id_parkir): bool
+    {
+        $transaksi = Transaksi::find($id_parkir);
+        if (!$transaksi || $transaksi->status_pembayaran === 'berhasil') {
+            return false;
+        }
+        $order_id = $transaksi->midtrans_order_id;
+        if (empty($order_id)) {
+            return false;
+        }
+
+        $serverKey = config('services.midtrans.server_key');
+        $isProduction = config('services.midtrans.is_production');
+        if (empty($serverKey)) {
+            return false;
+        }
+
+        try {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = $isProduction;
+            $statusResponse = \Midtrans\Transaction::status($order_id);
+        } catch (\Exception $e) {
+            Log::info('Midtrans sync status skip', ['order_id' => $order_id, 'reason' => $e->getMessage()]);
+            return false;
+        }
+
+        $transaction_status = $statusResponse->transaction_status ?? null;
+        $transaction_status = is_string($transaction_status) ? strtolower($transaction_status) : $transaction_status;
+        $successStatuses = ['capture', 'settlement'];
+        if (!in_array($transaction_status, $successStatuses)) {
+            return false;
+        }
+
+        $transaction_id = $statusResponse->transaction_id ?? null;
+        $payment_type = $statusResponse->payment_type ?? null;
+        $gross_amount = (float) ($statusResponse->gross_amount ?? 0);
+
+        $this->applyMidtransSuccess($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount);
+        return true;
     }
 }
