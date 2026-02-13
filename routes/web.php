@@ -22,10 +22,28 @@ Route::get('/payment/{id_parkir}/confirm-qr/signed', [\App\Http\Controllers\Paym
 Route::get('/payment/{id_parkir}/thank-you', [\App\Http\Controllers\PaymentController::class, 'thankYou'])
     ->name('payment.thank-you');
 
-// Midtrans notification callback (public, rate-limited; verifikasi signature di controller)
+// Midtrans notification callbacks (public, rate-limited; verifikasi signature di controller)
 Route::post('/payment/midtrans/notification', [\App\Http\Controllers\PaymentController::class, 'midtransNotification'])
     ->name('payment.midtrans.notification')
     ->middleware('throttle:60,1');
+
+Route::post('/payment/midtrans/recurring-notification', [\App\Http\Controllers\PaymentController::class, 'midtransRecurringNotification'])
+    ->name('payment.midtrans.recurring-notification')
+    ->middleware('throttle:60,1');
+
+Route::post('/payment/midtrans/pay-account-notification', [\App\Http\Controllers\PaymentController::class, 'midtransPayAccountNotification'])
+    ->name('payment.midtrans.pay-account-notification')
+    ->middleware('throttle:60,1');
+
+// Midtrans redirect URLs (public)
+Route::get('/payment/midtrans/{id_parkir}/finish', [\App\Http\Controllers\PaymentController::class, 'midtransFinish'])
+    ->name('payment.midtrans.finish');
+
+Route::get('/payment/midtrans/{id_parkir}/unfinish', [\App\Http\Controllers\PaymentController::class, 'midtransUnfinish'])
+    ->name('payment.midtrans.unfinish');
+
+Route::get('/payment/midtrans/{id_parkir}/error', [\App\Http\Controllers\PaymentController::class, 'midtransError'])
+    ->name('payment.midtrans.error');
 
 // Auth Routes
 Route::get('/login', [LoginController::class, 'create'])->name('login.create');

@@ -331,6 +331,11 @@ class PaymentController extends Controller
             // Simpan order_id agar halaman success bisa sinkron status dari API Midtrans jika notifikasi tidak sampai
             $transaksi->update(['midtrans_order_id' => $order_id]);
 
+            // Build redirect URLs
+            $finishUrl = route('payment.midtrans.finish', $id_parkir);
+            $unfinishUrl = route('payment.midtrans.unfinish', $id_parkir);
+            $errorUrl = route('payment.midtrans.error', $id_parkir);
+
             $params = [
                 'transaction_details' => [
                     'order_id' => $order_id,
@@ -348,6 +353,11 @@ class PaymentController extends Controller
                 'customer_details' => [
                     'first_name' => $transaksi->kendaraan->pemilik ?? $transaksi->kendaraan->plat_nomor ?? 'Customer',
                     'email' => $transaksi->user?->email ?? 'customer@parked.local',
+                ],
+                'callbacks' => [
+                    'finish' => $finishUrl,
+                    'unfinish' => $unfinishUrl,
+                    'error' => $errorUrl,
                 ],
             ];
 
@@ -503,5 +513,160 @@ class PaymentController extends Controller
 
         $this->applyMidtransSuccess($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount);
         return true;
+    }
+
+    /**
+     * Recurring Notification URL handler.
+     * Midtrans akan mengirim notifikasi recurring payment melalui HTTP Post Request.
+     */
+    public function midtransRecurringNotification(Request $request)
+    {
+        $payload = $request->all();
+        $order_id = $payload['order_id'] ?? null;
+        Log::info('Midtrans recurring notification', ['order_id' => $order_id, 'payload' => $payload]);
+
+        if (!$order_id || !preg_match('/^PARKIR-(\d+)-/', $order_id, $m)) {
+            return response()->json(['message' => 'Invalid order_id'], 400);
+        }
+
+        $id_parkir = (int) $m[1];
+
+        // Verifikasi dengan mengambil status resmi dari API Midtrans
+        $serverKey = config('services.midtrans.server_key');
+        $isProduction = config('services.midtrans.is_production');
+        if (empty($serverKey)) {
+            Log::error('Midtrans recurring notification: server key tidak di-set');
+            return response()->json(['message' => 'Server error'], 500);
+        }
+
+        try {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = $isProduction;
+            $statusResponse = \Midtrans\Transaction::status($order_id);
+        } catch (\Exception $e) {
+            Log::warning('Midtrans recurring notification: gagal fetch status', ['order_id' => $order_id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Invalid or unreachable transaction'], 400);
+        }
+
+        $transaction_status = $statusResponse->transaction_status ?? null;
+        $transaction_status = is_string($transaction_status) ? strtolower($transaction_status) : $transaction_status;
+
+        // Proses recurring payment jika status settlement atau capture
+        $successStatuses = ['capture', 'settlement'];
+        if (in_array($transaction_status, $successStatuses)) {
+            $transaction_id = $statusResponse->transaction_id ?? $payload['transaction_id'] ?? null;
+            $payment_type = $statusResponse->payment_type ?? $payload['payment_type'] ?? null;
+            $gross_amount = (float) ($statusResponse->gross_amount ?? $payload['gross_amount'] ?? 0);
+
+            try {
+                $this->applyMidtransSuccess($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount);
+            } catch (\Exception $e) {
+                Log::error('Midtrans recurring notification handler error', ['order_id' => $order_id, 'error' => $e->getMessage()]);
+                return response()->json(['message' => 'Processing error'], 500);
+            }
+        }
+
+        return response()->json(['received' => true]);
+    }
+
+    /**
+     * Pay Account Notification URL handler.
+     * Midtrans akan mengirim notifikasi status Pay Account melalui HTTP Post Request.
+     */
+    public function midtransPayAccountNotification(Request $request)
+    {
+        $payload = $request->all();
+        $order_id = $payload['order_id'] ?? null;
+        Log::info('Midtrans pay account notification', ['order_id' => $order_id, 'payload' => $payload]);
+
+        if (!$order_id || !preg_match('/^PARKIR-(\d+)-/', $order_id, $m)) {
+            return response()->json(['message' => 'Invalid order_id'], 400);
+        }
+
+        $id_parkir = (int) $m[1];
+
+        // Verifikasi dengan mengambil status resmi dari API Midtrans
+        $serverKey = config('services.midtrans.server_key');
+        $isProduction = config('services.midtrans.is_production');
+        if (empty($serverKey)) {
+            Log::error('Midtrans pay account notification: server key tidak di-set');
+            return response()->json(['message' => 'Server error'], 500);
+        }
+
+        try {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = $isProduction;
+            $statusResponse = \Midtrans\Transaction::status($order_id);
+        } catch (\Exception $e) {
+            Log::warning('Midtrans pay account notification: gagal fetch status', ['order_id' => $order_id, 'error' => $e->getMessage()]);
+            return response()->json(['message' => 'Invalid or unreachable transaction'], 400);
+        }
+
+        $transaction_status = $statusResponse->transaction_status ?? null;
+        $transaction_status = is_string($transaction_status) ? strtolower($transaction_status) : $transaction_status;
+
+        // Proses pay account payment jika status settlement atau capture
+        $successStatuses = ['capture', 'settlement'];
+        if (in_array($transaction_status, $successStatuses)) {
+            $transaction_id = $statusResponse->transaction_id ?? $payload['transaction_id'] ?? null;
+            $payment_type = $statusResponse->payment_type ?? $payload['payment_type'] ?? null;
+            $gross_amount = (float) ($statusResponse->gross_amount ?? $payload['gross_amount'] ?? 0);
+
+            try {
+                $this->applyMidtransSuccess($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount);
+            } catch (\Exception $e) {
+                Log::error('Midtrans pay account notification handler error', ['order_id' => $order_id, 'error' => $e->getMessage()]);
+                return response()->json(['message' => 'Processing error'], 500);
+            }
+        }
+
+        return response()->json(['received' => true]);
+    }
+
+    /**
+     * Finish Redirect URL handler.
+     * Pelanggan akan diarahkan ke link ini jika pembayaran telah sukses dilakukan.
+     */
+    public function midtransFinish($id_parkir)
+    {
+        $transaksi = Transaksi::with(['kendaraan', 'tarif', 'pembayaran', 'user', 'area'])
+            ->findOrFail($id_parkir);
+
+        // Sinkron status pembayaran dari API Midtrans jika belum tercatat berhasil
+        if ($transaksi->status_pembayaran !== 'berhasil' && !empty($transaksi->midtrans_order_id)) {
+            $this->syncMidtransPaymentStatus((int) $id_parkir);
+            $transaksi->refresh();
+            $transaksi->load(['kendaraan', 'tarif', 'pembayaran', 'user', 'area']);
+        }
+
+        // Redirect ke halaman success
+        return redirect()->route('payment.success', $id_parkir)
+            ->with('success', 'Pembayaran berhasil dilakukan');
+    }
+
+    /**
+     * Unfinish Redirect URL handler.
+     * Pelanggan akan diarahkan ke link ini jika mengklik button 'Back to Order Website' di halaman pembayaran VT-Web.
+     */
+    public function midtransUnfinish($id_parkir)
+    {
+        $transaksi = Transaksi::findOrFail($id_parkir);
+
+        // Redirect kembali ke halaman pembayaran dengan pesan informasi
+        return redirect()->route('payment.create', $id_parkir)
+            ->with('info', 'Pembayaran belum selesai. Silakan coba lagi atau pilih metode pembayaran lain.');
+    }
+
+    /**
+     * Error Redirect URL handler.
+     * Pelanggan akan diarahkan ke link ini jika terjadi error pada pembayaran.
+     */
+    public function midtransError($id_parkir)
+    {
+        $transaksi = Transaksi::findOrFail($id_parkir);
+
+        // Redirect kembali ke halaman pembayaran dengan pesan error
+        return redirect()->route('payment.create', $id_parkir)
+            ->with('error', 'Terjadi kesalahan pada proses pembayaran. Silakan coba lagi atau pilih metode pembayaran lain.');
     }
 }
