@@ -36,6 +36,14 @@
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     <span class="sidebar-label">Parkir Aktif</span>
                 </a>
+                <a href="{{ route('parking.map.index') }}"
+                   class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('parking.map.index') ? 'bg-emerald-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 5h2l3 7 4-4 4 8 3-6h2" />
+                    </svg>
+                    <span class="sidebar-label">Peta Parkir</span>
+                </a>
                 <a href="{{ route('transaksi.index') }}"
                    class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('transaksi.index', 'transaksi.show', 'transaksi.edit', 'transaksi.create') ? 'bg-indigo-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
@@ -60,6 +68,14 @@
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span class="sidebar-label">Riwayat Transaksi & Cetak Struk</span>
                 </a>
+                <a href="{{ route('parking.map.index') }}"
+                   class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('parking.map.index') ? 'bg-emerald-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 5h2l3 7 4-4 4 8 3-6h2" />
+                    </svg>
+                    <span class="sidebar-label">Peta Parkir</span>
+                </a>
                 <div class="pt-4 mt-4 border-t border-gray-200">
                     <p class="sidebar-section-title text-xs font-semibold text-gray-500 uppercase px-3 mb-3 tracking-wider">Master Data</p>
                     <a href="{{ route('users.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-cyan-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
@@ -74,9 +90,20 @@
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         <span class="sidebar-label">Area Parkir</span>
                     </a>
+                    <a href="{{ route('parking-maps.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('parking-maps.*') ? 'bg-emerald-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 5h2l3 7 4-4 4 8 3-6h2" />
+                        </svg>
+                        <span class="sidebar-label">Layout Peta</span>
+                    </a>
                     <a href="{{ route('kendaraan.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('kendaraan.*') ? 'bg-amber-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
                         <span class="sidebar-label">Kendaraan</span>
+                    </a>
+                    <a href="{{ route('kamera.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('kamera.*') ? 'bg-teal-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <span class="sidebar-label">Kamera</span>
                     </a>
                     <a href="{{ route('log-aktivitas.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200 {{ request()->routeIs('log-aktivitas.*') ? 'bg-slate-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>

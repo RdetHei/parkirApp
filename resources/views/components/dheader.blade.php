@@ -26,11 +26,21 @@
         $addButton = ['label' => 'Tambah Kendaraan', 'route' => route('kendaraan.create'), 'routeName' => 'kendaraan.create'];
     } elseif (request()->routeIs('kendaraan.create')) {
         $headerTitle = 'Tambah Kendaraan';
+    } elseif (request()->routeIs('parking-maps.index') || request()->routeIs('parking-maps.edit')) {
+        $headerTitle = 'Layout Peta Parkir';
+        $addButton = ['label' => 'Tambah Layout', 'route' => route('parking-maps.create'), 'routeName' => 'parking-maps.create'];
+    } elseif (request()->routeIs('parking-maps.create')) {
+        $headerTitle = 'Tambah Layout Peta Parkir';
     } elseif (request()->routeIs('area-parkir.index') || request()->routeIs('area-parkir.show') || request()->routeIs('area-parkir.edit')) {
         $headerTitle = 'Area Parkir';
         $addButton = ['label' => 'Tambah Area', 'route' => route('area-parkir.create'), 'routeName' => 'area-parkir.create'];
     } elseif (request()->routeIs('area-parkir.create')) {
         $headerTitle = 'Tambah Area Parkir';
+    } elseif (request()->routeIs('kamera.index') || request()->routeIs('kamera.edit')) {
+        $headerTitle = 'Kamera';
+        $addButton = ['label' => 'Tambah Kamera', 'route' => route('kamera.create'), 'routeName' => 'kamera.create'];
+    } elseif (request()->routeIs('kamera.create')) {
+        $headerTitle = 'Tambah Kamera';
     } elseif (request()->routeIs('tarif.index') || request()->routeIs('tarif.show') || request()->routeIs('tarif.edit')) {
         $headerTitle = 'Tarif Parkir';
         $addButton = ['label' => 'Tambah Tarif', 'route' => route('tarif.create'), 'routeName' => 'tarif.create'];

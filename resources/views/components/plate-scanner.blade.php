@@ -1,38 +1,61 @@
 @props([
-    'targetInputId' => 'id_kendaraan', // ID input/select yang akan diisi dengan hasil scan
-    'targetInputType' => 'select', // 'select' atau 'text'
-    'onScanSuccess' => null, // Optional callback function name
+    'targetInputId' => 'id_kendaraan',
+    'targetInputType' => 'select',
+    'onScanSuccess' => null,
+    'ipWebcamUrl' => '',
+    'cameras' => [], // Daftar kamera dari CRUD (id, nama, url, is_default)
 ])
 
-<div x-data="plateScanner('{{ $targetInputId }}', '{{ $targetInputType }}', {{ $onScanSuccess ? "'{$onScanSuccess}'" : 'null' }})" class="w-full">
+<div x-data="plateScanner('{{ $targetInputId }}', '{{ $targetInputType }}', {{ $onScanSuccess ? "'{$onScanSuccess}'" : 'null' }}, {{ json_encode($ipWebcamUrl) }}, {{ json_encode($cameras) }})" class="w-full">
     <!-- Camera Section -->
     <div class="mb-4">
         <label class="block text-sm font-semibold text-gray-700 mb-2">
             Scan Plat Nomor
         </label>
-        
+
+        <!-- Pilih Kamera (jika ada data kamera dari CRUD) -->
+        <div x-show="cameras.length > 0" class="mb-3">
+            <label for="plate-scanner-camera-select" class="block text-xs font-medium text-gray-600 mb-1">Kamera</label>
+            <select id="plate-scanner-camera-select" x-model="selectedCameraId" @change="onCameraChange()"
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
+                <template x-for="cam in cameras" :key="cam.id">
+                    <option :value="cam.id" x-text="cam.nama + (cam.is_default ? ' (default)' : '')"></option>
+                </template>
+            </select>
+        </div>
+
         <!-- Camera Container -->
         <div class="relative bg-gray-900 rounded-xl overflow-hidden" style="min-height: 300px;">
-            <!-- Video Preview -->
-            <video 
-                x-ref="video" 
-                x-show="!capturedImage"
-                autoplay 
+            <!-- Video Preview (kamera device) -->
+            <video
+                x-ref="video"
+                x-show="!useIpWebcam && !capturedImage"
+                autoplay
                 playsinline
                 class="w-full h-full object-cover"
                 style="min-height: 300px;"
             ></video>
-            
+
+            <!-- IP Webcam stream (MJPEG dari HP) -->
+            <img
+                x-ref="ipWebcamStream"
+                x-show="useIpWebcam && !capturedImage"
+                :src="streamActive ? ipWebcamUrl : ''"
+                class="w-full h-full object-cover"
+                style="min-height: 300px;"
+                alt="IP Webcam"
+            />
+
             <!-- Captured Image Preview -->
-            <img 
-                x-ref="capturedImage" 
+            <img
+                x-ref="capturedImage"
                 x-show="capturedImage"
                 class="w-full h-full object-contain bg-black"
                 style="min-height: 300px;"
             />
-            
+
             <!-- Loading Overlay -->
-            <div 
+            <div
                 x-show="isLoading"
                 class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10"
             >
@@ -44,9 +67,9 @@
                     <p class="text-white font-semibold">Memproses gambar...</p>
                 </div>
             </div>
-            
+
             <!-- Error Message -->
-            <div 
+            <div
                 x-show="errorMessage"
                 x-cloak
                 class="absolute bottom-0 left-0 right-0 bg-red-600 text-white p-4 z-20"
@@ -60,9 +83,9 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Success Message -->
-            <div 
+            <div
                 x-show="successMessage"
                 x-cloak
                 class="absolute bottom-0 left-0 right-0 bg-green-600 text-white p-4 z-20"
@@ -77,11 +100,11 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Camera Controls -->
         <div class="mt-4 flex gap-2 justify-center">
             <!-- Start Camera Button -->
-            <button 
+            <button
                 x-show="!streamActive && !capturedImage"
                 @click="startCamera()"
                 type="button"
@@ -92,9 +115,9 @@
                 </svg>
                 Buka Kamera
             </button>
-            
+
             <!-- Capture Button -->
-            <button 
+            <button
                 x-show="streamActive && !capturedImage"
                 @click="captureImage()"
                 type="button"
@@ -106,9 +129,9 @@
                 </svg>
                 Ambil Foto
             </button>
-            
+
             <!-- Scan Button -->
-            <button 
+            <button
                 x-show="capturedImage && !isLoading"
                 @click="scanPlate()"
                 type="button"
@@ -120,9 +143,9 @@
                 </svg>
                 Scan Plat
             </button>
-            
+
             <!-- Retake Button -->
-            <button 
+            <button
                 x-show="capturedImage"
                 @click="retakePhoto()"
                 type="button"
@@ -133,9 +156,9 @@
                 </svg>
                 Ambil Ulang
             </button>
-            
+
             <!-- Stop Camera Button -->
-            <button 
+            <button
                 x-show="streamActive"
                 @click="stopCamera()"
                 type="button"
@@ -148,12 +171,12 @@
                 Tutup Kamera
             </button>
         </div>
-        
+
         <!-- Scan Result Display -->
         <div x-show="scanResult" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div class="flex items-center justify-between mb-2">
                 <h4 class="text-sm font-semibold text-gray-700">Hasil Scan:</h4>
-                <span 
+                <span
                     :class="scanResult.valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                     class="px-2 py-1 rounded text-xs font-semibold"
                     x-text="scanResult.valid ? 'Valid' : 'Tidak Valid'"
@@ -168,8 +191,13 @@
 </div>
 
 <script>
-function plateScanner(targetInputId, targetInputType, onScanSuccess) {
+function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl, cameras) {
+    cameras = cameras || [];
+    const defaultId = cameras.find(c => c.is_default)?.id || cameras[0]?.id;
+    const fallbackUrl = (ipWebcamUrl || '').trim();
     return {
+        cameras: cameras,
+        selectedCameraId: defaultId || null,
         streamActive: false,
         capturedImage: null,
         isLoading: false,
@@ -177,33 +205,56 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess) {
         successMessage: '',
         scanResult: null,
         stream: null,
-        
+        get ipWebcamUrl() {
+            if (this.cameras.length > 0 && this.selectedCameraId) {
+                const cam = this.cameras.find(c => c.id == this.selectedCameraId);
+                return (cam && cam.url) ? cam.url : '';
+            }
+            return fallbackUrl;
+        },
+        get useIpWebcam() {
+            return this.ipWebcamUrl.length > 0;
+        },
+
+        onCameraChange() {
+            if (this.streamActive) {
+                this.streamActive = false;
+                this.$nextTick(() => { this.streamActive = true; });
+            }
+        },
+
         async startCamera() {
             try {
                 this.errorMessage = '';
                 this.successMessage = '';
-                
-                // Request camera access with environment (back) camera
-                const constraints = {
-                    video: {
-                        facingMode: 'environment', // Use back camera on mobile
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                };
-                
-                this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-                this.$refs.video.srcObject = this.stream;
-                this.streamActive = true;
+
+                if (this.useIpWebcam) {
+                    // IP Webcam: cukup aktifkan stream (img src sudah di-set di template)
+                    this.streamActive = true;
+                } else {
+                    // Kamera device: getUserMedia
+                    const constraints = {
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.$refs.video.srcObject = this.stream;
+                    this.streamActive = true;
+                }
             } catch (error) {
                 console.error('Camera error:', error);
-                this.errorMessage = 'Tidak dapat mengakses kamera. Pastikan izin kamera sudah diberikan.';
+                this.errorMessage = this.useIpWebcam
+                    ? 'Tidak dapat mengakses IP Webcam. Pastikan HP terhubung (localhost:8080) dan app IP Webcam berjalan.'
+                    : 'Tidak dapat mengakses kamera. Pastikan izin kamera sudah diberikan.';
                 this.streamActive = false;
             }
         },
-        
+
         stopCamera() {
-            if (this.stream) {
+            if (!this.useIpWebcam && this.stream) {
                 this.stream.getTracks().forEach(track => track.stop());
                 this.stream = null;
             }
@@ -211,46 +262,58 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess) {
             this.capturedImage = null;
             this.scanResult = null;
         },
-        
+
         captureImage() {
-            const video = this.$refs.video;
             const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-            
+
+            if (this.useIpWebcam && this.$refs.ipWebcamStream) {
+                const img = this.$refs.ipWebcamStream;
+                if (!img.complete || img.naturalWidth === 0) {
+                    this.errorMessage = 'Tunggu sebentar sampai stream IP Webcam siap.';
+                    return;
+                }
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                ctx.drawImage(img, 0, 0);
+            } else {
+                const video = this.$refs.video;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+            }
+
             this.capturedImage = canvas.toDataURL('image/jpeg', 0.9);
             this.$refs.capturedImage.src = this.capturedImage;
         },
-        
+
         retakePhoto() {
             this.capturedImage = null;
             this.scanResult = null;
             this.errorMessage = '';
             this.successMessage = '';
         },
-        
+
         async scanPlate() {
             if (!this.capturedImage) {
                 this.errorMessage = 'Silakan ambil foto terlebih dahulu';
                 return;
             }
-            
+
             this.isLoading = true;
             this.errorMessage = '';
             this.successMessage = '';
             this.scanResult = null;
-            
+
             try {
                 // Convert data URL to blob
                 const response = await fetch(this.capturedImage);
                 const blob = await response.blob();
-                
+
                 // Create FormData
                 const formData = new FormData();
                 formData.append('image', blob, 'plate-image.jpg');
-                
+
                 // Send to backend
                 const scanResponse = await fetch('{{ route("api.scan-plate") }}', {
                     method: 'POST',
@@ -260,13 +323,13 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess) {
                     },
                     body: formData
                 });
-                
+
                 const data = await scanResponse.json();
-                
+
                 if (!scanResponse.ok) {
                     throw new Error(data.message || 'Gagal memproses gambar');
                 }
-                
+
                 if (data.success) {
                     this.scanResult = {
                         plate_number: data.plate_number,
@@ -274,11 +337,11 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess) {
                         valid: data.valid,
                         message: data.message
                     };
-                    
+
                     if (data.valid && data.plate_number) {
                         this.successMessage = data.message || 'Plat nomor berhasil dideteksi!';
                         this.fillTargetInput(data.plate_number);
-                        
+
                         // Call optional callback
                         if (onScanSuccess && typeof window[onScanSuccess] === 'function') {
                             window[onScanSuccess](data.plate_number, data);
@@ -289,7 +352,7 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess) {
                 } else {
                     throw new Error(data.message || 'Gagal memproses gambar');
                 }
-                
+
             } catch (error) {
                 console.error('Scan error:', error);
                 this.errorMessage = error.message || 'Terjadi kesalahan saat memproses gambar';
@@ -302,14 +365,14 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess) {
                 this.isLoading = false;
             }
         },
-        
+
         fillTargetInput(plateNumber) {
             const targetInput = document.getElementById(targetInputId);
             if (!targetInput) {
                 console.warn('Target input not found:', targetInputId);
                 return;
             }
-            
+
             if (targetInputType === 'select') {
                 // Find option by plate number
                 const options = targetInput.options;

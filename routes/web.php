@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OwnerDashboardController;
 use App\Http\Controllers\PetugasDashboardController;
+use App\Http\Controllers\ParkingSlotController;
+use App\Http\Controllers\ParkingMapController;
 
 // Public Routes
 Route::get('/', function () {
@@ -51,14 +53,16 @@ Route::get('/forgot-password', function () {
 Route::middleware(['auth'])->group(function () {
     // API & halaman Peta Parkir: hanya admin dan petugas (sesuai kebutuhan operasional parkir)
     Route::middleware(['role:admin,petugas'])->group(function () {
-        Route::get('/api/parking-slots', [\App\Http\Controllers\Api\ParkingMapController::class, 'index'])->name('api.parking-slots');
+        // Halaman peta parkir (Leaflet + image overlay)
+        Route::get('/parking-map', [ParkingSlotController::class, 'view'])->name('parking.map.index');
+
+        // Endpoint lain untuk fitur bookmark lama tetap menggunakan ParkingMapController
         Route::post('/api/parking-slots/{area_id}/bookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])->name('api.parking-slots.bookmark');
         Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
-        Route::get('/parking-map', [\App\Http\Controllers\Api\ParkingMapController::class, 'showMap'])->name('parking.map.index');
-        
+
         // Plate Recognizer API
         Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
-        
+
         // Kendaraan search (autocomplete)
         Route::get('/api/kendaraan/search', [\App\Http\Controllers\Api\KendaraanSearchController::class, 'search'])->name('api.kendaraan.search');
         Route::get('/api/kendaraan/check-plat', [\App\Http\Controllers\Api\KendaraanSearchController::class, 'checkPlat'])->name('api.kendaraan.check-plat');
@@ -80,13 +84,15 @@ Route::middleware(['auth'])->group(function () {
     })->name('user.dashboard');
 
     // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
-    // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, Akses Log Aktifitas, Cetak struk parkir
+    // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);
         Route::resource('kendaraan', \App\Http\Controllers\KendaraanController::class);
         Route::resource('tarif', \App\Http\Controllers\TarifController::class);
+        Route::resource('parking-maps', ParkingMapController::class);
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
+        Route::resource('kamera', \App\Http\Controllers\CameraController::class);
         Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
     });
 
@@ -97,7 +103,8 @@ Route::middleware(['auth'])->group(function () {
             $kendaraans = \App\Models\Kendaraan::orderBy('plat_nomor')->get();
             $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
             $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
-            return view('parkir.create', compact('kendaraans', 'tarifs', 'areas'));
+            $cameras = \App\Models\Camera::scanner()->orderBy('is_default', 'desc')->orderBy('id')->get();
+            return view('parkir.create', compact('kendaraans', 'tarifs', 'areas', 'cameras'));
         })->name('transaksi.create-check-in');
         Route::post('/transaksi/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
         Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])

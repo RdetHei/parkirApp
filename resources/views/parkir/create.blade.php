@@ -15,11 +15,12 @@
         'submitText' => 'Catat Masuk'
     ])
         <div x-data="checkInForm()" x-init="init()">
-            <!-- Plate Scanner -->
+            <!-- Plate Scanner (kamera dari CRUD Kamera) -->
             <div class="mb-6 pb-6 border-b border-gray-200">
-                <x-plate-scanner 
-                    target-input-id="plat_nomor" 
+                <x-plate-scanner
+                    target-input-id="plat_nomor"
                     target-input-type="text"
+                    :cameras="$cameras ?? []"
                 />
             </div>
 
@@ -30,8 +31,8 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
                     </div>
-                    <input type="text" 
-                           id="plat_nomor" 
+                    <input type="text"
+                           id="plat_nomor"
                            x-model="platNomor"
                            @input.debounce.300ms="checkPlat()"
                            placeholder="Contoh: B 1234 XYZ"
@@ -54,13 +55,13 @@
             <input type="hidden" name="vehicle_mode" :value="vehicleFound ? 'existing' : 'new'">
 
             <!-- Section: Kendaraan Baru (hanya tampil jika plat tidak terdaftar) -->
-            <div x-show="!vehicleFound && platNomor.length >= 2" 
+            <div x-show="!vehicleFound && platNomor.length >= 2"
                  x-cloak
                  x-transition
                  class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
                 <h4 class="text-sm font-bold text-amber-800 mb-3">Data Kendaraan Baru</h4>
                 <input type="hidden" :name="vehicleFound ? '' : 'plat_nomor'" :value="platNomor">
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="jenis_kendaraan" class="block text-sm font-semibold text-gray-700 mb-1">Jenis Kendaraan <span class="text-red-500">*</span></label>
@@ -149,7 +150,7 @@
     <script>
         function checkInForm() {
             const tarifs = @json($tarifs);
-            
+
             return {
                 platNomor: '{{ old('plat_nomor', '') }}',
                 selectedVehicle: null,
@@ -158,7 +159,7 @@
                 showSubmitError: false,
                 submitError: '',
                 csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                
+
                 init() {
                     if (this.platNomor.length >= 2) {
                         this.checkPlat();
@@ -177,7 +178,7 @@
                         form.addEventListener('submit', (e) => this.validateSubmit(e));
                     }
                 },
-                
+
                 async checkPlat() {
                     const plat = this.platNomor.trim();
                     if (plat.length < 2) {
@@ -185,17 +186,17 @@
                         this.selectedVehicle = null;
                         return;
                     }
-                    
+
                     this.isChecking = true;
                     this.vehicleFound = false;
                     this.selectedVehicle = null;
-                    
+
                     try {
                         const res = await fetch(`{{ route('api.kendaraan.check-plat') }}?plat=${encodeURIComponent(plat)}`, {
                             headers: { 'X-Requested-With': 'XMLHttpRequest' }
                         });
                         const data = await res.json();
-                        
+
                         if (data.found && data.kendaraan) {
                             this.vehicleFound = true;
                             this.selectedVehicle = data.kendaraan;
@@ -210,7 +211,7 @@
                         this.isChecking = false;
                     }
                 },
-                
+
                 autoSelectTarif() {
                     const jenisSelect = this.$refs.jenisKendaraan;
                     const tarifSelect = this.$refs.idTarif;
@@ -224,7 +225,7 @@
                         }
                     }
                 },
-                
+
                 autoSelectTarifByJenis(jenis) {
                     const tarifSelect = this.$refs.idTarif;
                     if (!tarifSelect || !jenis) return;
@@ -235,7 +236,7 @@
                         }
                     }
                 },
-                
+
                 validateSubmit(event) {
                     const plat = this.platNomor.trim();
                     if (plat.length < 2) {
