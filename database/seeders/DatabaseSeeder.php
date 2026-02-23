@@ -15,44 +15,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'role' => 'user',
-            'password' => bcrypt('password'),
-        ]);
-
-        User::factory()->create([
-            'name' => 'Rudi',
-            'email' => 'admin@gmail.com',
-            'role' => 'admin',
-            'password' => bcrypt('12345678'),
-        ]);
-
-        User::factory()->create([
-            'name' => 'Petugas',
-            'email' => 'petugas@gmail.com',
-            'role' => 'petugas123',
-            'password' => bcrypt('12345678'),
-        ]);
-
-        User::factory()->create([
-            'name' => 'Owner',
-            'email' => 'owner@gmail.com',
-            'role' => 'owner',
-            'password' => bcrypt('12345678'),
-        ]);
-
-        // Call app-specific seeders
         $this->call([
-            AreaParkirSeeder::class,
-            TarifSeeder::class,
-            KendaraanSeeder::class,
-            TransaksiSeeder::class,
-            PembayaranSeeder::class,
-            LogAktifitasSeeder::class,
+            UserTableSeeder::class,
+            AreaParkirTableSeeder::class,
+            TarifTableSeeder::class,
+            KendaraanTableSeeder::class,
+            TransaksiTableSeeder::class,
+            PembayaranTableSeeder::class,
+            LogAktivitasTableSeeder::class,
         ]);
     }
 }

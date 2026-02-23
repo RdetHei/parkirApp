@@ -17,7 +17,8 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver !== 'mysql' && $driver !== 'mariadb') {
-            throw new RuntimeException("Migration ini hanya mendukung MySQL/MariaDB. Driver terdeteksi: {$driver}");
+            // Di luar MySQL/MariaDB (misalnya sqlite), lewati perubahan khusus ini
+            return;
         }
 
         // Jadikan kolom opsional: kendaraan tidak wajib punya user, warna, dan pemilik
@@ -45,7 +46,8 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver !== 'mysql' && $driver !== 'mariadb') {
-            throw new RuntimeException("Rollback migration ini hanya mendukung MySQL/MariaDB. Driver terdeteksi: {$driver}");
+            // Di luar MySQL/MariaDB (misalnya sqlite), tidak ada perubahan untuk di‑rollback
+            return;
         }
 
         // NOTE: Jika ada data NULL, rollback akan gagal sampai data dibersihkan.
