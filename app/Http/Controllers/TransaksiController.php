@@ -34,6 +34,7 @@ class TransaksiController extends Controller
                 'pemilik' => 'nullable|string|max:100',
                 'id_tarif' => 'required|exists:tb_tarif,id_tarif',
                 'id_area' => 'required|exists:tb_area_parkir,id_area',
+                'parking_map_slot_id' => 'nullable|exists:tb_parking_map_slots,id',
                 'catatan' => 'nullable|string|max:255',
             ]);
             $platNormalized = $this->normalizePlatNomor($request->plat_nomor);
@@ -45,8 +46,23 @@ class TransaksiController extends Controller
                 'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
                 'id_tarif' => 'required|exists:tb_tarif,id_tarif',
                 'id_area' => 'required|exists:tb_area_parkir,id_area',
+                'parking_map_slot_id' => 'nullable|exists:tb_parking_map_slots,id',
                 'catatan' => 'nullable|string|max:255',
             ]);
+        }
+
+        if ($request->filled('parking_map_slot_id')) {
+            $slot = \App\Models\ParkingMapSlot::find($request->parking_map_slot_id);
+            if (!$slot || (int) $slot->area_parkir_id !== (int) $request->id_area) {
+                return back()->withInput()->with('error', 'Slot parkir tidak valid untuk area yang dipilih.');
+            }
+            $occupied = Transaksi::where('parking_map_slot_id', $slot->id)
+                ->whereNull('waktu_keluar')
+                ->where('status', 'masuk')
+                ->exists();
+            if ($occupied) {
+                return back()->withInput()->with('error', 'Slot ' . $slot->code . ' sudah terisi.');
+            }
         }
 
         try {
@@ -75,6 +91,7 @@ class TransaksiController extends Controller
                     'id_kendaraan' => $id_kendaraan,
                     'id_tarif' => $request->id_tarif,
                     'id_area' => $request->id_area,
+                    'parking_map_slot_id' => $request->parking_map_slot_id ?: null,
                     'id_user' => Auth::id(),
                     'waktu_masuk' => Carbon::now(),
                     'status' => 'masuk',

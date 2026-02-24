@@ -133,4 +133,3 @@ Sistem menangani berbagai error:
 - Pastikan gambar jelas dan fokus
 - Pastikan plat nomor terlihat jelas
 - Coba dengan pencahayaan yang lebih baik
-

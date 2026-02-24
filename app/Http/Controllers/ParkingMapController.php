@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ParkingMap;
+use App\Models\Camera;
 use Illuminate\Http\Request;
 
 class ParkingMapController extends Controller
 {
     public function index()
     {
-        $items = ParkingMap::orderByDesc('is_default')->orderBy('name')->paginate(15);
+        $items = ParkingMap::with('areaParkir')->orderByDesc('is_default')->orderBy('name')->paginate(15);
         return view('parking_maps.index', compact('items'));
     }
 
@@ -43,7 +44,9 @@ class ParkingMapController extends Controller
     public function edit($id)
     {
         $item = ParkingMap::findOrFail($id);
-        return view('parking_maps.edit', compact('item'));
+        $item->load('mapCameras.camera');
+        $cameras = Camera::orderBy('nama')->get();
+        return view('parking_maps.edit', compact('item', 'cameras'));
     }
 
     public function update(Request $request, $id)

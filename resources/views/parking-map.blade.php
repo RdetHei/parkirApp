@@ -27,6 +27,10 @@
                 @endif
             </div>
 
+            <div id="parking-map-summary" class="px-6 py-2 text-sm text-gray-600 border-b border-gray-100">
+                Memuat…
+            </div>
+
             <div class="p-4">
                 <div id="parking-map"
                      class="w-full rounded-lg border border-gray-200"

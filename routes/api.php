@@ -1,17 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ParkingSlotController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Endpoint publik/stated-less untuk data slot parkir yang akan digunakan
-| oleh peta Leaflet (indoor parking map).
+| GET /api/parking-slots (slot + kamera + summary) ada di web.php
+| dengan middleware auth agar session dipakai.
 |
 */
-
-Route::get('/parking-slots', [ParkingSlotController::class, 'index'])->name('api.parking-slots.leaflet');
 

@@ -55,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin,petugas'])->group(function () {
         // Halaman peta parkir (Leaflet + image overlay)
         Route::get('/parking-map', [ParkingSlotController::class, 'view'])->name('parking.map.index');
+        // API data slot + kamera + summary (untuk Leaflet)
+        Route::get('/api/parking-slots', [ParkingSlotController::class, 'index'])->name('api.parking-slots');
+        Route::get('/api/areas/{area}/slots', [ParkingSlotController::class, 'slotsByArea'])->name('api.areas.slots');
 
         // Endpoint lain untuk fitur bookmark lama tetap menggunakan ParkingMapController
         Route::post('/api/parking-slots/{area_id}/bookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])->name('api.parking-slots.bookmark');
@@ -88,9 +91,18 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);
+        Route::post('area-parkir/{area}/create-layout', [\App\Http\Controllers\AreaParkirController::class, 'createLayout'])->name('area-parkir.create-layout');
         Route::resource('kendaraan', \App\Http\Controllers\KendaraanController::class);
         Route::resource('tarif', \App\Http\Controllers\TarifController::class);
         Route::resource('parking-maps', ParkingMapController::class);
+        Route::get('parking-maps/{parking_map}/slots', [\App\Http\Controllers\ParkingMapSlotController::class, 'index'])->name('parking-maps.slots.index');
+        Route::get('parking-maps/{parking_map}/slots/create', [\App\Http\Controllers\ParkingMapSlotController::class, 'create'])->name('parking-maps.slots.create');
+        Route::post('parking-maps/{parking_map}/slots', [\App\Http\Controllers\ParkingMapSlotController::class, 'store'])->name('parking-maps.slots.store');
+        Route::get('parking-maps/{parking_map}/slots/{slot}/edit', [\App\Http\Controllers\ParkingMapSlotController::class, 'edit'])->name('parking-maps.slots.edit');
+        Route::put('parking-maps/{parking_map}/slots/{slot}', [\App\Http\Controllers\ParkingMapSlotController::class, 'update'])->name('parking-maps.slots.update');
+        Route::delete('parking-maps/{parking_map}/slots/{slot}', [\App\Http\Controllers\ParkingMapSlotController::class, 'destroy'])->name('parking-maps.slots.destroy');
+        Route::post('parking-maps/{parking_map}/cameras', [\App\Http\Controllers\ParkingMapCameraController::class, 'store'])->name('parking-maps.cameras.store');
+        Route::delete('parking-maps/{parking_map}/cameras/{map_camera}', [\App\Http\Controllers\ParkingMapCameraController::class, 'destroy'])->name('parking-maps.cameras.destroy');
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
         Route::resource('kamera', \App\Http\Controllers\CameraController::class);
         Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');

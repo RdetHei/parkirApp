@@ -22,6 +22,7 @@ class Transaksi extends Model
         'catatan',
         'id_user',
         'id_area',
+        'parking_map_slot_id',
         'status_pembayaran',
         'id_pembayaran',
         'midtrans_order_id',
@@ -53,6 +54,11 @@ class Transaksi extends Model
     public function area()
     {
         return $this->belongsTo(AreaParkir::class, 'id_area', 'id_area');
+    }
+
+    public function parkingMapSlot()
+    {
+        return $this->belongsTo(ParkingMapSlot::class, 'parking_map_slot_id', 'id');
     }
 
     public function pembayaran()

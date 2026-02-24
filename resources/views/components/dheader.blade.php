@@ -31,6 +31,12 @@
         $addButton = ['label' => 'Tambah Layout', 'route' => route('parking-maps.create'), 'routeName' => 'parking-maps.create'];
     } elseif (request()->routeIs('parking-maps.create')) {
         $headerTitle = 'Tambah Layout Peta Parkir';
+    } elseif (request()->routeIs('parking-maps.slots.index')) {
+        $headerTitle = 'Slot Peta Parkir';
+    } elseif (request()->routeIs('parking-maps.slots.create')) {
+        $headerTitle = 'Tambah Slot';
+    } elseif (request()->routeIs('parking-maps.slots.edit')) {
+        $headerTitle = 'Edit Slot';
     } elseif (request()->routeIs('area-parkir.index') || request()->routeIs('area-parkir.show') || request()->routeIs('area-parkir.edit')) {
         $headerTitle = 'Area Parkir';
         $addButton = ['label' => 'Tambah Area', 'route' => route('area-parkir.create'), 'routeName' => 'area-parkir.create'];

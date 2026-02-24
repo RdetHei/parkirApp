@@ -106,6 +106,20 @@
                             </td>
                             <td class="px-6 py-4 text-sm space-x-2">
                                 <div class="flex items-center gap-2">
+                                    @if($area->parkingMap)
+                                    <a href="{{ route('parking-maps.edit', $area->parkingMap) }}"
+                                       class="inline-flex items-center justify-center w-8 h-8 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors"
+                                       title="Edit layout peta">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h2l3 7 4-4 4 8 3-6h2"></path></svg>
+                                    </a>
+                                    @else
+                                    <form action="{{ route('area-parkir.create-layout', $area) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-lg transition-colors" title="Buat layout peta">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                        </button>
+                                    </form>
+                                    @endif
                                     <!-- Edit Button -->
                                     <a href="{{ route('area-parkir.edit', $area) }}"
                                        class="inline-flex items-center justify-center w-8 h-8 bg-yellow-50 hover:bg-yellow-100 text-yellow-600 rounded-lg transition-colors"

@@ -86,5 +86,76 @@
             @error('is_default')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
         </div>
     @endcomponent
+
+    {{-- Posisi kamera di peta --}}
+    <div class="mt-8 bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h3 class="text-base font-bold text-gray-900">Lokasi kamera di peta</h3>
+            <a href="{{ route('parking-maps.slots.index', $item) }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                Kelola slot →
+            </a>
+        </div>
+        <div class="p-6">
+            @if(session('success'))
+                <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">{{ session('error') }}</div>
+            @endif
+
+            <form action="{{ route('parking-maps.cameras.store', $item) }}" method="POST" class="flex flex-wrap items-end gap-4 mb-6">
+                @csrf
+                <div>
+                    <label for="cam_camera_id" class="block text-xs font-medium text-gray-600 mb-1">Kamera</label>
+                    <select name="camera_id" id="cam_camera_id" required class="block w-56 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
+                        <option value="">-- Pilih kamera --</option>
+                        @foreach($cameras as $c)
+                            <option value="{{ $c->id }}">{{ $c->nama }} ({{ $c->tipe }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="cam_x" class="block text-xs font-medium text-gray-600 mb-1">X (px)</label>
+                    <input type="number" name="x" id="cam_x" value="100" min="0" class="block w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label for="cam_y" class="block text-xs font-medium text-gray-600 mb-1">Y (px)</label>
+                    <input type="number" name="y" id="cam_y" value="100" min="0" class="block w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
+                </div>
+                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg">Tambah posisi</button>
+            </form>
+
+            @if($item->mapCameras && $item->mapCameras->count())
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-600">Kamera</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-600">X</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-600">Y</th>
+                            <th class="px-4 py-2 text-right font-medium text-gray-600">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach($item->mapCameras as $pmc)
+                            <tr>
+                                <td class="px-4 py-2">{{ $pmc->camera->nama ?? '-' }}</td>
+                                <td class="px-4 py-2">{{ $pmc->x }}</td>
+                                <td class="px-4 py-2">{{ $pmc->y }}</td>
+                                <td class="px-4 py-2 text-right">
+                                    <form action="{{ route('parking-maps.cameras.destroy', [$item, $pmc]) }}" method="POST" class="inline" onsubmit="return confirm('Hapus posisi kamera ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <p class="text-gray-500 text-sm">Belum ada kamera ditempatkan di peta ini. Tambah posisi (X, Y) sesuai koordinat pixel di floor plan.</p>
+            @endif
+        </div>
+    </div>
 @endsection
 

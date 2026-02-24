@@ -40,6 +40,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Area Parkir</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gambar</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ukuran</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Default</th>
@@ -67,6 +68,14 @@
                         <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $item->code }}</code>
                     </td>
                     <td class="px-6 py-4 text-sm">
+                        @if($item->areaParkir)
+                            <span class="text-gray-900">{{ $item->areaParkir->nama_area }}</span>
+                            <span class="text-xs text-gray-500">(1:1)</span>
+                        @else
+                            <span class="text-gray-400">—</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 text-sm">
                         <code class="text-xs bg-gray-100 px-2 py-1 rounded break-all">{{ $item->image_path }}</code>
                     </td>
                     <td class="px-6 py-4 text-sm">
@@ -87,6 +96,11 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
+                            </a>
+                            <a href="{{ route('parking-maps.slots.index', $item) }}"
+                               class="inline-flex items-center justify-center w-8 h-8 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors"
+                               title="Kelola slot">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                             </a>
                             <form action="{{ route('parking-maps.destroy', $item) }}" method="POST" class="inline"
                                   onsubmit="return confirm('Yakin ingin menghapus layout peta ini?')">

@@ -9,6 +9,7 @@ class ParkingMap extends Model
     protected $table = 'tb_parking_maps';
 
     protected $fillable = [
+        'area_parkir_id',
         'name',
         'code',
         'image_path',
@@ -20,6 +21,21 @@ class ParkingMap extends Model
     protected $casts = [
         'is_default' => 'boolean',
     ];
+
+    public function slots()
+    {
+        return $this->hasMany(ParkingMapSlot::class, 'parking_map_id', 'id');
+    }
+
+    public function mapCameras()
+    {
+        return $this->hasMany(ParkingMapCamera::class, 'parking_map_id', 'id');
+    }
+
+    public function areaParkir()
+    {
+        return $this->belongsTo(AreaParkir::class, 'area_parkir_id', 'id_area');
+    }
 
     public static function getDefaultOrFirst(): ?self
     {

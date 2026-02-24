@@ -120,6 +120,7 @@
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </div>
                     <select name="id_area" id="id_area" required
+                            @change="loadSlots($event.target.value)"
                             class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('id_area') border-red-500 @enderror">
                         <option value="">-- Pilih Area --</option>
                         @foreach($areas as $a)
@@ -130,6 +131,25 @@
                     </select>
                 </div>
                 @error('id_area')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
+
+            <!-- Slot Parkir (opsional) -->
+            <div class="mb-4">
+                <label for="parking_map_slot_id" class="block text-sm font-semibold text-gray-700 mb-2">Slot Parkir (Opsional)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"></path></svg>
+                    </div>
+                    <select name="parking_map_slot_id" id="parking_map_slot_id"
+                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('parking_map_slot_id') border-red-500 @enderror">
+                        <option value="">— Pilih slot (opsional) —</option>
+                        <template x-for="s in slotOptions" :key="s.id">
+                            <option :value="s.id" :disabled="s.occupied" x-text="s.code + (s.occupied ? ' (Terisi)' : '')"></option>
+                        </template>
+                    </select>
+                    <span x-show="loadingSlots" x-cloak class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Memuat...</span>
+                </div>
+                @error('parking_map_slot_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
 
             <!-- Catatan -->
@@ -159,6 +179,8 @@
                 showSubmitError: false,
                 submitError: '',
                 csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                slotOptions: [],
+                loadingSlots: false,
 
                 init() {
                     if (this.platNomor.length >= 2) {
@@ -172,10 +194,37 @@
                         this.vehicleFound = true;
                         this.selectedVehicle = { id_kendaraan: '{{ old('id_kendaraan') }}', jenis_kendaraan: '', pemilik: '' };
                     @endif
+                    const areaId = document.getElementById('id_area')?.value;
+                    if (areaId) {
+                        this.loadSlots(areaId);
+                    }
                     // Attach form submit validation
                     const form = this.$el.closest('form');
                     if (form) {
                         form.addEventListener('submit', (e) => this.validateSubmit(e));
+                    }
+                },
+
+                async loadSlots(areaId) {
+                    const select = document.getElementById('parking_map_slot_id');
+                    if (!select) return;
+                    this.slotOptions = [];
+                    if (!areaId) {
+                        select.value = '';
+                        return;
+                    }
+                    this.loadingSlots = true;
+                    try {
+                        const url = `{{ route('api.areas.slots', ['area' => '__ID__']) }}`.replace('__ID__', areaId);
+                        const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+                        const data = await res.json();
+                        this.slotOptions = Array.isArray(data) ? data : [];
+                        const oldSlot = '{{ old('parking_map_slot_id') }}';
+                        select.value = oldSlot && this.slotOptions.some(s => String(s.id) === oldSlot) ? oldSlot : '';
+                    } catch (e) {
+                        console.error(e);
+                    } finally {
+                        this.loadingSlots = false;
                     }
                 },
 
