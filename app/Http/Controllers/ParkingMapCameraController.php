@@ -9,6 +9,15 @@ use Illuminate\Http\Request;
 
 class ParkingMapCameraController extends Controller
 {
+    public function index($parking_map_id)
+    {
+        $parkingMap = ParkingMap::with(['mapCameras.camera'])->findOrFail($parking_map_id);
+        $cameras = Camera::viewer()->orderBy('nama')->get();
+        $title = 'Kelola Kamera Peta: ' . $parkingMap->name;
+
+        return view('parking_maps.cameras.index', compact('parkingMap', 'cameras', 'title'));
+    }
+
     public function store(Request $request, $parking_map_id)
     {
         $parkingMap = ParkingMap::findOrFail($parking_map_id);
@@ -25,7 +34,7 @@ class ParkingMapCameraController extends Controller
 
         if ($exists) {
             return redirect()
-                ->route('parking-maps.edit', $parkingMap)
+                ->route('parking-maps.cameras.index', $parkingMap)
                 ->with('error', 'Kamera ini sudah ditambahkan ke peta ini.');
         }
 
@@ -33,7 +42,7 @@ class ParkingMapCameraController extends Controller
         ParkingMapCamera::create($data);
 
         return redirect()
-            ->route('parking-maps.edit', $parkingMap)
+            ->route('parking-maps.cameras.index', $parkingMap)
             ->with('success', 'Posisi kamera berhasil ditambahkan.');
     }
 
@@ -44,7 +53,7 @@ class ParkingMapCameraController extends Controller
         $pmc->delete();
 
         return redirect()
-            ->route('parking-maps.edit', $parkingMap)
+            ->route('parking-maps.cameras.index', $parkingMap)
             ->with('success', 'Posisi kamera dihapus.');
     }
 }

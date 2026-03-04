@@ -34,6 +34,15 @@
                     {{ session('error') }}
                 </div>
             @endif
+            @if($errors->any())
+                <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div class="bg-white rounded-2xl border border-gray-200 p-5">
                 <h2 class="text-sm font-semibold text-gray-900 mb-3">Tambah kendaraan baru</h2>
@@ -97,33 +106,57 @@
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach($kendaraans as $k)
                                         <tr>
-                                            <td class="px-4 py-2 font-semibold text-gray-900">{{ $k->plat_nomor }}</td>
-                                            <td class="px-4 py-2 text-gray-700">{{ $k->jenis_kendaraan }}</td>
-                                            <td class="px-4 py-2 text-gray-700">{{ $k->warna ?? '-' }}</td>
-                                            <td class="px-4 py-2 text-gray-700">{{ $k->pemilik ?? '-' }}</td>
-                                            <td class="px-4 py-2 text-right space-x-2">
-                                                <form action="{{ route('user.vehicles.update', $k) }}" method="POST" class="inline-flex gap-1 items-center">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="plat_nomor" value="{{ $k->plat_nomor }}">
-                                                    <input type="hidden" name="jenis_kendaraan" value="{{ $k->jenis_kendaraan }}">
-                                                    <input type="hidden" name="warna" value="{{ $k->warna }}">
-                                                    <input type="hidden" name="pemilik" value="{{ $k->pemilik }}">
+                                            <form action="{{ route('user.vehicles.update', $k) }}" method="POST" class="contents">
+                                                @csrf
+                                                @method('PUT')
+                                                <td class="px-4 py-2 font-semibold text-gray-900">
+                                                    <input type="text"
+                                                           name="plat_nomor"
+                                                           value="{{ old('plat_nomor', $k->plat_nomor) }}"
+                                                           class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-semibold text-gray-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/70"
+                                                           required>
+                                                </td>
+                                                <td class="px-4 py-2 text-gray-700">
+                                                    <select name="jenis_kendaraan"
+                                                            class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/70"
+                                                            required>
+                                                        <option value="motor" {{ $k->jenis_kendaraan === 'motor' ? 'selected' : '' }}>Motor</option>
+                                                        <option value="mobil" {{ $k->jenis_kendaraan === 'mobil' ? 'selected' : '' }}>Mobil</option>
+                                                        <option value="lainnya" {{ $k->jenis_kendaraan === 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                                    </select>
+                                                </td>
+                                                <td class="px-4 py-2 text-gray-700">
+                                                    <input type="text"
+                                                           name="warna"
+                                                           value="{{ old('warna', $k->warna) }}"
+                                                           class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/70"
+                                                           placeholder="-">
+                                                </td>
+                                                <td class="px-4 py-2 text-gray-700">
+                                                    <input type="text"
+                                                           name="pemilik"
+                                                           value="{{ old('pemilik', $k->pemilik) }}"
+                                                           class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/70"
+                                                           placeholder="-">
+                                                </td>
+                                                <td class="px-4 py-2 text-right space-x-2">
                                                     <button type="submit"
                                                             class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">
                                                         Simpan
                                                     </button>
-                                                </form>
-                                                <form action="{{ route('user.vehicles.destroy', $k) }}" method="POST" class="inline"
-                                                      onsubmit="return confirm('Hapus kendaraan ini dari akun Anda?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100">
-                                                        Hapus
-                                                    </button>
-                                                </form>
-                                            </td>
+                                                    <form action="{{ route('user.vehicles.destroy', $k) }}"
+                                                          method="POST"
+                                                          class="inline"
+                                                          onsubmit="return confirm('Hapus kendaraan ini dari akun Anda?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </form>
                                         </tr>
                                     @endforeach
                                 </tbody>

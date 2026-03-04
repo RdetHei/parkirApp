@@ -61,7 +61,7 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand {
 
 /* Collapsed state */
 body[data-sidebar="collapsed"] #app-sidebar {
-    width: 4rem;
+    width: 4.5rem;
 }
 
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-label,
@@ -71,6 +71,9 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand,
 body[data-sidebar="collapsed"] #app-sidebar .ml-auto.w-2.h-2 {
     opacity: 0;
     max-width: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
     pointer-events: none;
     white-space: nowrap;
@@ -80,11 +83,16 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand {
     min-width: 0;
 }
 
-/* Jangan ubah justify-content agar burger ikut slide (tetap di ujung kanan brand yang menyusut) */
-/* Saat collapse: burger geser ke tengah dengan translateX */
+/* Saat collapse: burger geser ke tengah */
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-header {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-toggle-btn {
-    /* Posisi alami saat collapse (justify-between, brand 0) = kanan; tengah = 2rem - 1.25rem = 0.75rem; dari kanan 1rem → geser kiri 0.25rem */
-    transform: translateX(-0.25rem);
+    transform: none;
+    margin: 0 auto;
 }
 
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-nav {
@@ -94,8 +102,30 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-nav {
 
 body[data-sidebar="collapsed"] #app-sidebar .sidebar-item {
     justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 0;
+}
+
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-item svg {
+    margin: 0;
+}
+
+body[data-sidebar="collapsed"] #app-sidebar .sidebar-account-wrap {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+body[data-sidebar="collapsed"] #app-sidebar #sidebar-account-toggle {
+    justify-content: center;
+    padding: 0;
+    margin: 0;
 }
 
 /* Account popup: smooth open/close */

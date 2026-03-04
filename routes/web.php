@@ -97,6 +97,15 @@ Route::middleware(['auth'])->group(function () {
             ->where('status', 'berhasil')
             ->sum('nominal');
 
+        // Tagihan (transaksi sudah keluar tapi belum dibayar)
+        $transaksiBelumDibayar = \App\Models\Transaksi::where('id_user', $user->id)
+            ->where('status', 'keluar')
+            ->where(function ($q) {
+                $q->whereNull('status_pembayaran')
+                    ->orWhere('status_pembayaran', '!=', 'berhasil');
+            })
+            ->count();
+
         $riwayatTransaksi = \App\Models\Transaksi::with(['kendaraan', 'area', 'tarif'])
             ->where('id_user', $user->id)
             ->orderByDesc('created_at')
@@ -116,10 +125,45 @@ Route::middleware(['auth'])->group(function () {
             'transaksiAktif',
             'totalPembayaran',
             'totalPengeluaran',
+            'transaksiBelumDibayar',
             'riwayatTransaksi',
             'riwayatPembayaran'
         ));
     })->name('user.dashboard');
+
+    // User: Riwayat transaksi lengkap
+    Route::get('/user/history', function (\Illuminate\Http\Request $request) {
+        $user = $request->user();
+        $transactions = \App\Models\Transaksi::with(['kendaraan', 'area', 'tarif', 'pembayaran'])
+            ->where('id_user', $user->id)
+            ->orderByDesc('created_at')
+            ->paginate(15);
+        $title = 'Riwayat Parkir';
+        return view('user.history', compact('transactions', 'title'));
+    })->name('user.history');
+
+    // User: Kelola profil sendiri
+    Route::get('/user/profile', function (\Illuminate\Http\Request $request) {
+        return view('user.profile', ['user' => $request->user(), 'title' => 'Profil Saya']);
+    })->name('user.profile');
+
+    Route::put('/user/profile', function (\Illuminate\Http\Request $request) {
+        $user = $request->user();
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:tb_user,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        $user->update($data);
+        return back()->with('success', 'Profil berhasil diperbarui.');
+    })->name('user.profile.update');
 
     // User: Kelola kendaraan milik sendiri
     Route::get('/user/vehicles', [\App\Http\Controllers\UserVehicleController::class, 'index'])->name('user.vehicles.index');
@@ -176,6 +220,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/user/bookings/areas/{transaksi}', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])
         ->name('user.bookings.unbook');
 
+    // User: Tagihan sendiri (transaksi keluar tapi belum dibayar)
+    Route::get('/user/bills', [\App\Http\Controllers\PaymentController::class, 'userBills'])
+        ->name('user.bills');
+
     // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
@@ -191,6 +239,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('parking-maps/{parking_map}/slots/{slot}/edit', [\App\Http\Controllers\ParkingMapSlotController::class, 'edit'])->name('parking-maps.slots.edit');
         Route::put('parking-maps/{parking_map}/slots/{slot}', [\App\Http\Controllers\ParkingMapSlotController::class, 'update'])->name('parking-maps.slots.update');
         Route::delete('parking-maps/{parking_map}/slots/{slot}', [\App\Http\Controllers\ParkingMapSlotController::class, 'destroy'])->name('parking-maps.slots.destroy');
+        Route::get('parking-maps/{parking_map}/cameras', [\App\Http\Controllers\ParkingMapCameraController::class, 'index'])->name('parking-maps.cameras.index');
         Route::post('parking-maps/{parking_map}/cameras', [\App\Http\Controllers\ParkingMapCameraController::class, 'store'])->name('parking-maps.cameras.store');
         Route::delete('parking-maps/{parking_map}/cameras/{map_camera}', [\App\Http\Controllers\ParkingMapCameraController::class, 'destroy'])->name('parking-maps.cameras.destroy');
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
@@ -230,11 +279,13 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
-        Route::get('/payment/{id_parkir}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
-        Route::get('/payment/{id_parkir}/midtrans', [\App\Http\Controllers\PaymentController::class, 'midtransPay'])->name('payment.midtrans');
-        Route::post('/payment/{id_parkir}/midtrans/token', [\App\Http\Controllers\PaymentController::class, 'midtransSnapToken'])->name('payment.midtrans.token');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
     });
+
+    // Pembayaran Midtrans & struk: bisa diakses user (hanya untuk transaksi miliknya) dan petugas
+    Route::get('/payment/{id_parkir}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment/{id_parkir}/midtrans', [\App\Http\Controllers\PaymentController::class, 'midtransPay'])->name('payment.midtrans');
+    Route::post('/payment/{id_parkir}/midtrans/token', [\App\Http\Controllers\PaymentController::class, 'midtransSnapToken'])->name('payment.midtrans.token');
 
     // ========== OWNER ONLY (sesuai SPK: Rekap transaksi sesuai waktu) ==========
     Route::middleware(['role:owner'])->group(function () {

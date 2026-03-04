@@ -102,6 +102,11 @@
                                title="Kelola slot">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                             </a>
+                            <a href="{{ route('parking-maps.cameras.index', $item) }}"
+                               class="inline-flex items-center justify-center w-8 h-8 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-colors"
+                               title="Kelola kamera">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </a>
                             <form action="{{ route('parking-maps.destroy', $item) }}" method="POST" class="inline"
                                   onsubmit="return confirm('Yakin ingin menghapus layout peta ini?')">
                                 @csrf

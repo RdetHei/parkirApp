@@ -14,6 +14,27 @@ use Illuminate\Support\Facades\URL;
 class PaymentController extends Controller
 {
     /**
+     * Pastikan user yang login boleh mengakses transaksi ini.
+     * - Admin/petugas/owner: bebas
+     * - User biasa: hanya transaksi miliknya sendiri (id_user sama)
+     */
+    private function ensureUserCanAccessTransaksi(Transaksi $transaksi): void
+    {
+        $user = Auth::user();
+        if (! $user) {
+            abort(403);
+        }
+
+        if (in_array($user->role, ['admin', 'petugas', 'owner'], true)) {
+            return;
+        }
+
+        if ((int) $transaksi->id_user !== (int) $user->id) {
+            abort(403);
+        }
+    }
+
+    /**
      * Halaman untuk memilih transaksi yang akan dibayar
      */
     public function selectTransaction()
@@ -58,6 +79,8 @@ class PaymentController extends Controller
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'pembayaran', 'user', 'area'])
             ->findOrFail($id_parkir);
 
+        $this->ensureUserCanAccessTransaksi($transaksi);
+
         if ($transaksi->status_pembayaran !== 'berhasil' && !empty($transaksi->midtrans_order_id)) {
             $this->syncMidtransPaymentStatus((int) $id_parkir);
             $transaksi->refresh();
@@ -80,12 +103,42 @@ class PaymentController extends Controller
     }
 
     /**
+     * Tagihan milik user yang sudah checkout tapi belum dibayar.
+     */
+    public function userBills()
+    {
+        $user = Auth::user();
+
+        $transaksis = Transaksi::with(['kendaraan', 'tarif', 'area'])
+            ->where('id_user', $user->id)
+            ->where('status', 'keluar')
+            ->where(function ($q) {
+                $q->whereNull('status_pembayaran')
+                    ->orWhere('status_pembayaran', '!=', 'berhasil');
+            })
+            ->orderByDesc('waktu_keluar')
+            ->paginate(10);
+
+        $totalTagihan = $transaksis->sum(function (Transaksi $t) {
+            return (float) $t->biaya_total;
+        });
+
+        return view('user.bills.index', [
+            'user' => $user,
+            'transaksis' => $transaksis,
+            'totalTagihan' => $totalTagihan,
+        ]);
+    }
+
+    /**
      * Halaman pembayaran Midtrans (Snap).
      */
     public function midtransPay($id_parkir)
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->findOrFail($id_parkir);
+
+        $this->ensureUserCanAccessTransaksi($transaksi);
 
         if ($transaksi->status_pembayaran === 'berhasil') {
             return redirect()->route('payment.create', $id_parkir)->with('error', 'Transaksi ini sudah dibayar');
@@ -96,7 +149,13 @@ class PaymentController extends Controller
 
         $clientKey = config('services.midtrans.client_key');
         $isProduction = config('services.midtrans.is_production');
-        return view('payment.midtrans-pay', compact('transaksi', 'clientKey', 'isProduction'));
+
+        // Untuk user biasa, tombol kembali diarahkan ke daftar tagihan mereka
+        $cancelUrl = Auth::user() && Auth::user()->role === 'user'
+            ? route('user.bills')
+            : route('payment.create', $id_parkir);
+
+        return view('payment.midtrans-pay', compact('transaksi', 'clientKey', 'isProduction', 'cancelUrl'));
     }
 
     /**
@@ -105,6 +164,8 @@ class PaymentController extends Controller
     public function midtransSnapToken(Request $request, $id_parkir)
     {
         $transaksi = Transaksi::with(['kendaraan', 'tarif'])->findOrFail($id_parkir);
+
+        $this->ensureUserCanAccessTransaksi($transaksi);
 
         if ($transaksi->status_pembayaran === 'berhasil') {
             return response()->json(['error' => 'Transaksi sudah dibayar'], 400);

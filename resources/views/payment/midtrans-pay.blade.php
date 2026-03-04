@@ -20,11 +20,13 @@
             </div>
         </div>
 
-        <div class="mt-6 text-center">
-            <a href="{{ route('payment.create', $transaksi->id_parkir) }}" class="text-sm text-gray-500 hover:text-gray-700">
-                &larr; Kembali pilih metode lain
-            </a>
-        </div>
+        @isset($cancelUrl)
+            <div class="mt-6 text-center">
+                <a href="{{ $cancelUrl }}" class="text-sm text-gray-500 hover:text-gray-700">
+                    &larr; Kembali
+                </a>
+            </div>
+        @endisset
     </div>
 </div>
 
@@ -46,7 +48,7 @@
     var idParkir = {{ $transaksi->id_parkir }};
     var tokenUrl = '{{ route("payment.midtrans.token", ["id_parkir" => $transaksi->id_parkir]) }}';
     var successUrl = '{{ route("payment.success", $transaksi->id_parkir) }}';
-    var cancelUrl = '{{ route("payment.create", $transaksi->id_parkir) }}';
+    var cancelUrl = @json($cancelUrl ?? route('payment.create', $transaksi->id_parkir));
 
     fetch(tokenUrl, {
         method: 'POST',

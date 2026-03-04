@@ -87,134 +87,15 @@
         </div>
     @endcomponent
 
-    {{-- Posisi kamera di peta --}}
-    <div class="mt-8 bg-white shadow-lg rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <div>
-                <h3 class="text-base font-bold text-gray-900">Lokasi kamera di peta</h3>
-                <p class="mt-0.5 text-xs text-gray-500">Klik pada gambar peta untuk mengisi koordinat kamera secara otomatis.</p>
-            </div>
-            <a href="{{ route('parking-maps.slots.index', $item) }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                Kelola slot →
-            </a>
-        </div>
-        <div class="p-6 space-y-5">
-            @if(session('success'))
-                <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">{{ session('error') }}</div>
-            @endif
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-                <div class="lg:col-span-2 space-y-3">
-                    @if($item->image_path)
-                        <div class="overflow-auto rounded-xl border border-dashed border-gray-200 bg-slate-50/70 p-3">
-                            <div
-                                id="camera-map-clickable"
-                                class="relative bg-center bg-no-repeat rounded-lg shadow-inner cursor-crosshair transition-transform duration-150 hover:scale-[1.01]"
-                                style="
-                                    width: {{ $item->width }}px;
-                                    height: {{ $item->height }}px;
-                                    background-image: url('{{ asset($item->image_path) }}');
-                                    background-size: contain;
-                                    background-color: #020617;
-                                "
-                            >
-                                @if($item->mapCameras && $item->mapCameras->count())
-                                    @foreach($item->mapCameras as $pmc)
-                                        <div
-                                            class="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                                            style="left: {{ $pmc->x }}px; top: {{ $pmc->y }}px;"
-                                        >
-                                            <div class="h-5 w-5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">
-                                                C
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                @endif
-                                <div
-                                    id="camera-preview"
-                                    class="absolute -translate-x-1/2 -translate-y-1/2 hidden"
-                                >
-                                    <div class="h-5 w-5 rounded-full bg-sky-500 shadow-lg shadow-sky-500/40 ring-2 ring-white flex items-center justify-center text-[9px] font-bold text-white">
-                                        +
-                                    </div>
-                                </div>
-                                <div class="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-inset ring-white/5"></div>
-                            </div>
-                        </div>
-                        <p class="text-[11px] text-gray-500">
-                            Titik <span class="font-mono text-xs text-gray-700">(0, 0)</span> berada di kiri atas gambar. Klik peta untuk mengisi koordinat kamera secara otomatis.
-                        </p>
-                    @else
-                        <p class="text-xs text-gray-500">
-                            Setel terlebih dahulu gambar layout peta untuk mengaktifkan pemetaan kamera secara visual.
-                        </p>
-                    @endif
-                </div>
-
-                <div>
-                    <form action="{{ route('parking-maps.cameras.store', $item) }}" method="POST" class="space-y-3">
-                        @csrf
-                        <div>
-                            <label for="cam_camera_id" class="block text-xs font-medium text-gray-600 mb-1">Kamera</label>
-                            <select name="camera_id" id="cam_camera_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
-                                <option value="">-- Pilih kamera --</option>
-                                @foreach($cameras as $c)
-                                    <option value="{{ $c->id }}">{{ $c->nama }} ({{ $c->tipe }})</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label for="cam_x" class="block text-xs font-medium text-gray-600 mb-1">X (px)</label>
-                                <input type="number" name="x" id="cam_x" value="100" min="0" class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
-                            </div>
-                            <div>
-                                <label for="cam_y" class="block text-xs font-medium text-gray-600 mb-1">Y (px)</label>
-                                <input type="number" name="y" id="cam_y" value="100" min="0" class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500">
-                            </div>
-                        </div>
-                        <p class="text-[11px] text-gray-500">Klik peta di kiri untuk mengisi nilai X/Y, atau sesuaikan secara manual di sini.</p>
-                        <button type="submit" class="w-full justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg flex items-center gap-2">
-                            <span>Tambah posisi</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            @if($item->mapCameras && $item->mapCameras->count())
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left font-medium text-gray-600">Kamera</th>
-                            <th class="px-4 py-2 text-left font-medium text-gray-600">X</th>
-                            <th class="px-4 py-2 text-left font-medium text-gray-600">Y</th>
-                            <th class="px-4 py-2 text-right font-medium text-gray-600">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @foreach($item->mapCameras as $pmc)
-                            <tr>
-                                <td class="px-4 py-2">{{ $pmc->camera->nama ?? '-' }}</td>
-                                <td class="px-4 py-2">{{ $pmc->x }}</td>
-                                <td class="px-4 py-2">{{ $pmc->y }}</td>
-                                <td class="px-4 py-2 text-right">
-                                    <form action="{{ route('parking-maps.cameras.destroy', [$item, $pmc]) }}" method="POST" class="inline" onsubmit="return confirm('Hapus posisi kamera ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800">Hapus</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <p class="text-gray-500 text-sm">Belum ada kamera ditempatkan di peta ini. Klik peta di atas untuk memilih posisi, lalu simpan.</p>
-            @endif
-        </div>
+    <div class="mt-8 flex flex-col md:flex-row items-center gap-4">
+        <a href="{{ route('parking-maps.slots.index', $item) }}" class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 bg-emerald-600 text-white rounded-2xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            Kelola Slot Parkir
+        </a>
+        <a href="{{ route('parking-maps.cameras.index', $item) }}" class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            Kelola Kamera Peta
+        </a>
     </div>
 @endsection
 

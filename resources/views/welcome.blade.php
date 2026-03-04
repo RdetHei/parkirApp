@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parkir App - Solusi Parkir Modern</title>
+    <title>NESTON - Smart Parking Management</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -107,17 +107,17 @@
                         Parkir Lebih Mudah dengan <span class="gradient-text">NESTON</span>
                     </h1>
                     <p class="text-xl text-gray-600 mb-8 leading-relaxed">
-                        Temukan, pesan, dan bayar parkir dalam satu aplikasi. Hemat waktu dan nikmati pengalaman parkir yang efisien.
+                        Temukan, booking, dan bayar parkir secara real-time langsung dari dashboard web Anda. Terintegrasi dengan petugas dan Midtrans.
                     </p>
 
                     <!-- CTA Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <a href="#download" class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 inline-flex items-center justify-center group">
-                            Mulai Sekarang
+                        <a href="{{ route('login.create') }}" class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 inline-flex items-center justify-center group">
+                            Masuk ke dashboard
                             <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                         </a>
-                        <a href="#fitur" class="bg-white text-primary-600 border-2 border-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-600 hover:text-white transition-all duration-300 inline-flex items-center justify-center">
-                            Pelajari Lebih Lanjut
+                        <a href="{{ route('register.create') }}" class="bg-white text-primary-600 border-2 border-primary-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary-600 hover:text-white transition-all duration-300 inline-flex items-center justify-center">
+                            Daftar akun baru
                         </a>
                     </div>
 
@@ -334,13 +334,13 @@
                         01
                     </div>
                     <div class="mb-6">
-                        <i class="fas fa-download text-5xl text-primary-600"></i>
+                        <i class="fas fa-user-plus text-5xl text-primary-600"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">
-                        Download & Daftar
+                        Buat akun NESTON
                     </h3>
                     <p class="text-gray-600 leading-relaxed">
-                        Unduh aplikasi PARKED dari App Store atau Google Play. Daftar dengan email atau nomor telepon dalam hitungan detik.
+                        Buka NESTON di browser lalu daftar sebagai user. Gunakan email atau nomor telepon untuk membuat akun dalam hitungan detik.
                     </p>
                 </div>
 
@@ -350,13 +350,13 @@
                         02
                     </div>
                     <div class="mb-6">
-                        <i class="fas fa-search-location text-5xl text-primary-600"></i>
+                        <i class="fas fa-parking text-5xl text-primary-600"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">
-                        Cari & Pilih Lokasi
+                        Booking slot parkir
                     </h3>
                     <p class="text-gray-600 leading-relaxed">
-                        Temukan lokasi parkir terdekat menggunakan GPS. Lihat ketersediaan slot dan harga secara real-time.
+                        Pilih kendaraan, tarif, lalu klik slot/area yang kosong di peta. Sistem otomatis membuat booking terhubung ke petugas.
                     </p>
                 </div>
 
@@ -366,13 +366,13 @@
                         03
                     </div>
                     <div class="mb-6">
-                        <i class="fas fa-check-circle text-5xl text-primary-600"></i>
+                        <i class="fas fa-credit-card text-5xl text-primary-600"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">
-                        Parkir & Bayar
+                        Bayar & simpan struk
                     </h3>
                     <p class="text-gray-600 leading-relaxed">
-                        Parkir kendaraan Anda dengan tenang. Bayar dengan cepat menggunakan metode pembayaran digital favorit Anda.
+                        Selesaikan pembayaran secara mandiri via Midtrans atau di loket petugas. Simpan struk digital langsung dari dashboard.
                     </p>
                 </div>
             </div>
@@ -387,7 +387,7 @@
                     Dipercaya oleh Ribuan Pengguna
                 </h2>
                 <p class="text-xl text-primary-100">
-                    Bergabunglah dengan komunitas pengguna PARKED di seluruh Indonesia
+                    Bergabunglah dengan komunitas pengguna NESTON di seluruh Indonesia
                 </p>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
@@ -432,7 +432,7 @@
                     Apa Kata Pengguna Kami
                 </h2>
                 <p class="text-xl text-gray-600">
-                    Ribuan pengguna telah merasakan kemudahan PARKED
+                    Ribuan pengguna telah merasakan kemudahan NESTON
                 </p>
             </div>
 
@@ -522,7 +522,7 @@
                         Siap Untuk Pengalaman Parkir yang Lebih Baik?
                     </h2>
                     <p class="text-xl text-primary-50 mb-10 max-w-2xl mx-auto">
-                        Masuk atau daftar sekarang untuk mulai menggunakan PARKED.
+                        Masuk atau daftar sekarang untuk mulai menggunakan NESTON.
                     </p>
 
                     <!-- Auth CTA -->
@@ -531,15 +531,15 @@
                             <i class="fas fa-sign-in-alt text-2xl mr-4"></i>
                             <div class="text-left">
                                 <div class="text-xs">Sudah punya akun?</div>
-                                <div class="text-lg font-bold">Login</div>
+                                <div class="text-lg font-bold">Masuk</div>
                             </div>
                         </a>
 
                         <a href="{{ route('register.create') }}" class="inline-flex items-center bg-primary-900 text-white px-8 py-4 rounded-xl font-semibold hover:bg-primary-800 transform hover:scale-105 transition-all duration-300 shadow-lg border border-white/20">
                             <i class="fas fa-user-plus text-2xl mr-4"></i>
                             <div class="text-left">
-                                <div class="text-xs">Baru di PARKED?</div>
-                                <div class="text-lg font-bold">Sign Up</div>
+                                <div class="text-xs">Baru di NESTON?</div>
+                                <div class="text-lg font-bold">Daftar</div>
                             </div>
                         </a>
                     </div>

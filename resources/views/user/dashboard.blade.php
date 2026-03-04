@@ -28,6 +28,20 @@
                         </svg>
                         Booking slot
                     </a>
+                    <a href="{{ route('user.bills') }}"
+                       class="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 shadow-sm hover:bg-amber-100">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M7 7h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z"></path>
+                        </svg>
+                        Tagihan saya
+                    </a>
+                    <a href="{{ route('user.profile') }}"
+                       class="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-800 shadow-sm hover:bg-blue-100">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Edit Profil
+                    </a>
                 </div>
             </div>
 
@@ -45,8 +59,9 @@
                     <p class="mt-2 text-2xl font-bold text-emerald-600">{{ $transaksiAktif }}</p>
                 </div>
                 <div class="bg-white rounded-2xl p-4 border border-gray-200">
-                    <p class="text-xs font-medium text-gray-500">Total pengeluaran</p>
-                    <p class="mt-2 text-xl font-bold text-gray-900">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</p>
+                    <p class="text-xs font-medium text-gray-500">Tagihan belum dibayar</p>
+                    <p class="mt-2 text-2xl font-bold text-amber-600">{{ $transaksiBelumDibayar }}</p>
+                    <p class="mt-1 text-[11px] text-gray-500">Segera selesaikan pembayaran untuk menghindari masalah di loket keluar.</p>
                 </div>
             </div>
 
@@ -59,23 +74,60 @@
                         </div>
                     </div>
                     <div class="p-5">
-                        @if($transaksiAktif > 0 && $riwayatTransaksi->where('status', 'masuk')->count())
+                        @php
+                            $activeParkings = $riwayatTransaksi->where('status', 'masuk');
+                        @endphp
+                        @if($transaksiAktif > 0 && $activeParkings->count())
                             <ul class="divide-y divide-gray-100">
-                                @foreach($riwayatTransaksi->where('status', 'masuk') as $trx)
-                                    <li class="py-3 flex items-center justify-between gap-3">
-                                        <div>
-                                            <p class="text-sm font-semibold text-gray-900">
-                                                {{ $trx->kendaraan->plat_nomor ?? '-' }}
-                                            </p>
-                                            <p class="text-xs text-gray-500">
-                                                Masuk: {{ \Carbon\Carbon::parse($trx->waktu_masuk)->format('d M Y, H:i') }} • Area: {{ $trx->area->nama_area ?? '-' }}
-                                            </p>
+                                @foreach($activeParkings as $trx)
+                                    @php
+                                        $masuk = \Carbon\Carbon::parse($trx->waktu_masuk);
+                                        $durasiMenit = now()->diffInMinutes($masuk);
+                                        $durasiJam = ceil($durasiMenit / 60);
+                                        $estimasiBiaya = $durasiJam * ($trx->tarif->tarif_perjam ?? 0);
+                                    @endphp
+                                    <li class="py-4">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-bold text-gray-900">{{ $trx->kendaraan->plat_nomor ?? '-' }}</p>
+                                                    <p class="text-[10px] text-gray-500 uppercase">{{ $trx->area->nama_area ?? '-' }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-sm font-bold text-emerald-600">Rp {{ number_format($estimasiBiaya, 0, ',', '.') }}</p>
+                                                <p class="text-[10px] text-gray-400">Estimasi biaya</p>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4 mt-3 bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                            <div>
+                                                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Waktu Masuk</p>
+                                                <p class="text-xs font-semibold text-gray-700">{{ $masuk->format('H:i') }} <span class="text-[10px] font-normal text-gray-400">({{ $masuk->format('d/m/Y') }})</span></p>
+                                            </div>
+                                            <div>
+                                                <p class="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Durasi</p>
+                                                <p class="text-xs font-semibold text-gray-700">
+                                                    {{ floor($durasiMenit / 60) }}j {{ $durasiMenit % 60 }}m
+                                                </p>
+                                            </div>
                                         </div>
                                     </li>
                                 @endforeach
                             </ul>
                         @else
-                            <p class="text-sm text-gray-500">Tidak ada parkir aktif saat ini.</p>
+                            <div class="py-8 text-center">
+                                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-sm text-gray-500">Tidak ada parkir aktif saat ini.</p>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -86,6 +138,7 @@
                             <h2 class="text-sm font-semibold text-gray-900">Riwayat parkir terakhir</h2>
                             <p class="text-xs text-gray-500">5 transaksi parkir terakhir atas nama Anda.</p>
                         </div>
+                        <a href="{{ route('user.history') }}" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">Lihat Semua</a>
                     </div>
                     <div class="p-5">
                         @if($riwayatTransaksi->count())

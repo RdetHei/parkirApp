@@ -108,16 +108,32 @@
 
         <!-- Tombol Aksi -->
         <div class="flex flex-col md:flex-row gap-3">
-            @if(auth()->user()->role === 'admin')
-            <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
-               class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-center">
-                Cetak Struk & Bukti Pembayaran
-            </a>
+            @php
+                $role = auth()->user()->role ?? null;
+            @endphp
+
+            @if(in_array($role, ['admin', 'petugas']))
+                @if($role === 'admin')
+                    <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
+                       class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-center">
+                        Cetak Struk & Bukti Pembayaran
+                    </a>
+                @endif
+                <a href="{{ route('transaksi.index', ['status' => 'masuk']) }}"
+                   class="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-center">
+                    Kembali ke Dashboard Petugas
+                </a>
+            @else
+                <button type="button"
+                        onclick="window.print()"
+                        class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-center">
+                    Cetak / simpan struk ini
+                </button>
+                <a href="{{ route('user.bills') }}"
+                   class="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-center">
+                    Kembali ke Tagihan Saya
+                </a>
             @endif
-            <a href="{{ route('transaksi.index', ['status' => 'masuk']) }}"
-               class="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold text-center">
-                Kembali ke Dashboard
-            </a>
         </div>
     </div>
 </div>

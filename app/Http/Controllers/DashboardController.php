@@ -7,42 +7,60 @@ use App\Models\Kendaraan;
 use App\Models\Transaksi;
 use App\Models\Pembayaran;
 use App\Models\AreaParkir;
+use App\Models\User;
+use App\Models\LogAktivitas;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Ambil statistik real dari database
+        // Statistik Utama
         $totalKendaraan = Kendaraan::count();
-
-        // Total transaksi (semua status)
         $totalTransaksi = Transaksi::count();
-
-        // Transaksi aktif (belum keluar)
         $transaksiAktif = Transaksi::where('status', 'masuk')->count();
-
-        // Total pendapatan dari pembayaran yang sudah berhasil
-        $totalPendapatan = Pembayaran::where('status', 'berhasil')
-            ->sum('nominal');
-
-        // Pendapatan hari ini
+        $totalPendapatan = Pembayaran::where('status', 'berhasil')->sum('nominal');
         $pendapatanHariIni = Pembayaran::where('status', 'berhasil')
-            ->whereDate('created_at', Carbon::today())
+            ->whereDate('waktu_pembayaran', Carbon::today())
             ->sum('nominal');
 
-        // Area parkir dengan kapasitas tertinggi
+        $pembayaranPending = Pembayaran::where('status', 'pending')->count();
+        $totalUser = User::count();
+        $transaksiHariIni = Transaksi::whereDate('waktu_masuk', Carbon::today())->count();
+
+        // Data Area Parkir
         $areaParkir = AreaParkir::all();
         $totalKapasitas = $areaParkir->sum('kapasitas');
         $totalTerisi = $areaParkir->sum('terisi');
 
-        // Status pembayaran pending
-        $pembayaranPending = Pembayaran::where('status', 'pending')->count();
+        // Data Grafik: Pendapatan 7 Hari Terakhir
+        $grafikPendapatan = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $label = $date->translatedFormat('d M');
+            $value = Pembayaran::where('status', 'berhasil')
+                ->whereDate('waktu_pembayaran', $date)
+                ->sum('nominal');
+            $grafikPendapatan['labels'][] = $label;
+            $grafikPendapatan['data'][] = $value;
+        }
 
-        // Transaksi hari ini
-        $transaksiHariIni = Transaksi::whereDate('waktu_masuk', Carbon::today())->count();
+        // Data Grafik: Jenis Kendaraan (Pie)
+        $grafikKendaraan = [
+            'labels' => ['Mobil', 'Motor'],
+            'data' => [
+                Kendaraan::where('jenis_kendaraan', 'mobil')->count(),
+                Kendaraan::where('jenis_kendaraan', 'motor')->count(),
+            ]
+        ];
 
-        $title = 'Dashboard';
+        // Aktivitas Terbaru (Log Sistem)
+        $aktivitasTerbaru = Transaksi::with(['kendaraan', 'area', 'user'])
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        $title = 'Admin Dashboard';
 
         return view('dashboard', compact(
             'title',
@@ -55,7 +73,11 @@ class DashboardController extends Controller
             'totalTerisi',
             'pembayaranPending',
             'transaksiHariIni',
-            'areaParkir'
+            'totalUser',
+            'areaParkir',
+            'grafikPendapatan',
+            'grafikKendaraan',
+            'aktivitasTerbaru'
         ));
     }
 }

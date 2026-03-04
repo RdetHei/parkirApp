@@ -2,191 +2,288 @@
 
 @section('content')
     <div class="p-6">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p class="text-sm text-gray-500 mt-1">Halo Admin, berikut adalah ringkasan operasional parkir hari ini.</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 shadow-sm">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    Sistem Online: {{ now()->translatedFormat('d F Y') }}
+                </span>
+            </div>
+        </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <!-- Total Kendaraan -->
-            <div class="bg-white rounded-2xl p-5 border border-gray-200">
+        <!-- Statistik Utama -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
-                        </svg>
+                    <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Revenue</span>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Total Kendaraan</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $totalKendaraan }}</p>
+                <p class="text-2xl font-bold text-gray-900">Rp {{ number_format($pendapatanHariIni, 0, ',', '.') }}</p>
+                <p class="text-xs text-gray-500 mt-1">Pendapatan Hari Ini</p>
             </div>
 
-            <!-- Total Transaksi -->
-            <div class="bg-white rounded-2xl p-5 border border-gray-200">
+            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                    <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     </div>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Transactions</span>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Total Transaksi</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $totalTransaksi }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $transaksiHariIni }}</p>
+                <p class="text-xs text-gray-500 mt-1">Transaksi Hari Ini</p>
             </div>
 
-            <!-- Kendaraan Aktif -->
-            <div class="bg-white rounded-2xl p-5 border border-gray-200">
+            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <span class="text-xs font-semibold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">Aktif</span>
+                    <span class="text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 px-2 py-0.5 rounded-lg">Active</span>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Kendaraan Aktif</p>
                 <p class="text-2xl font-bold text-gray-900">{{ $transaksiAktif }}</p>
+                <p class="text-xs text-gray-500 mt-1">Kendaraan Sedang Parkir</p>
             </div>
 
-            <!-- Pembayaran Pending -->
-            <div class="bg-white rounded-2xl p-5 border border-gray-200">
+            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     </div>
-                    <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">Pending</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Users</span>
                 </div>
-                <p class="text-sm text-gray-500 mb-1">Pembayaran Pending</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $pembayaranPending }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $totalUser }}</p>
+                <p class="text-xs text-gray-500 mt-1">Total Pengguna Terdaftar</p>
             </div>
         </div>
 
-        <!-- Revenue & Area Status -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <!-- Pendapatan Card -->
-            <div class="bg-white rounded-2xl border border-gray-200">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-bold text-gray-900">Pendapatan</h2>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-                            <p class="text-xs font-semibold text-green-700 uppercase mb-2">Hari Ini</p>
-                            <p class="text-2xl font-bold text-green-900">Rp {{ number_format($pendapatanHariIni, 0, ',', '.') }}</p>
-                        </div>
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-                            <p class="text-xs font-semibold text-blue-700 uppercase mb-2">Total</p>
-                            <p class="text-2xl font-bold text-blue-900">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</p>
-                        </div>
+        <!-- Grafik & Visualisasi -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900">Tren Pendapatan</h2>
+                        <p class="text-xs text-gray-500">7 Hari Terakhir</p>
                     </div>
+                    <div class="text-right">
+                        <p class="text-sm font-bold text-indigo-600">Total: Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+                <div class="h-[300px]">
+                    <canvas id="revenueChart"></canvas>
                 </div>
             </div>
 
-            <!-- Status Area Parkir -->
-            <div class="bg-white rounded-2xl border border-gray-200">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-bold text-gray-900">Status Area Parkir</h2>
+            <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
+                <h2 class="text-lg font-bold text-gray-900 mb-6">Distribusi Kendaraan</h2>
+                <div class="h-[240px] flex items-center justify-center">
+                    <canvas id="vehicleChart"></canvas>
                 </div>
-                <div class="p-6">
-                    <div class="mb-3">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="text-sm font-semibold text-gray-700">Kapasitas Total</p>
-                            <p class="text-sm font-bold text-gray-900">{{ $totalTerisi }} / {{ $totalKapasitas }}</p>
-                        </div>
-                        @php
-                            $percentage = $totalKapasitas > 0 ? ($totalTerisi / $totalKapasitas * 100) : 0;
-                            $colorClass = $percentage >= 80 ? 'bg-red-500' : ($percentage >= 60 ? 'bg-yellow-500' : 'bg-green-500');
-                        @endphp
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="{{ $colorClass }} h-3 rounded-full transition-all duration-300" style="width: {{ $percentage }}%"></div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">{{ number_format($percentage, 1) }}% Terisi</p>
-                    </div>
-
-                    <div class="mt-4 pt-4 border-t border-gray-200">
+                <div class="mt-6 space-y-3">
+                    @php 
+                        $totalV = array_sum($grafikKendaraan['data']);
+                    @endphp
+                    @foreach($grafikKendaraan['labels'] as $index => $label)
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Tersedia</span>
-                            <span class="font-semibold text-gray-900">{{ $totalKapasitas - $totalTerisi }} Slot</span>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full {{ $index == 0 ? 'bg-indigo-500' : 'bg-emerald-500' }}"></span>
+                                <span class="text-gray-600">{{ $label }}</span>
+                            </div>
+                            <span class="font-bold text-gray-900">{{ $grafikKendaraan['data'][$index] }} ({{ $totalV > 0 ? round($grafikKendaraan['data'][$index] / $totalV * 100) : 0 }}%)</span>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
 
-        <!-- Detail Area Parkir -->
-        <div class="bg-white rounded-2xl border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-900">Detail Area Parkir</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Status ketersediaan per area</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Monitoring Area -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div class="px-6 py-4 border-b border-gray-50 bg-gray-50/50 flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Status Area</h2>
+                        <a href="{{ route('area-parkir.index') }}" class="text-[10px] font-bold text-indigo-600 hover:underline">Detail</a>
+                    </div>
+                    <div class="p-6 space-y-5">
+                        @foreach($areaParkir as $area)
+                            @php
+                                $percent = $area->kapasitas > 0 ? ($area->terisi / $area->kapasitas * 100) : 0;
+                            @endphp
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <span class="text-xs font-bold text-gray-700">{{ $area->nama_area }}</span>
+                                    <span class="text-[10px] font-bold {{ $percent >= 90 ? 'text-red-500' : 'text-emerald-500' }}">
+                                        {{ $area->terisi }}/{{ $area->kapasitas }}
+                                    </span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="{{ $percent >= 90 ? 'bg-red-500' : 'bg-indigo-500' }} h-1.5 rounded-full transition-all" style="width: {{ min($percent, 100) }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden group">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full group-hover:scale-110 transition-transform"></div>
+                    <h3 class="text-lg font-bold mb-2">Quick Actions</h3>
+                    <div class="grid grid-cols-2 gap-3 mt-4 relative z-10">
+                        <a href="{{ route('users.index') }}" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl flex flex-col items-center gap-2 transition-colors border border-white/10 text-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            <span class="text-[10px] font-bold">Kelola User</span>
+                        </a>
+                        <a href="{{ route('parking-maps.index') }}" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl flex flex-col items-center gap-2 transition-colors border border-white/10 text-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h2l3 7 4-4 4 8 3-6h2"></path></svg>
+                            <span class="text-[10px] font-bold">Edit Peta</span>
+                        </a>
+                    </div>
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Area</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kapasitas</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Terisi</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tersedia</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @forelse($areaParkir as $area)
-                            @php
-                                $percentage = $area->kapasitas > 0 ? ($area->terisi / $area->kapasitas * 100) : 0;
-                                $badgeColor = $percentage >= 80 ? 'bg-red-500' : ($percentage >= 60 ? 'bg-yellow-500' : 'bg-green-500');
-                                $statusText = $percentage >= 80 ? 'Penuh' : ($percentage >= 60 ? 'Hampir Penuh' : 'Tersedia');
-                                $statusBg = $percentage >= 80 ? 'bg-red-100 text-red-800' : ($percentage >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800');
-                            @endphp
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 {{ $badgeColor }} rounded-full"></div>
-                                        <span class="text-sm font-medium text-gray-900">{{ $area->nama_area }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm text-gray-900">{{ $area->kapasitas }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-semibold text-gray-900">{{ $area->terisi }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm text-gray-900">{{ $area->kapasitas - $area->terisi }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-1">
-                                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                                <div class="{{ $badgeColor }} h-2 rounded-full transition-all" style="width: {{ $percentage }}%"></div>
+
+            <!-- Aktivitas Terbaru -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div class="px-6 py-4 border-b border-gray-50 bg-gray-50/50 flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Log Transaksi Terbaru</h2>
+                        <a href="{{ route('transaksi.index') }}" class="text-[10px] font-bold text-indigo-600 hover:underline">Lihat Semua</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <tbody class="divide-y divide-gray-50">
+                                @forelse($aktivitasTerbaru as $trx)
+                                    <tr class="hover:bg-gray-50/50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center font-bold text-gray-400 text-xs">
+                                                    {{ substr($trx->kendaraan->plat_nomor ?? '-', 0, 2) }}
+                                                </div>
+                                                <div>
+                                                    <p class="font-bold text-gray-900">{{ $trx->kendaraan->plat_nomor ?? '-' }}</p>
+                                                    <p class="text-[10px] text-gray-500 uppercase">{{ $trx->kendaraan->jenis_kendaraan ?? 'Kendaraan' }}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $statusBg }}">
-                                            {{ $statusText }}
-                                        </span>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-12">
-                                    <div class="text-center">
-                                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-gray-900 font-semibold mb-1">Belum Ada Data Area Parkir</p>
-                                        <p class="text-sm text-gray-500">Tambahkan area parkir untuk memulai</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                                <span class="text-xs text-gray-600">{{ $trx->area->nama_area ?? '-' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <p class="text-xs font-bold text-gray-900">{{ $trx->waktu_masuk->diffForHumans() }}</p>
+                                            <p class="text-[10px] text-gray-400">{{ $trx->waktu_masuk->format('H:i') }} • {{ $trx->user->name ?? 'System' }}</p>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-bold {{ $trx->status === 'masuk' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-gray-50 text-gray-700 border border-gray-100' }}">
+                                                {{ ucfirst($trx->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-20 text-center">
+                                            <p class="text-gray-400 text-sm italic">Belum ada aktivitas hari ini.</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Revenue Chart
+            const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctxRevenue, {
+                type: 'line',
+                data: {
+                    labels: @json($grafikPendapatan['labels']),
+                    datasets: [{
+                        label: 'Pendapatan',
+                        data: @json($grafikPendapatan['data']),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#6366f1',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [5, 5], color: '#f1f5f9' },
+                            ticks: {
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    if (value >= 1000000) return (value / 1000000) + 'jt';
+                                    if (value >= 1000) return (value / 1000) + 'rb';
+                                    return value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            // Vehicle Chart
+            const ctxVehicle = document.getElementById('vehicleChart').getContext('2d');
+            new Chart(ctxVehicle, {
+                type: 'doughnut',
+                data: {
+                    labels: @json($grafikKendaraan['labels']),
+                    datasets: [{
+                        data: @json($grafikKendaraan['data']),
+                        backgroundColor: ['#6366f1', '#10b981'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        });
+    </script>
+@endpush
