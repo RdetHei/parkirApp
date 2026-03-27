@@ -31,6 +31,10 @@ class User extends Authenticatable
         'password',
         'role',
         'saldo',
+        'rfid_uid',
+        'nfc_uid',
+        'balance',
+        'photo',
     ];
 
     public function saldoHistories()

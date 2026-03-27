@@ -9,11 +9,32 @@ use App\Http\Controllers\OwnerDashboardController;
 use App\Http\Controllers\PetugasDashboardController;
 use App\Http\Controllers\ParkingSlotController;
 use App\Http\Controllers\ParkingMapController;
+use App\Http\Controllers\NfcAdminController;
+use App\Http\Controllers\NfcController;
+use App\Http\Controllers\RfidParkingController;
+use App\Http\Controllers\RfidIdentifyController;
+use App\Http\Controllers\RfidAccessController;
+use App\Http\Controllers\RfidLoginController;
 
 // Public Routes
 Route::get('/', function () {
     return view('welcome');
 });
+
+// RFID Login (for fun): scan kartu untuk Auth::login()
+Route::get('/login/rfid', [RfidLoginController::class, 'page'])->name('rfid.login.page');
+Route::post('/api/rfid/login', [RfidLoginController::class, 'login'])
+    ->name('api.rfid.login')
+    ->middleware('throttle:20,1');
+
+// NFC APIs (buat Web NFC)
+Route::post('/api/encrypt-id', [NfcController::class, 'encryptId'])
+    ->middleware(['auth', 'role:admin']);
+Route::post('/api/nfc-write', [NfcController::class, 'nfcWrite'])
+    ->middleware(['auth', 'role:admin']);
+Route::post('/api/nfc-scan', [NfcController::class, 'nfcScan']);
+Route::post('/api/parkir/masuk', [NfcController::class, 'parkirMasuk']);
+Route::post('/api/parkir/keluar', [NfcController::class, 'parkirKeluar']);
 
 
 // Midtrans notification callbacks (public, rate-limited; verifikasi signature di controller)
@@ -50,7 +71,7 @@ Route::get('/forgot-password', function () {
 })->name('password.request');
 
 // Protected Routes - Require Authentication
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'no-cache'])->group(function () {
     // API & halaman Peta Parkir: admin, petugas, dan user (user hanya untuk lihat & booking slot)
     Route::middleware(['role:admin,petugas,user'])->group(function () {
         // Halaman peta parkir (Leaflet + image overlay)
@@ -240,6 +261,10 @@ Route::middleware(['auth'])->group(function () {
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
+        Route::get('/admin/users/{id}/scan-rfid', [\App\Http\Controllers\UserController::class, 'showScanPage'])
+            ->name('admin.users.scan-rfid');
+        Route::post('/admin/users/{id}/save-rfid', [\App\Http\Controllers\UserController::class, 'saveRfid'])
+            ->name('admin.users.save-rfid');
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);
         Route::post('area-parkir/{area}/create-layout', [\App\Http\Controllers\AreaParkirController::class, 'createLayout'])->name('area-parkir.create-layout');
         Route::resource('kendaraan', \App\Http\Controllers\KendaraanController::class);
@@ -262,13 +287,7 @@ Route::middleware(['auth'])->group(function () {
     // Transaksi: index & show untuk Admin dan Petugas (lihat riwayat tanpa edit/hapus)
     Route::middleware(['role:admin,petugas'])->group(function () {
         Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.index');
-        Route::get('/transaksi/create-check-in', function () {
-            $kendaraans = \App\Models\Kendaraan::orderBy('plat_nomor')->get();
-            $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
-            $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
-            $cameras = \App\Models\Camera::scanner()->orderBy('is_default', 'desc')->orderBy('id')->get();
-            return view('parkir.create', compact('kendaraans', 'tarifs', 'areas', 'cameras'));
-        })->name('transaksi.create-check-in');
+        Route::get('/transaksi/create-check-in', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create-check-in');
         Route::post('/transaksi/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
         Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])
             ->whereNumber('transaksi')
@@ -292,6 +311,45 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
+    });
+
+    // NFC: halaman scan (tampil untuk admin + petugas)
+    Route::middleware(['role:admin,petugas'])->group(function () {
+        Route::get('/nfc/scan', function () {
+            return view('nfc.scan');
+        })->name('nfc.scan');
+    });
+
+    // RFID: halaman scan operasional (tampil untuk admin + petugas)
+    Route::middleware(['role:admin,petugas'])->group(function () {
+        Route::get('/parkir/scan', [RfidParkingController::class, 'scanPage'])->name('parkir.scan');
+        Route::post('/api/parkir/scan-rfid', [RfidParkingController::class, 'scan'])
+            ->name('api.parkir.scan-rfid');
+    });
+
+    // RFID: identifikasi instan (tanpa transaksi) + kontrol akses berbasis kartu
+    Route::middleware(['role:admin,petugas'])->group(function () {
+        Route::get('/rfid/identify', [RfidIdentifyController::class, 'page'])->name('rfid.identify.page');
+        Route::post('/api/rfid/identify', [RfidIdentifyController::class, 'identify'])->name('api.rfid.identify');
+
+        Route::get('/rfid/access/scan', [RfidAccessController::class, 'scanPage'])->name('rfid.access.scan-page');
+        Route::post('/api/rfid/access/scan', [RfidAccessController::class, 'scan'])->name('api.rfid.access.scan');
+        Route::post('/rfid/access/clear', [RfidAccessController::class, 'clear'])->name('rfid.access.clear');
+
+        // Contoh proteksi fitur dengan kartu (scan dulu baru boleh akses)
+        Route::get('/rfid/access-demo', function () {
+            return view('rfid.access-demo', ['title' => 'RFID Access Demo']);
+        })->middleware('rfid.access');
+
+        // Contoh proteksi berbasis role user kartu (sesuaikan role yang Anda pakai)
+        Route::get('/rfid/access-demo-admin', function () {
+            return view('rfid.access-demo', ['title' => 'RFID Access Demo (Admin Card)']);
+        })->middleware('rfid.access:admin');
+    });
+
+    // NFC: halaman write (admin saja)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/nfc/admin/write', [NfcAdminController::class, 'index'])->name('nfc.admin.write');
     });
 
     // Pembayaran Midtrans & struk: bisa diakses user (hanya untuk transaksi miliknya) dan petugas

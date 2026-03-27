@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\ParkingMap;
 use App\Models\ParkingMapSlot;
 use App\Models\ParkingMapCamera;
 use App\Models\Transaksi;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\Auth;
 class ParkingSlotController extends Controller
 {
     /**
@@ -32,7 +31,7 @@ class ParkingSlotController extends Controller
         $summary = ['total' => 0, 'empty' => 0, 'occupied' => 0, 'reserved' => 0];
 
         if ($map) {
-            $currentUserId = Auth::id();
+            $currentUserId = Auth::user()?->id ?? null;
             $slotModels = ParkingMapSlot::where('parking_map_id', $map->id)
                 ->with(['areaParkir', 'camera'])
                 ->orderBy('code')
@@ -48,11 +47,10 @@ class ParkingSlotController extends Controller
                 $vehiclePlate = null;
                 $areaName = $slot->areaParkir?->nama_area ?? null;
                 $transaksiId = null;
-                $is_mine = false;
 
                 if (isset($activeBySlot[$slot->id])) {
                     $tx = $activeBySlot[$slot->id];
-                    $isMine = $currentUserId && (int)$tx['user_id'] === (int)$currentUserId;
+                    $isMine = $currentUserId && $tx['user_id'] === $currentUserId;
                     if ($tx['status'] === 'bookmarked') {
                         $status = $isMine ? 'reserved-by-me' : 'reserved';
                     } else {
@@ -60,13 +58,10 @@ class ParkingSlotController extends Controller
                     }
                     $vehiclePlate = $tx['vehicle_plate'] ?? null;
                     $transaksiId = $tx['transaksi_id'] ?? null;
-                    $is_mine = $isMine;
                 } elseif ($slot->area_parkir_id && isset($activeByArea[$slot->area_parkir_id])) {
                     $tx = $activeByArea[$slot->area_parkir_id];
-                    $isMine = $currentUserId && (int)$tx['user_id'] === (int)$currentUserId;
-                    $status = $tx['status'] === 'bookmarked' ? ($isMine ? 'reserved-by-me' : 'reserved') : 'occupied';
+                    $status = $tx['status'] === 'bookmarked' ? 'reserved' : 'occupied';
                     $vehiclePlate = $tx['vehicle_plate'] ?? null;
-                    $is_mine = $isMine;
                 }
 
                 $slots[] = [
@@ -84,7 +79,6 @@ class ParkingSlotController extends Controller
                     'meta' => $slot->meta,
                     'area_id' => $slot->area_parkir_id,
                     'transaksi_id' => $transaksiId,
-                    'is_mine' => $is_mine,
                 ];
 
                 $summary['total']++;
@@ -175,7 +169,6 @@ class ParkingSlotController extends Controller
             $byArea[$tx->id_area] = [
                 'status' => $tx->status,
                 'vehicle_plate' => $tx->kendaraan?->plat_nomor ?? null,
-                'user_id' => $tx->id_user,
             ];
         }
         return $byArea;
@@ -184,9 +177,9 @@ class ParkingSlotController extends Controller
     /** API: daftar slot untuk area (untuk dropdown form catat masuk). */
     public function slotsByArea(\App\Models\AreaParkir $area)
     {
-        $slots = ParkingMapSlot::where('area_parkir_id', $area->id_area)
+        $slots = ParkingMapSlot::forArea($area)
             ->orderBy('code')
-            ->get(['id', 'code', 'area_parkir_id']);
+            ->get(['id', 'code', 'area_parkir_id', 'parking_map_id']);
 
         $slotIds = $slots->pluck('id')->all();
         $occupiedSlotIds = [];

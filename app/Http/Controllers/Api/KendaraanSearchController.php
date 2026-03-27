@@ -40,8 +40,13 @@ class KendaraanSearchController extends Controller
             return response()->json(['found' => false, 'kendaraan' => null]);
         }
 
-        $platNormalized = strtoupper(str_replace(' ', '', $plat));
-        $kendaraan = Kendaraan::whereRaw('UPPER(REPLACE(plat_nomor, \' \', \'\')) = ?', [$platNormalized])->first();
+        $platNormalized = $this->normalizePlatNomor($plat);
+        $kendaraan = Kendaraan::query()
+            ->orderBy('id_kendaraan', 'desc')
+            ->get(['id_kendaraan', 'plat_nomor', 'jenis_kendaraan', 'warna', 'pemilik'])
+            ->first(function ($item) use ($platNormalized) {
+                return $this->normalizePlatNomor((string) $item->plat_nomor) === $platNormalized;
+            });
 
         return response()->json([
             'found' => $kendaraan !== null,
@@ -53,6 +58,11 @@ class KendaraanSearchController extends Controller
                 'pemilik' => $kendaraan->pemilik,
             ] : null,
         ]);
+    }
+
+    private function normalizePlatNomor(string $plat): string
+    {
+        return strtoupper(preg_replace('/[^A-Z0-9]/i', '', $plat) ?? '');
     }
 }
 

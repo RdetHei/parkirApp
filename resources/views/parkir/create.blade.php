@@ -1,22 +1,32 @@
 @extends('layouts.app')
 
-@section('title', 'Catat Kendaraan Masuk')
+@section('title', 'Check-In Vehicle')
+
+@php
+    $areaSlotUrlPlaceholder = route('api.areas.slots', ['area' => '999999999'], false);
+@endphp
 
 @section('content')
     @component('components.form-card', [
         'backUrl' => route('transaksi.parkir.index'),
-        'title' => 'Catat Kendaraan Masuk',
-        'description' => 'Scan atau input plat nomor. Kendaraan terdaftar akan auto-fill, kendaraan baru bisa didaftarkan langsung.',
-        'cardIcon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>',
-        'cardTitle' => 'Form Kendaraan Masuk',
-        'cardDescription' => 'Plat nomor terdaftar = auto-fill. Plat baru = isi data kendaraan.',
+        'title' => 'Vehicle Check-In',
+        'description' => 'Register vehicle entry using manual input or ANPR scanner.',
+        'cardIcon' => '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>',
+        'cardTitle' => 'Check-In Terminal',
+        'cardDescription' => 'Verify vehicle details and assign parking location.',
         'action' => route('transaksi.checkIn'),
         'method' => 'POST',
-        'submitText' => 'Catat Masuk'
+        'submitText' => 'Confirm Entry'
     ])
-        <div x-data="checkInForm()" x-init="init()">
-            <!-- Plate Scanner (kamera dari CRUD Kamera) -->
-            <div class="mb-6 pb-6 border-b border-gray-200">
+        <div x-data="checkInForm()" x-init="init()" class="space-y-8">
+            <!-- 1. Scanner Section -->
+            <div class="p-6 bg-slate-900/50 border border-white/5 rounded-2xl">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                    </div>
+                    <h3 class="text-xs font-bold text-white uppercase tracking-widest">ANPR Scanner <span class="text-slate-500 font-medium lowercase ml-1">(optional)</span></h3>
+                </div>
                 <x-plate-scanner
                     target-input-id="plat_nomor"
                     target-input-type="text"
@@ -24,288 +34,265 @@
                 />
             </div>
 
-            <!-- Plat Nomor Input -->
-            <div class="mb-4">
-                <label for="plat_nomor" class="block text-sm font-semibold text-gray-700 mb-2">Plat Nomor <span class="text-red-500">*</span></label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-                    </div>
+            <!-- 2. Primary Identification -->
+            <div class="space-y-4">
+                <label for="plat_nomor" class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+                    License Plate <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative group">
                     <input type="text"
+                           name="plat_nomor"
                            id="plat_nomor"
                            x-model="platNomor"
-                           @input.debounce.300ms="checkPlat()"
-                           placeholder="Contoh: B 1234 XYZ"
-                           class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                           autocomplete="off">
+                           @input.debounce.400ms="searchVehicle()"
+                           placeholder="B 1234 XYZ"
+                           class="block w-full px-6 py-5 bg-slate-900/80 border-2 border-white/5 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all uppercase font-bold text-3xl tracking-widest text-white placeholder:text-slate-800 placeholder:font-bold"
+                           autocomplete="off"
+                           required>
+                    <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                        <template x-if="isSearching">
+                            <svg class="animate-spin h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </template>
+                        <template x-if="!isSearching && vehicleFound">
+                            <div class="w-8 h-8 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </template>
+                    </div>
                 </div>
-                <p x-show="isChecking" x-cloak class="mt-1 text-sm text-blue-600">Memeriksa...</p>
-                <p x-show="vehicleFound && !isChecking" x-cloak class="mt-1 text-sm text-green-600">
-                    <span x-text="'✓ Kendaraan terdaftar: ' + (selectedVehicle ? selectedVehicle.jenis_kendaraan + ' (' + (selectedVehicle.pemilik || 'Tanpa pemilik') + ')' : '')"></span>
-                </p>
-                <p x-show="!vehicleFound && platNomor.length >= 2 && !isChecking" x-cloak class="mt-1 text-sm text-amber-600">
-                    Kendaraan belum terdaftar. Isi data di bawah.
-                </p>
+                
+                <!-- Status Indicators -->
+                <div class="min-h-[48px]">
+                    <template x-if="vehicleFound">
+                        <div class="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl flex items-center gap-4 animate-fade-in">
+                            <div class="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Registered Member</p>
+                                <p class="text-xs font-semibold text-slate-300" x-text="selectedVehicle.jenis_kendaraan + ' • ' + (selectedVehicle.pemilik || 'General Public')"></p>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="!vehicleFound && platNomor.length >= 3 && !isSearching">
+                        <div class="p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl flex items-center gap-4 animate-fade-in">
+                            <div class="w-8 h-8 bg-amber-500/10 rounded-lg flex items-center justify-center text-amber-500">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">New Vehicle</p>
+                                <p class="text-xs font-semibold text-slate-300">New record will be created automatically.</p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
 
-            <!-- Hidden: id_kendaraan (hanya dikirim saat kendaraan terdaftar) -->
-            <input type="hidden" :name="vehicleFound ? 'id_kendaraan' : ''" :value="selectedVehicle ? selectedVehicle.id_kendaraan : ''">
-
-            <!-- Hidden: vehicle_mode -->
-            <input type="hidden" name="vehicle_mode" :value="vehicleFound ? 'existing' : 'new'">
-
-            <!-- Section: Kendaraan Baru (hanya tampil jika plat tidak terdaftar) -->
-            <div x-show="!vehicleFound && platNomor.length >= 2"
-                 x-cloak
-                 x-transition
-                 class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <h4 class="text-sm font-bold text-amber-800 mb-3">Data Kendaraan Baru</h4>
-                <input type="hidden" :name="vehicleFound ? '' : 'plat_nomor'" :value="platNomor">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="jenis_kendaraan" class="block text-sm font-semibold text-gray-700 mb-1">Jenis Kendaraan <span class="text-red-500">*</span></label>
-                        <select name="jenis_kendaraan" id="jenis_kendaraan"
-                                :required="!vehicleFound"
-                                x-ref="jenisKendaraan"
-                                @change="autoSelectTarif()"
-                                class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                            <option value="">-- Pilih --</option>
-                            @foreach($tarifs as $t)
-                                <option value="{{ $t->jenis_kendaraan }}">{{ $t->jenis_kendaraan }}</option>
+            <!-- 3. Dynamic Registration Fields -->
+            <div x-show="!vehicleFound && platNomor.length >= 3" x-cloak x-transition class="p-6 bg-slate-900/30 border border-white/5 rounded-2xl space-y-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Registration Details</h4>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Type <span class="text-rose-500">*</span></label>
+                        <select name="jenis_kendaraan" 
+                                x-model="jenisKendaraan" 
+                                @change="syncTarifByJenis()" 
+                                class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
+                            <option value="">Select Type</option>
+                            @foreach($tarifs->pluck('jenis_kendaraan')->unique() as $jk)
+                                <option value="{{ $jk }}">{{ $jk }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div>
-                        <label for="warna" class="block text-sm font-semibold text-gray-700 mb-1">Warna (Opsional)</label>
-                        <input type="text" name="warna" id="warna" placeholder="Contoh: Hitam"
-                               class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                               value="{{ old('warna') }}">
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Color</label>
+                        <input type="text" name="warna" placeholder="e.g. Black" class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
                     </div>
-                    <div class="md:col-span-2">
-                        <label for="pemilik" class="block text-sm font-semibold text-gray-700 mb-1">Pemilik (Opsional)</label>
-                        <input type="text" name="pemilik" id="pemilik" placeholder="Nama pemilik kendaraan"
-                               class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                               value="{{ old('pemilik') }}">
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Owner Name</label>
+                        <input type="text" name="pemilik" placeholder="e.g. John Doe" class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
                     </div>
                 </div>
             </div>
 
-            <!-- Tarif -->
-            <div class="mb-4">
-                <label for="id_tarif" class="block text-sm font-semibold text-gray-700 mb-2">Tarif <span class="text-red-500">*</span></label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <select name="id_tarif" id="id_tarif" required
-                            x-ref="idTarif"
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('id_tarif') border-red-500 @enderror">
-                        <option value="">-- Pilih Tarif --</option>
+            <!-- 4. Logistics & Assignment -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Tariff -->
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Tariff Plan <span class="text-rose-500">*</span></label>
+                    <select name="id_tarif" 
+                            x-model="idTarif" 
+                            required 
+                            class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
+                        <option value="">Select Plan</option>
                         @foreach($tarifs as $t)
-                            <option value="{{ $t->id_tarif }}" data-jenis="{{ $t->jenis_kendaraan }}" {{ old('id_tarif') == $t->id_tarif ? 'selected' : '' }}>
-                                {{ $t->jenis_kendaraan }} — Rp {{ number_format($t->tarif_perjam, 0, ',', '.') }}/jam
+                            <option value="{{ $t->id_tarif }}" data-jenis="{{ $t->jenis_kendaraan }}">
+                                {{ $t->jenis_kendaraan }} (Rp {{ number_format($t->tarif_perjam, 0, ',', '.') }}/h)
                             </option>
                         @endforeach
                     </select>
                 </div>
-                @error('id_tarif')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-            </div>
 
-            <!-- Area Parkir -->
-            <div class="mb-4">
-                <label for="id_area" class="block text-sm font-semibold text-gray-700 mb-2">Area Parkir <span class="text-red-500">*</span></label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </div>
-                    <select name="id_area" id="id_area" required
-                            @change="loadSlots($event.target.value)"
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('id_area') border-red-500 @enderror">
-                        <option value="">-- Pilih Area --</option>
+                <!-- Area -->
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Parking Area <span class="text-rose-500">*</span></label>
+                    <select name="id_area" 
+                            x-model="idArea" 
+                            @change="filterSlots()" 
+                            required 
+                            class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
+                        <option value="">Select Area</option>
                         @foreach($areas as $a)
-                            <option value="{{ $a->id_area }}" {{ old('id_area') == $a->id_area ? 'selected' : '' }}>
-                                {{ $a->nama_area }} (Kapasitas: {{ $a->kapasitas ?? '-' }})
-                            </option>
+                            <option value="{{ $a->id_area }}">{{ $a->nama_area }}</option>
                         @endforeach
                     </select>
                 </div>
-                @error('id_area')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-            </div>
 
-            <!-- Slot Parkir (opsional) -->
-            <div class="mb-4">
-                <label for="parking_map_slot_id" class="block text-sm font-semibold text-gray-700 mb-2">Slot Parkir (Opsional)</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"></path></svg>
-                    </div>
-                    <select name="parking_map_slot_id" id="parking_map_slot_id"
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('parking_map_slot_id') border-red-500 @enderror">
-                        <option value="">— Pilih slot (opsional) —</option>
-                        <template x-for="s in slotOptions" :key="s.id">
-                            <option :value="s.id" :disabled="s.occupied" x-text="s.code + (s.occupied ? ' (Terisi)' : '')"></option>
+                <!-- Slot -->
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Slot</label>
+                    <div class="relative">
+                        <select name="parking_map_slot_id" 
+                                x-model="idSlot" 
+                                :disabled="!idArea || loadingSlots"
+                                class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                            <option value="">Optional Slot</option>
+                            <template x-for="s in filteredSlots" :key="s.id">
+                                <option :value="s.id" :disabled="s.occupied"
+                                        x-text="s.code + (s.occupied ? ' (Occupied)' : '')"></option>
+                            </template>
+                        </select>
+                        <template x-if="loadingSlots">
+                            <div class="absolute right-10 top-1/2 -translate-y-1/2">
+                                <svg class="animate-spin h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </div>
                         </template>
-                    </select>
-                    <span x-show="loadingSlots" x-cloak class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Memuat...</span>
+                    </div>
                 </div>
-                @error('parking_map_slot_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
 
-            <!-- Catatan -->
-            <div class="mb-4">
-                <label for="catatan" class="block text-sm font-semibold text-gray-700 mb-2">Catatan (Opsional)</label>
-                <textarea name="catatan" id="catatan" rows="3" placeholder="Tambahkan catatan jika perlu"
-                          class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('catatan') border-red-500 @enderror">{{ old('catatan') }}</textarea>
-                @error('catatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            <!-- 5. Additional Notes -->
+            <div class="space-y-2">
+                <label for="catatan" class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Additional Notes</label>
+                <textarea name="catatan" id="catatan" rows="2" placeholder="e.g. Helmet storage, cargo details, etc." class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"></textarea>
             </div>
 
-            <!-- Validasi sebelum submit -->
-            <div x-show="showSubmitError" x-cloak class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                <span x-text="submitError"></span>
+            <!-- Live Validation Error -->
+            <div x-show="errorMessage" x-cloak class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold rounded-xl flex items-center gap-3 animate-fade-in">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                <span x-text="errorMessage"></span>
             </div>
         </div>
     @endcomponent
-
-    <script>
-        function checkInForm() {
-            const tarifs = @json($tarifs);
-
-            return {
-                platNomor: '{{ old('plat_nomor', '') }}',
-                selectedVehicle: null,
-                vehicleFound: false,
-                isChecking: false,
-                showSubmitError: false,
-                submitError: '',
-                csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                slotOptions: [],
-                loadingSlots: false,
-
-                init() {
-                    if (this.platNomor.length >= 2) {
-                        this.checkPlat();
-                    }
-                    // Restore old values for validation errors
-                    @if(old('vehicle_mode') === 'new')
-                        this.vehicleFound = false;
-                        this.selectedVehicle = null;
-                    @elseif(old('id_kendaraan'))
-                        this.vehicleFound = true;
-                        this.selectedVehicle = { id_kendaraan: '{{ old('id_kendaraan') }}', jenis_kendaraan: '', pemilik: '' };
-                    @endif
-                    const areaId = document.getElementById('id_area')?.value;
-                    if (areaId) {
-                        this.loadSlots(areaId);
-                    }
-                    // Attach form submit validation
-                    const form = this.$el.closest('form');
-                    if (form) {
-                        form.addEventListener('submit', (e) => this.validateSubmit(e));
-                    }
-                },
-
-                async loadSlots(areaId) {
-                    const select = document.getElementById('parking_map_slot_id');
-                    if (!select) return;
-                    this.slotOptions = [];
-                    if (!areaId) {
-                        select.value = '';
-                        return;
-                    }
-                    this.loadingSlots = true;
-                    try {
-                        const url = `{{ route('api.areas.slots', ['area' => '__ID__']) }}`.replace('__ID__', areaId);
-                        const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
-                        const data = await res.json();
-                        this.slotOptions = Array.isArray(data) ? data : [];
-                        const oldSlot = '{{ old('parking_map_slot_id') }}';
-                        select.value = oldSlot && this.slotOptions.some(s => String(s.id) === oldSlot) ? oldSlot : '';
-                    } catch (e) {
-                        console.error(e);
-                    } finally {
-                        this.loadingSlots = false;
-                    }
-                },
-
-                async checkPlat() {
-                    const plat = this.platNomor.trim();
-                    if (plat.length < 2) {
-                        this.vehicleFound = false;
-                        this.selectedVehicle = null;
-                        return;
-                    }
-
-                    this.isChecking = true;
-                    this.vehicleFound = false;
-                    this.selectedVehicle = null;
-
-                    try {
-                        const res = await fetch(`{{ route('api.kendaraan.check-plat') }}?plat=${encodeURIComponent(plat)}`, {
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        });
-                        const data = await res.json();
-
-                        if (data.found && data.kendaraan) {
-                            this.vehicleFound = true;
-                            this.selectedVehicle = data.kendaraan;
-                            this.autoSelectTarifByJenis(data.kendaraan.jenis_kendaraan);
-                        } else {
-                            this.vehicleFound = false;
-                            this.selectedVehicle = null;
-                        }
-                    } catch (e) {
-                        console.error(e);
-                    } finally {
-                        this.isChecking = false;
-                    }
-                },
-
-                autoSelectTarif() {
-                    const jenisSelect = this.$refs.jenisKendaraan;
-                    const tarifSelect = this.$refs.idTarif;
-                    if (!jenisSelect || !tarifSelect) return;
-                    const jenis = jenisSelect.value;
-                    if (!jenis) return;
-                    for (let opt of tarifSelect.options) {
-                        if (opt.dataset.jenis === jenis) {
-                            tarifSelect.value = opt.value;
-                            break;
-                        }
-                    }
-                },
-
-                autoSelectTarifByJenis(jenis) {
-                    const tarifSelect = this.$refs.idTarif;
-                    if (!tarifSelect || !jenis) return;
-                    for (let opt of tarifSelect.options) {
-                        if (opt.dataset.jenis === jenis) {
-                            tarifSelect.value = opt.value;
-                            break;
-                        }
-                    }
-                },
-
-                validateSubmit(event) {
-                    const plat = this.platNomor.trim();
-                    if (plat.length < 2) {
-                        event.preventDefault();
-                        this.showSubmitError = true;
-                        this.submitError = 'Plat nomor minimal 2 karakter.';
-                        return;
-                    }
-                    if (!this.vehicleFound) {
-                        const jenisSelect = this.$refs.jenisKendaraan;
-                        if (jenisSelect && !jenisSelect.value) {
-                            event.preventDefault();
-                            this.showSubmitError = true;
-                            this.submitError = 'Pilih jenis kendaraan untuk kendaraan baru.';
-                            return;
-                        }
-                    }
-                    this.showSubmitError = false;
-                }
-            };
-        }
-    </script>
 @endsection
+
+@push('styles')
+<style>
+    [x-cloak] { display: none !important; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+    function checkInForm() {
+        return {
+            platNomor: '{{ old('plat_nomor', '') }}',
+            isSearching: false,
+            vehicleFound: false,
+            selectedVehicle: null,
+            
+            jenisKendaraan: '',
+            idTarif: '{{ old('id_tarif', '') }}',
+            idArea: '{{ old('id_area', '') }}',
+            idSlot: '{{ old('parking_map_slot_id', '') }}',
+            
+            allSlots: @json($slots ?? []),
+            filteredSlots: [],
+            loadingSlots: false,
+            slotsLoadError: '',
+            errorMessage: '',
+            
+            slotsUrlTemplate: '{{ $areaSlotUrlPlaceholder }}',
+
+            init() {
+                if (this.platNomor.length >= 3) this.searchVehicle();
+                if (this.idArea) this.filterSlots();
+            },
+
+            async searchVehicle() {
+                const plat = this.platNomor.trim().toUpperCase();
+                if (plat.length < 3) {
+                    this.resetVehicleState();
+                    return;
+                }
+                
+                this.isSearching = true;
+                try {
+                    const response = await fetch(`/api/vehicles/search?plat_nomor=${plat}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.vehicleFound = true;
+                        this.selectedVehicle = data.vehicle;
+                        this.jenisKendaraan = data.vehicle.jenis_kendaraan;
+                        this.syncTarifByJenis();
+                    } else {
+                        this.resetVehicleState();
+                    }
+                } catch (e) {
+                    console.error('Search error:', e);
+                } finally {
+                    this.isSearching = false;
+                }
+            },
+
+            resetVehicleState() {
+                this.vehicleFound = false;
+                this.selectedVehicle = null;
+            },
+
+            syncTarifByJenis() {
+                if (!this.jenisKendaraan) return;
+                const selectTarif = document.querySelector('select[name="id_tarif"]');
+                const options = Array.from(selectTarif.options);
+                const match = options.find(opt => opt.dataset.jenis === this.jenisKendaraan);
+                if (match) this.idTarif = match.value;
+            },
+
+            async filterSlots() {
+                if (!this.idArea) {
+                    this.filteredSlots = [];
+                    return;
+                }
+
+                this.loadingSlots = true;
+                this.slotsLoadError = '';
+
+                try {
+                    const url = this.slotsUrlTemplate.replace('999999999', this.idArea);
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Failed to load slots');
+                    
+                    const data = await response.json();
+                    this.filteredSlots = data;
+                    
+                    // Reset slot if current selected slot is not in the new list
+                    if (this.idSlot && !this.filteredSlots.find(s => s.id == this.idSlot)) {
+                        this.idSlot = '';
+                    }
+                } catch (e) {
+                    this.slotsLoadError = 'Could not sync slots with server.';
+                    console.error(e);
+                } finally {
+                    this.loadingSlots = false;
+                }
+            }
+        }
+    }
+</script>
+@endpush

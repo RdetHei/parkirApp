@@ -1,7 +1,7 @@
 import requests
 import json
 import os
-from .config import PLATE_RECOGNIZER_TOKEN, LARAVEL_API_URL, OCR_CONFIDENCE_THRESHOLD
+from config import PLATE_RECOGNIZER_TOKEN, LARAVEL_API_URL, OCR_CONFIDENCE_THRESHOLD
 
 def scan_plate_with_api(image_path):
     """

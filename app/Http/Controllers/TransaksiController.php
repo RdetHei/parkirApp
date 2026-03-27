@@ -18,147 +18,114 @@ class TransaksiController extends Controller
 
     /**
      * Menangani proses kendaraan masuk (check-in).
-     * Mendukung kendaraan terdaftar (id_kendaraan) atau kendaraan baru (plat_nomor + jenis_kendaraan).
-     * Menggunakan transaction untuk mencegah race condition
+     * Input manual plat + tarif + area cukup; scan kamera opsional.
+     * Plat dicocokkan di server (normalisasi sama seperti API) agar tetap jalan walau JS/field tersembunyi bermasalah.
      */
     public function checkIn(Request $request)
     {
-        // Validasi: either id_kendaraan (terdaftar) atau plat_nomor + jenis_kendaraan (baru)
-        $isNewVehicle = $request->filled('vehicle_mode') && $request->vehicle_mode === 'new';
+        // Debug: Log request data
+        \Illuminate\Support\Facades\Log::info('CheckIn Request:', $request->all());
 
-        if ($isNewVehicle) {
-            $request->validate([
-                'plat_nomor' => 'required|string|max:15',
-                'jenis_kendaraan' => 'required|string|max:20',
-                'warna' => 'nullable|string|max:20',
-                'pemilik' => 'nullable|string|max:100',
-                'id_tarif' => 'required|exists:tb_tarif,id_tarif',
-                'id_area' => 'required|exists:tb_area_parkir,id_area',
-                'parking_map_slot_id' => 'nullable|exists:tb_parking_map_slots,id',
-                'catatan' => 'nullable|string|max:255',
-            ]);
-            $platNormalized = $this->normalizePlatNomor($request->plat_nomor);
-            if (Kendaraan::whereRaw('UPPER(REPLACE(plat_nomor, \' \', \'\')) = ?', [$platNormalized])->exists()) {
-                return back()->withInput()->with('error', 'Plat nomor sudah terdaftar. Gunakan mode kendaraan terdaftar.');
+        $request->validate([
+            'plat_nomor' => 'required|string|max:15',
+            'id_tarif' => 'required|exists:tb_tarif,id_tarif',
+            'id_area' => 'required|exists:tb_area_parkir,id_area',
+        ], [
+            'plat_nomor.required' => 'Plat nomor wajib diisi.',
+            'id_tarif.required' => 'Tarif wajib dipilih.',
+            'id_area.required' => 'Area parkir wajib dipilih.',
+        ]);
+
+        $platNormalized = $this->normalizePlatNomor($request->plat_nomor);
+        
+        // Cek apakah kendaraan sudah ada di database
+        $kendaraan = $this->findKendaraanByNormalizedPlat($platNormalized);
+
+        if (!$kendaraan) {
+            // Jika belum ada, buat baru
+            $tarif = Tarif::findOrFail($request->id_tarif);
+            $jenis = $request->filled('jenis_kendaraan')
+                ? $request->jenis_kendaraan
+                : $tarif->jenis_kendaraan;
+
+            if (empty($jenis)) {
+                return back()->withInput()->with('error', 'Jenis kendaraan tidak valid. Silakan pilih jenis kendaraan.');
             }
-        } else {
-            $request->validate([
-                'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
-                'id_tarif' => 'required|exists:tb_tarif,id_tarif',
-                'id_area' => 'required|exists:tb_area_parkir,id_area',
-                'parking_map_slot_id' => 'nullable|exists:tb_parking_map_slots,id',
-                'catatan' => 'nullable|string|max:255',
+
+            $kendaraan = Kendaraan::create([
+                'plat_nomor' => $platNormalized,
+                'jenis_kendaraan' => $jenis,
+                'warna' => $request->warna,
+                'pemilik' => $request->pemilik,
+                'id_user' => Auth::id(),
             ]);
         }
 
+        $id_kendaraan = $kendaraan->id_kendaraan;
+
+        // Cek apakah kendaraan ini sudah ada di dalam (status masuk)
+        $isAlreadyIn = Transaksi::where('id_kendaraan', $id_kendaraan)
+            ->whereNull('waktu_keluar')
+            ->where('status', 'masuk')
+            ->exists();
+        
+        if ($isAlreadyIn) {
+            return back()->withInput()->with('error', 'Kendaraan dengan plat ' . $request->plat_nomor . ' sudah tercatat masuk dan belum keluar.');
+        }
+
+        // Cek Slot (jika diisi)
         if ($request->filled('parking_map_slot_id')) {
             $slot = \App\Models\ParkingMapSlot::find($request->parking_map_slot_id);
-            if (!$slot || (int) $slot->area_parkir_id !== (int) $request->id_area) {
-                return back()->withInput()->with('error', 'Slot parkir tidak valid untuk area yang dipilih.');
+            if (!$slot) {
+                return back()->withInput()->with('error', 'Slot parkir tidak ditemukan.');
             }
+
+            // Validasi apakah slot ini milik area yang dipilih
+            if ((int)$slot->effectiveAreaId() !== (int)$request->id_area) {
+                return back()->withInput()->with('error', 'Slot parkir ' . $slot->code . ' tidak tersedia untuk area yang dipilih.');
+            }
+
             $occupied = Transaksi::where('parking_map_slot_id', $slot->id)
                 ->whereNull('waktu_keluar')
                 ->where('status', 'masuk')
                 ->exists();
+
             if ($occupied) {
                 return back()->withInput()->with('error', 'Slot ' . $slot->code . ' sudah terisi.');
             }
         }
 
         try {
-            $transaksi = DB::transaction(function () use ($request, $isNewVehicle) {
+            $transaksi = DB::transaction(function () use ($request, $id_kendaraan) {
                 $area = AreaParkir::lockForUpdate()->findOrFail($request->id_area);
 
                 if ($area->terisi >= $area->kapasitas) {
-                    throw new \Exception('Kapasitas area parkir sudah penuh');
-                }
-
-                $id_kendaraan = $request->id_kendaraan;
-
-                if ($isNewVehicle) {
-                    $platNormalized = $this->normalizePlatNomor($request->plat_nomor);
-                    $kendaraan = Kendaraan::create([
-                        'plat_nomor' => $platNormalized,
-                        'jenis_kendaraan' => $request->jenis_kendaraan,
-                        'warna' => $request->warna,
-                        'pemilik' => $request->pemilik,
-                        'id_user' => null,
-                    ]);
-                    $id_kendaraan = $kendaraan->id_kendaraan;
+                    throw new \Exception('Kapasitas area ' . $area->nama_area . ' sudah penuh.');
                 }
 
                 $now = Carbon::now();
                 $slotId = $request->parking_map_slot_id ?: null;
 
-                // Jika ada booking (bookmarked) aktif untuk slot/area ini, gunakan transaksi tersebut (konversi menjadi masuk)
-                $tenMinutesAgo = Carbon::now()->subMinutes(10);
-                $bookmarkedTx = null;
-
-                if ($slotId) {
-                    $bookmarkedTx = Transaksi::lockForUpdate()
-                        ->where('status', 'bookmarked')
-                        ->whereNotNull('bookmarked_at')
-                        ->where('bookmarked_at', '>', $tenMinutesAgo)
-                        ->where('parking_map_slot_id', $slotId)
-                        ->first();
-                }
-
-                if (!$bookmarkedTx) {
-                    $bookmarkedTx = Transaksi::lockForUpdate()
-                        ->where('status', 'bookmarked')
-                        ->whereNotNull('bookmarked_at')
-                        ->where('bookmarked_at', '>', $tenMinutesAgo)
-                        ->where('id_area', $request->id_area)
-                        ->whereNull('parking_map_slot_id')
-                        ->first();
-                }
-
-                if ($bookmarkedTx) {
-                    $bookingUserName = $bookmarkedTx->user?->name;
-                    $bookingAt = $bookmarkedTx->bookmarked_at ? $bookmarkedTx->bookmarked_at->format('d/m/Y H:i') : null;
-                    $prefix = 'Booking';
-                    if ($bookingUserName) {
-                        $prefix .= ' oleh ' . $bookingUserName;
-                    }
-                    if ($bookingAt) {
-                        $prefix .= ' (' . $bookingAt . ')';
-                    }
-
-                    $bookmarkedTx->update([
-                        'id_kendaraan' => $id_kendaraan,
-                        'id_tarif' => $request->id_tarif,
-                        'id_area' => $request->id_area,
-                        'parking_map_slot_id' => $slotId,
-                        'id_user' => Auth::id(), // operator/petugas
-                        'waktu_masuk' => $now,
-                        'status' => 'masuk',
-                        'catatan' => trim($prefix . '. ' . ($request->catatan ?? $bookmarkedTx->catatan ?? '')),
-                        'bookmarked_at' => null,
-                    ]);
-
-                    $transaksi = $bookmarkedTx;
-                } else {
-                    $transaksi = Transaksi::create([
-                        'id_kendaraan' => $id_kendaraan,
-                        'id_tarif' => $request->id_tarif,
-                        'id_area' => $request->id_area,
-                        'parking_map_slot_id' => $slotId,
-                        'id_user' => Auth::id(),
-                        'waktu_masuk' => $now,
-                        'status' => 'masuk',
-                        'catatan' => $request->catatan,
-                    ]);
-                }
+                // Buat transaksi
+                $transaksi = Transaksi::create([
+                    'id_kendaraan' => $id_kendaraan,
+                    'id_tarif' => $request->id_tarif,
+                    'id_area' => $request->id_area,
+                    'parking_map_slot_id' => $slotId,
+                    'id_user' => Auth::id(),
+                    'waktu_masuk' => $now,
+                    'status' => 'masuk',
+                    'catatan' => $request->catatan,
+                ]);
 
                 $area->increment('terisi');
-
                 return $transaksi;
             });
 
             return redirect()->route('transaksi.parkir.index')
-                ->with('success', 'Kendaraan berhasil dicatat masuk parkir. ID Transaksi: ' . $transaksi->id_parkir);
+                ->with('success', 'Berhasil! Kendaraan ' . $request->plat_nomor . ' tercatat masuk.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal mencatat transaksi: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal: ' . $e->getMessage());
         }
     }
 
@@ -272,9 +239,28 @@ class TransaksiController extends Controller
     {
         $kendaraans = Kendaraan::orderBy('plat_nomor')->get();
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
-        $users = User::orderBy('name')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
-        return view('transaksi.create', compact('kendaraans','tarifs','users','areas'));
+        $cameras = \App\Models\Camera::scanner()->orderBy('is_default', 'desc')->orderBy('id')->get();
+        
+        // Fallback UI: slot + id_area efektif (langsung di slot atau lewat peta area)
+        $slots = \App\Models\ParkingMapSlot::with('parkingMap')
+            ->orderBy('code')
+            ->get()
+            ->map(function ($s) {
+                $occupied = Transaksi::where('parking_map_slot_id', $s->id)
+                    ->whereNull('waktu_keluar')
+                    ->where('status', 'masuk')
+                    ->exists();
+
+                return [
+                    'id' => $s->id,
+                    'code' => $s->code,
+                    'id_area' => $s->effectiveAreaId(),
+                    'occupied' => $occupied,
+                ];
+            });
+
+        return view('parkir.create', compact('kendaraans', 'tarifs', 'areas', 'cameras', 'slots'));
     }
 
     public function show($id)
@@ -320,10 +306,24 @@ class TransaksiController extends Controller
     }
 
     /**
-     * Normalisasi plat nomor: uppercase, hapus spasi
+     * Normalisasi plat: huruf besar, hanya A–Z dan 0–9 (spasi/tanda diabaikan).
      */
     private function normalizePlatNomor(string $plat): string
     {
-        return strtoupper(str_replace(' ', '', trim($plat)));
+        return strtoupper(preg_replace('/[^A-Z0-9]/i', '', trim($plat)) ?? '');
+    }
+
+    private function findKendaraanByNormalizedPlat(string $normalized): ?Kendaraan
+    {
+        if ($normalized === '') {
+            return null;
+        }
+
+        return Kendaraan::query()
+            ->orderByDesc('id_kendaraan')
+            ->get(['id_kendaraan', 'plat_nomor'])
+            ->first(function (Kendaraan $k) use ($normalized) {
+                return $this->normalizePlatNomor((string) $k->plat_nomor) === $normalized;
+            });
     }
 }

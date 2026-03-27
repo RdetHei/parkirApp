@@ -48,7 +48,7 @@ class DashboardController extends Controller
         $revenueByHour = [];
         for ($h = 0; $h < 24; $h++) {
             $revenueByHour[$h] = Pembayaran::where('status', 'berhasil')
-                ->whereHour('waktu_pembayaran', $h)
+                ->whereRaw('HOUR(waktu_pembayaran) = ?', [$h])
                 ->sum('nominal');
         }
 

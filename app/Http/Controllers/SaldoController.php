@@ -46,6 +46,9 @@ class SaldoController extends Controller
         try {
             // 1. Potong Saldo User
             $user->saldo -= $amount;
+            if (array_key_exists('balance', $user->getAttributes())) {
+                $user->balance = (float) ($user->balance ?? 0) - $amount;
+            }
             $user->save();
 
             // 2. Catat Riwayat Saldo
@@ -95,6 +98,9 @@ class SaldoController extends Controller
         DB::beginTransaction();
         try {
             $user->saldo += $amount;
+            if (array_key_exists('balance', $user->getAttributes())) {
+                $user->balance = (float) ($user->balance ?? 0) + $amount;
+            }
             $user->save();
 
             SaldoHistory::create([

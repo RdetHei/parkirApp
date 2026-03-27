@@ -75,17 +75,17 @@
         $headerTitle = 'Profil Saya';
     }
 @endphp
-<header class="h-16 bg-white/80 backdrop-blur-md border-b border-zinc-100 sticky top-0 z-40">
+<header class="h-16 bg-zinc-950/50 backdrop-blur-md border-b border-white/5 sticky top-0 z-40">
     <div class="h-16 w-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-3 min-w-0">
-            <h1 class="text-xl font-bold text-zinc-900 tracking-tight truncate">{{ $headerTitle }}</h1>
+            <h1 class="text-xs font-bold text-white uppercase tracking-[0.3em] truncate">{{ $headerTitle }}</h1>
         </div>
 
         <div class="flex items-center gap-4">
             @if($addButton)
                 <a href="{{ $addButton['route'] }}"
-                   class="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-zinc-200 transition-all active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-zinc-100 text-black text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all active:scale-95">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     <span>{{ $addButton['label'] }}</span>

@@ -19,7 +19,23 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
-<body class="bg-[#fafafa]" data-sidebar="expanded">
+<body class="bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white" data-sidebar="expanded">
+    <!-- Background Accents -->
+    <div class="fixed inset-0 pro-grid opacity-20 pointer-events-none z-0"></div>
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-emerald-500/5 blur-[120px] pointer-events-none z-0"></div>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .pro-grid {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+    </style>
         {{-- Layout wrapper: sidebar + main content --}}
         <div class="min-h-screen flex">
             @include('components.sidebar')

@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "anpr": "python anpr/detection.py"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.1.18",

@@ -5,20 +5,22 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class UserTableSeeder extends Seeder
+class AccountsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Bersihkan data lama
-        User::query()->delete();
+        // Reset akun agar hasil seed deterministik.
+        // `tb_user` memakai SoftDeletes, jadi pakai forceDelete supaya benar-benar hilang.
+        // Dengan cascade FK, record terkait (mis. tb_transaksi, tb_kendaraan) juga akan ikut terhapus.
+        User::withTrashed()->forceDelete();
 
-        // Data sesuai dump parkir.sql
         User::insert([
             [
                 'id' => 1,
                 'name' => 'Test User',
                 'email' => 'test@example.com',
                 'email_verified_at' => '2026-02-20 04:12:55',
+                // Password hash (sesuai seeder lama)
                 'password' => '$2y$12$/0ab1dF7IT27SE6j6.sUEurzN9EnGYIECD9oVE0yrABCxzCotHl4.',
                 'role' => 'user',
                 'saldo' => 500000,

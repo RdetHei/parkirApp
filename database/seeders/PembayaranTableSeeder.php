@@ -10,7 +10,8 @@ class PembayaranTableSeeder extends Seeder
 {
     public function run(): void
     {
-        Pembayaran::query()->delete();
+        // SoftDeletes: pakai forceDelete agar seeding ulang tidak bentrok PK.
+        Pembayaran::withTrashed()->forceDelete();
 
         Pembayaran::insert([
             [

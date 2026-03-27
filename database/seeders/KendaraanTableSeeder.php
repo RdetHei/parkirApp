@@ -9,7 +9,8 @@ class KendaraanTableSeeder extends Seeder
 {
     public function run(): void
     {
-        Kendaraan::query()->delete();
+        // SoftDeletes: pakai forceDelete agar seeding ulang tidak bentrok PK.
+        Kendaraan::withTrashed()->forceDelete();
 
         Kendaraan::insert([
             [

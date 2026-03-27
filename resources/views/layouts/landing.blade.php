@@ -15,7 +15,15 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
     </head>
-    <body>
+    <body class="bg-emerald-950 text-emerald-50 antialiased selection:bg-amber-400 selection:text-black">
+        <!-- Batik Overlay -->
+        <div class="fixed inset-0 bg-batik opacity-[0.03] pointer-events-none z-0"></div>
+
+        <style>
+            .bg-batik {
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50L0 0M50 50L100 0M50 50L100 100M50 50L0 100' stroke='%23fbbf24' stroke-width='1' fill='none'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23fbbf24'/%3E%3C/svg%3E");
+            }
+        </style>
         {{-- Kita masukkan header di sini agar semua halaman punya header yang sama --}}
         @include('components.header')
 

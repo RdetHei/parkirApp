@@ -3,13 +3,23 @@
 namespace Database\Seeders;
 
 use App\Models\Transaksi;
+use App\Models\ParkingMapSlot;
 use Illuminate\Database\Seeder;
 
 class TransaksiTableSeeder extends Seeder
 {
     public function run(): void
     {
-        Transaksi::query()->delete();
+        // SoftDeletes: pakai forceDelete agar PK bisa di-seed ulang.
+        Transaksi::withTrashed()->forceDelete();
+
+        // Ambil ID slot berdasarkan code agar FK stabil meski auto-increment berubah.
+        $slotA1 = ParkingMapSlot::where('code', 'A1')->value('id');
+        $slotA2 = ParkingMapSlot::where('code', 'A2')->value('id');
+        $slotA3 = ParkingMapSlot::where('code', 'A3')->value('id');
+
+        // Jika slot belum ada, biarkan null supaya FK tidak gagal (lebih aman untuk dev).
+        // (Namun seharusnya slot A1/A2/A3 ada dari ParkingSlotTableSeeder.)
 
         // Insert awal tanpa relasi ke pembayaran untuk menghindari masalah FK
         Transaksi::insert([
@@ -29,7 +39,7 @@ class TransaksiTableSeeder extends Seeder
                 'midtrans_order_id' => 'TRX-101',
                 'id_user' => 1,
                 'id_area' => 1,
-                'parking_map_slot_id' => 1, // A1
+                'parking_map_slot_id' => $slotA1,
                 'created_at' => now()->subDays(2),
                 'updated_at' => now()->subDay(),
                 'deleted_at' => null,
@@ -50,7 +60,7 @@ class TransaksiTableSeeder extends Seeder
                 'midtrans_order_id' => null,
                 'id_user' => 1,
                 'id_area' => 1,
-                'parking_map_slot_id' => 2, // A2
+                'parking_map_slot_id' => $slotA2,
                 'created_at' => now()->subHours(5),
                 'updated_at' => now()->subHours(5),
                 'deleted_at' => null,
@@ -71,7 +81,7 @@ class TransaksiTableSeeder extends Seeder
                 'midtrans_order_id' => null,
                 'id_user' => 1,
                 'id_area' => 1,
-                'parking_map_slot_id' => 3, // A3
+                'parking_map_slot_id' => $slotA3,
                 'created_at' => now()->subHours(2),
                 'updated_at' => now()->subHours(2),
                 'deleted_at' => null,
