@@ -1,141 +1,139 @@
 @extends('layouts.app')
 
-@section('title','Area Parkir')
+@section('title','Parking Areas')
 
 @section('content')
-<div class="p-4 sm:p-6 lg:p-8">
+<div class="p-8 relative z-10">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div>
+            <div class="flex items-center gap-3 mb-3">
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
+                    Infrastructure Console
+                </span>
+            </div>
+            <h1 class="text-4xl font-bold tracking-tight text-white">Parking <span class="text-emerald-500">Zones</span></h1>
+            <p class="text-slate-400 text-sm mt-2">Manage physical parking locations and capacity limits.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="{{ route('area-parkir.create') }}" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Create New Zone
+            </a>
+        </div>
+    </div>
 
     <!-- Success Alert -->
     @if(session('success'))
-        <div class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
-            <div class="flex items-start gap-3">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                </div>
-                <button type="button" onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 text-green-600 hover:text-green-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+        <div class="mb-8 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4 animate-fade-in">
+            <div class="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
+            <p class="text-sm font-bold text-emerald-500 uppercase tracking-widest">{{ session('success') }}</p>
         </div>
     @endif
 
-    <!-- Card Container -->
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-        <!-- Card Header -->
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-gray-900">Daftar Area Parkir</h2>
-                <span class="text-sm text-gray-500">{{ $areas->total() }} area</span>
-            </div>
+    <!-- Main Data Table -->
+    <div class="card-pro !p-0 overflow-hidden shadow-2xl">
+        <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <h2 class="text-sm font-bold text-white uppercase tracking-widest">Zone Inventory <span class="text-slate-500 ml-2 font-medium">({{ $areas->total() }} total)</span></h2>
         </div>
-
-        <!-- Table -->
-        @if($areas->count())
-        <table class="w-full table-auto divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Area</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kapasitas</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Terisi</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($areas as $area)
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-white/[0.01] text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        <th class="px-8 py-4">ID</th>
+                        <th class="px-8 py-4">Area Identity</th>
+                        <th class="px-8 py-4">Total Capacity</th>
+                        <th class="px-8 py-4">Current Load</th>
+                        <th class="px-8 py-4">Utilization</th>
+                        <th class="px-8 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    @forelse($areas as $area)
                         @php
                             $percentage = $area->kapasitas > 0 ? ($area->terisi / $area->kapasitas * 100) : 0;
-                            $statusColor = $percentage >= 80 ? 'bg-red-500' : ($percentage >= 60 ? 'bg-yellow-500' : 'bg-green-500');
-                            $statusText = $percentage >= 80 ? 'Penuh' : ($percentage >= 60 ? 'Hampir Penuh' : 'Tersedia');
-                            $statusBadge = $percentage >= 80 ? 'bg-red-100 text-red-800' : ($percentage >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800');
+                            $statusColor = $percentage >= 90 ? 'bg-rose-500' : ($percentage >= 70 ? 'bg-amber-500' : 'bg-emerald-500');
+                            $statusText = $percentage >= 90 ? 'Critical' : ($percentage >= 70 ? 'High' : 'Normal');
+                            $statusBadge = $percentage >= 90 ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : ($percentage >= 70 ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20');
                         @endphp
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm">
-                                <span class="text-sm font-semibold text-gray-900">#{{ $area->id_area }}</span>
+                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                            <td class="px-8 py-5">
+                                <span class="text-[10px] font-mono font-bold text-emerald-500/80">#{{ str_pad($area->id_area, 3, '0', STR_PAD_LEFT) }}</span>
                             </td>
-                            <td class="px-6 py-4 text-sm">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-md">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-emerald-500 group-hover:border-emerald-500/30 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-semibold text-gray-900">{{ $area->nama_area }}</p>
-                                        <p class="text-xs text-gray-500">Area ID: {{ $area->id_area }}</p>
+                                        <p class="text-sm font-bold text-white tracking-tight">{{ $area->nama_area }}</p>
+                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">System Identifier: AREA-{{ $area->id_area }}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm">
+                            <td class="px-8 py-5">
                                 <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
-                                    </svg>
-                                    <span class="text-sm font-semibold text-gray-900">{{ $area->kapasitas }}</span>
-                                    <span class="text-xs text-gray-500">slot</span>
+                                    <span class="text-sm font-bold text-white">{{ $area->kapasitas }}</span>
+                                    <span class="text-[10px] text-slate-500 font-bold uppercase">Slots</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm">
+                            <td class="px-8 py-5">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 {{ $statusColor }} rounded-full"></div>
-                                    <span class="text-sm font-semibold text-gray-900">{{ $area->terisi ?? 0 }}</span>
-                                    <span class="text-xs text-gray-500">kendaraan</span>
+                                    <div class="w-1.5 h-1.5 {{ $statusColor }} rounded-full animate-pulse"></div>
+                                    <span class="text-sm font-bold text-white">{{ $area->terisi ?? 0 }}</span>
+                                    <span class="text-[10px] text-slate-500 font-bold uppercase">Occupied</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm">
-                                <div class="space-y-2">
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="{{ $statusColor }} h-2 rounded-full transition-all" style="width: {{ $percentage }}%"></div>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $statusBadge }}">
+                            <td class="px-8 py-5">
+                                <div class="w-32">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase border {{ $statusBadge }}">
                                             {{ $statusText }}
                                         </span>
-                                        <span class="text-xs font-semibold text-gray-600">{{ number_format($percentage, 0) }}%</span>
+                                        <span class="text-[10px] font-bold text-slate-400">{{ number_format($percentage, 0) }}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
+                                        <div class="{{ $statusColor }} h-1 rounded-full transition-all duration-1000" style="width: {{ $percentage }}%"></div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm space-x-2">
-                                <div class="flex items-center gap-2">
+                            <td class="px-8 py-5 text-right space-x-2">
+                                <div class="flex items-center justify-end gap-2">
                                     @if($area->parkingMap)
                                     <a href="{{ route('parking-maps.edit', $area->parkingMap) }}"
-                                       class="inline-flex items-center justify-center w-8 h-8 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors"
+                                       class="p-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-slate-950 rounded-lg border border-emerald-500/20 transition-all"
                                        title="Edit layout peta">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h2l3 7 4-4 4 8 3-6h2"></path></svg>
                                     </a>
                                     @else
                                     <form action="{{ route('area-parkir.create-layout', $area) }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-lg transition-colors" title="Buat layout peta">
+                                        <button type="submit" class="p-2 bg-slate-800 hover:bg-emerald-500 text-slate-500 hover:text-slate-950 rounded-lg border border-white/5 transition-all" title="Buat layout peta">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                                         </button>
                                     </form>
                                     @endif
-                                    <!-- Edit Button -->
+                                    
                                     <a href="{{ route('area-parkir.edit', $area) }}"
-                                       class="inline-flex items-center justify-center w-8 h-8 bg-yellow-50 hover:bg-yellow-100 text-yellow-600 rounded-lg transition-colors"
-                                       title="Edit">
+                                       class="p-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 rounded-lg border border-amber-500/20 transition-all"
+                                       title="Edit Details">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
 
-                                    <!-- Delete Button -->
-                                    <form action="{{ route('area-parkir.destroy', $area) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus area parkir ini?')">
+                                    <form action="{{ route('area-parkir.destroy', $area) }}" method="POST" class="inline" onsubmit="return confirm('Archive this zone? This action cannot be undone.')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                                                title="Hapus">
+                                                class="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
+                                                title="Archive Zone">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
@@ -144,16 +142,26 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-8 py-24 text-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-20 h-20 bg-slate-900 border border-white/5 rounded-[2rem] flex items-center justify-center text-slate-700 mb-6">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-white mb-2">No zones defined</h3>
+                                    <p class="text-slate-500 text-sm max-w-xs mx-auto">Create your first parking area to start monitoring capacity.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
-        </table>
-
-        <div class="px-6 py-4 border-t bg-gray-50">
-            {{ $areas->links() }}
+            </table>
         </div>
-        @else
-        <div class="px-6 py-8 text-center text-gray-500">
-            <p class="text-lg">Tidak ada area parkir</p>
+
+        @if($areas->hasPages())
+        <div class="px-8 py-6 border-t border-white/5 bg-white/[0.01]">
+            {{ $areas->links() }}
         </div>
         @endif
     </div>

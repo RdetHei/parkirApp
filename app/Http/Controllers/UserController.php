@@ -27,7 +27,7 @@ class UserController extends Controller
         return $this->storeUser($request);
     }
 
-    // Simpan user lalu arahkan ke halaman scan RFID
+    // Simpan user
     public function storeUser(Request $request)
     {
         $data = $request->validate([
@@ -42,8 +42,8 @@ class UserController extends Controller
         $user = User::create($data);
 
         return redirect()
-            ->route('admin.users.scan-rfid', $user->id)
-            ->with('success', 'User dibuat. Silakan scan kartu untuk mendaftarkan RFID.');
+            ->route('users.index')
+            ->with('success', 'User berhasil dibuat.');
     }
 
     public function show($id)
@@ -87,44 +87,6 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted.');
-    }
-
-    // GET: /admin/users/{id}/scan-rfid
-    public function showScanPage($id)
-    {
-        $user = User::query()->findOrFail($id);
-        $title = 'Scan RFID';
-
-        return view('users.scan-rfid', compact('title', 'user'));
-    }
-
-    // POST (AJAX): simpan UID ke tb_user.rfid_uid
-    public function saveRfid(Request $request, $id)
-    {
-        $user = User::query()->findOrFail($id);
-
-        $data = $request->validate([
-            'rfid_uid' => [
-                'required',
-                'string',
-                'max:128',
-                'regex:/^[0-9A-Za-z]+$/',
-                // Unique di tb_user, kecuali untuk user yang sedang diedit ini.
-                'unique:tb_user,rfid_uid,' . $user->id . ',id',
-            ],
-        ], [
-            'rfid_uid.unique' => 'UID RFID ini sudah terdaftar untuk user lain.',
-        ]);
-
-        $user->update([
-            'rfid_uid' => $data['rfid_uid'],
-        ]);
-
-        return response()->json([
-            'ok' => true,
-            'message' => 'RFID berhasil didaftarkan.',
-            'redirect' => route('users.show', $user->id),
-        ]);
     }
 }
 

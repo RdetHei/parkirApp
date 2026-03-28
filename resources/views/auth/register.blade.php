@@ -17,11 +17,18 @@
             background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 32px 32px;
         }
+
+        .bg-batik {
+            background-image: url("{{ asset('images/batik-pattern.svg') }}");
+            background-size: 560px 560px;
+            background-repeat: repeat;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white flex items-center justify-center p-6 relative overflow-hidden">
     <!-- Grid Overlay -->
     <div class="fixed inset-0 auth-grid pointer-events-none z-0"></div>
+    <div class="fixed inset-0 bg-batik opacity-[0.035] pointer-events-none z-0"></div>
     
     <!-- Background Glow -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
@@ -31,7 +38,7 @@
         <div class="text-center mb-12">
             <a href="/" class="inline-flex items-center space-x-3 group">
                 <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                    <img src="{{ asset('images/neston.png') }}" alt="N" class="w-6 h-6 invert">
+                    <img src="{{ asset('images/neston-batik.svg') }}" alt="N" class="w-6 h-6">
                 </div>
                 <span class="text-2xl font-bold tracking-tight text-white uppercase">NESTON</span>
             </a>
@@ -140,9 +147,14 @@
                 <!-- Submit -->
                 <button
                     type="submit"
-                    class="btn-pro-primary w-full !py-4 shadow-xl"
+                    id="submitBtn"
+                    class="group relative w-full flex justify-center py-4 px-4 bg-emerald-500 text-slate-950 text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-emerald-400 transition-all duration-300 shadow-xl shadow-emerald-500/20 active:scale-[0.98]"
                 >
-                    Create Free Account
+                    <span id="buttonText">Create Free Account</span>
+                    <svg id="spinner" class="hidden animate-spin ml-3 h-4 w-4 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                 </button>
             </form>
 

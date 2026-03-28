@@ -7,6 +7,7 @@
 
     <title>@yield('title', $title ?? 'Neston')</title>
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston-batik.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
 
@@ -27,13 +28,37 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
+        :root {
+            --bg-main: #020617;
+            --bg-panel: #0f172a;
+            --border-pro: rgba(255, 255, 255, 0.08);
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-main) !important;
+            color: #f8fafc !important;
         }
 
         .pro-grid {
             background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
             background-size: 32px 32px;
+        }
+
+        /* Robust Dark Mode Overrides */
+        .card-pro {
+            background-color: var(--bg-panel) !important;
+            border: 1px solid var(--border-pro) !important;
+        }
+
+        aside#app-sidebar {
+            background-color: var(--bg-main) !important;
+            border-right: 1px solid var(--border-pro) !important;
+        }
+
+        header {
+            background-color: rgba(2, 6, 23, 0.8) !important;
+            border-bottom: 1px solid var(--border-pro) !important;
         }
     </style>
         {{-- Layout wrapper: sidebar + main content --}}

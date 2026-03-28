@@ -11,8 +11,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
+use App\Traits\LogsActivity;
+
 class PaymentController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Pastikan user yang login boleh mengakses transaksi ini.
      * - Admin/petugas/owner: bebas
@@ -330,6 +334,17 @@ class PaymentController extends Controller
                 'status_pembayaran' => 'berhasil',
                 'id_pembayaran' => $pembayaran->id_pembayaran,
             ]);
+
+            $this->logActivity(
+                "Pembayaran Midtrans berhasil untuk transaksi #{$id_parkir}",
+                'transaksi',
+                $pembayaran,
+                [
+                    'order_id' => $order_id,
+                    'nominal' => $gross_amount,
+                    'payment_type' => $payment_type
+                ]
+            );
         });
     }
 

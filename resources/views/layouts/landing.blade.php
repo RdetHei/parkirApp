@@ -8,6 +8,7 @@
 
         {{-- Slot kosong untuk judul, dengan judul default 'Parkir App' --}}
         <title>NESTON</title>
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston-batik.svg') }}">
         <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
         <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
 
@@ -21,7 +22,9 @@
 
         <style>
             .bg-batik {
-                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50L0 0M50 50L100 0M50 50L100 100M50 50L0 100' stroke='%23fbbf24' stroke-width='1' fill='none'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23fbbf24'/%3E%3C/svg%3E");
+                background-image: url("{{ asset('images/batik-pattern.svg') }}");
+                background-size: 560px 560px;
+                background-repeat: repeat;
             }
         </style>
         {{-- Kita masukkan header di sini agar semua halaman punya header yang sama --}}

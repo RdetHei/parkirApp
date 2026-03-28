@@ -1,111 +1,103 @@
 @extends('layouts.app')
 
-@section('title','Tarif')
+@section('title','Tariff Rules')
 
 @section('content')
-<div class="p-4 sm:p-6 lg:p-8">
+<div class="p-8 relative z-10">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div>
+            <div class="flex items-center gap-3 mb-3">
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
+                    Financial Policy
+                </span>
+            </div>
+            <h1 class="text-4xl font-bold tracking-tight text-white">Tariff <span class="text-emerald-500">Structure</span></h1>
+            <p class="text-slate-400 text-sm mt-2">Define hourly rates based on vehicle classification.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="{{ route('tarif.create') }}" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Add New Rule
+            </a>
+        </div>
+    </div>
 
     <!-- Success Alert -->
     @if(session('success'))
-        <div class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
-            <div class="flex items-start gap-3">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                </div>
-                <button type="button" onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 text-green-600 hover:text-green-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+        <div class="mb-8 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4 animate-fade-in">
+            <div class="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-500">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
+            <p class="text-sm font-bold text-emerald-500 uppercase tracking-widest">{{ session('success') }}</p>
         </div>
     @endif
 
-    <!-- Card Container -->
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-        <!-- Card Header -->
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-gray-900">Daftar Tarif</h2>
-                <span class="text-sm text-gray-500">{{ $items->total() }} tarif</span>
-            </div>
+    <!-- Main Data Table -->
+    <div class="card-pro !p-0 overflow-hidden shadow-2xl">
+        <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <h2 class="text-sm font-bold text-white uppercase tracking-widest">Active Policies <span class="text-slate-500 ml-2 font-medium">({{ $items->total() }} total)</span></h2>
         </div>
-
-        <!-- Table -->
-        @if($items->count())
-        <table class="w-full table-auto divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Kendaraan</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarif Per Jam</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($items as $item)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm">
-                                <span class="text-sm font-semibold text-gray-900">#{{ $item->id_tarif }}</span>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-white/[0.01] text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        <th class="px-8 py-4">ID</th>
+                        <th class="px-8 py-4">Classification</th>
+                        <th class="px-8 py-4">Hourly Rate</th>
+                        <th class="px-8 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    @forelse($items as $item)
+                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                            <td class="px-8 py-5">
+                                <span class="text-[10px] font-mono font-bold text-emerald-500/80">#{{ str_pad($item->id_tarif, 3, '0', STR_PAD_LEFT) }}</span>
                             </td>
-                            <td class="px-6 py-4 text-sm">
-                                <div class="flex items-center gap-3">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-4">
                                     @php
                                         $vehicleIcons = [
-                                            'motor' => ['icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'bg' => 'bg-blue-100', 'text' => 'text-blue-600'],
-                                            'mobil' => ['icon' => 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2', 'bg' => 'bg-green-100', 'text' => 'text-green-600'],
-                                            'lainnya' => ['icon' => 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z', 'bg' => 'bg-purple-100', 'text' => 'text-purple-600'],
+                                            'motor' => ['icon' => 'M13 10V3L4 14h7v7l9-11h-7z', 'bg' => 'bg-emerald-500/10', 'text' => 'text-emerald-500'],
+                                            'mobil' => ['icon' => 'M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2', 'bg' => 'bg-indigo-500/10', 'text' => 'text-indigo-500'],
+                                            'lainnya' => ['icon' => 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z', 'bg' => 'bg-slate-800', 'text' => 'text-slate-400'],
                                         ];
                                         $vehicle = $vehicleIcons[$item->jenis_kendaraan] ?? $vehicleIcons['lainnya'];
                                     @endphp
-                                    <div class="w-10 h-10 {{ $vehicle['bg'] }} rounded-xl flex items-center justify-center">
+                                    <div class="w-10 h-10 {{ $vehicle['bg'] }} rounded-xl flex items-center justify-center border border-white/5 group-hover:border-emerald-500/30 transition-colors">
                                         <svg class="w-5 h-5 {{ $vehicle['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $vehicle['icon'] }}"></path>
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-semibold text-gray-900">{{ ucfirst($item->jenis_kendaraan) }}</p>
-                                        @if($item->jenis_kendaraan == 'motor')
-                                            <p class="text-xs text-gray-500">Sepeda Motor</p>
-                                        @elseif($item->jenis_kendaraan == 'mobil')
-                                            <p class="text-xs text-gray-500">Kendaraan Roda 4</p>
-                                        @else
-                                            <p class="text-xs text-gray-500">Kendaraan Lainnya</p>
-                                        @endif
+                                        <p class="text-sm font-bold text-white tracking-tight">{{ ucfirst($item->jenis_kendaraan) }}</p>
+                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{{ $item->jenis_kendaraan == 'motor' ? 'Two-Wheeled' : ($item->jenis_kendaraan == 'mobil' ? 'Passenger Car' : 'Special Vehicle') }}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm">
-                                <div class="flex items-center gap-2">
-                                    <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg px-3 py-2">
-                                        <p class="text-lg font-bold text-green-900">Rp {{ number_format($item->tarif_perjam, 0, ',', '.') }}</p>
-                                        <p class="text-xs text-green-700">per jam</p>
-                                    </div>
+                            <td class="px-8 py-5">
+                                <div class="inline-flex flex-col">
+                                    <span class="text-lg font-bold text-emerald-500">Rp {{ number_format($item->tarif_perjam, 0, ',', '.') }}</span>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Base rate per hour</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm space-x-2">
-                                <div class="flex items-center gap-2">
-                                    <!-- Edit Button -->
+                            <td class="px-8 py-5 text-right space-x-2">
+                                <div class="flex items-center justify-end gap-2">
                                     <a href="{{ route('tarif.edit', $item) }}"
-                                       class="inline-flex items-center justify-center w-8 h-8 bg-yellow-50 hover:bg-yellow-100 text-yellow-600 rounded-lg transition-colors"
-                                       title="Edit">
+                                       class="p-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 rounded-lg border border-amber-500/20 transition-all"
+                                       title="Edit Tariff">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
 
-                                    <!-- Delete Button -->
-                                    <form action="{{ route('tarif.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus tarif ini?')">
+                                    <form action="{{ route('tarif.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Remove this tariff rule? This will affect future calculations.')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                                class="inline-flex items-center justify-center w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
-                                                title="Hapus">
+                                                class="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
+                                                title="Delete Rule">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
@@ -114,18 +106,29 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-8 py-24 text-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-20 h-20 bg-slate-900 border border-white/5 rounded-[2rem] flex items-center justify-center text-slate-700 mb-6">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-white mb-2">No tariffs defined</h3>
+                                    <p class="text-slate-500 text-sm max-w-xs mx-auto">Set up your pricing rules to start generating revenue from parking.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
-        </table>
-
-        <div class="px-6 py-4 border-t bg-gray-50">
-            {{ $items->links() }}
+            </table>
         </div>
-        @else
-        <div class="px-6 py-8 text-center text-gray-500">
-            <p class="text-lg">Tidak ada tarif parkir</p>
+
+        @if($items->hasPages())
+        <div class="px-8 py-6 border-t border-white/5 bg-white/[0.01]">
+            {{ $items->links() }}
         </div>
         @endif
     </div>
 </div>
 @endsection
+

@@ -9,8 +9,12 @@ use App\Models\Camera;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use App\Traits\LogsActivity;
+
 class ParkingMapSlotController extends Controller
 {
+    use LogsActivity;
+
     public function index($parking_map_id)
     {
         $parkingMap = ParkingMap::findOrFail($parking_map_id);
@@ -47,6 +51,9 @@ class ParkingMapSlotController extends Controller
         ]);
 
         $data['parking_map_id'] = $parkingMap->id;
+        if (empty($data['area_parkir_id']) && $parkingMap->area_parkir_id) {
+            $data['area_parkir_id'] = $parkingMap->area_parkir_id;
+        }
 
         $request->validate([
             'code' => [Rule::unique('tb_parking_map_slots', 'code')->where('parking_map_id', $parkingMap->id)],
@@ -54,7 +61,14 @@ class ParkingMapSlotController extends Controller
             'code.unique' => 'Kode slot ini sudah dipakai di peta ini.',
         ]);
 
-        ParkingMapSlot::create($data);
+        $slot = ParkingMapSlot::create($data);
+
+        $this->logActivity(
+            "Menambahkan slot parkir baru: {$slot->code} di peta {$parkingMap->name}",
+            'slot',
+            $slot,
+            $data
+        );
 
         return redirect()
             ->route('parking-maps.slots.index', $parkingMap)
@@ -86,6 +100,9 @@ class ParkingMapSlotController extends Controller
             'camera_id' => 'nullable|exists:tb_kamera,id',
             'notes' => 'nullable|string|max:255',
         ]);
+        if (empty($data['area_parkir_id']) && $parkingMap->area_parkir_id) {
+            $data['area_parkir_id'] = $parkingMap->area_parkir_id;
+        }
 
         $request->validate([
             'code' => [Rule::unique('tb_parking_map_slots', 'code')->where('parking_map_id', $parkingMap->id)->ignore($slot->id)],
@@ -93,7 +110,15 @@ class ParkingMapSlotController extends Controller
             'code.unique' => 'Kode slot ini sudah dipakai di peta ini.',
         ]);
 
+        $oldData = $slot->toArray();
         $slot->update($data);
+
+        $this->logActivity(
+            "Mengubah slot parkir: {$slot->code} di peta {$parkingMap->name}",
+            'slot',
+            $slot,
+            ['old' => $oldData, 'new' => $data]
+        );
 
         return redirect()
             ->route('parking-maps.slots.index', $parkingMap)
@@ -104,6 +129,12 @@ class ParkingMapSlotController extends Controller
     {
         $parkingMap = ParkingMap::findOrFail($parking_map_id);
         $slot = ParkingMapSlot::where('parking_map_id', $parkingMap->id)->findOrFail($id);
+        $this->logActivity(
+            "Menghapus slot parkir: {$slot->code} dari peta {$parkingMap->name}",
+            'slot',
+            $slot,
+            $slot->toArray()
+        );
         $slot->delete();
 
         return redirect()

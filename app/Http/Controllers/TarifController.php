@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Tarif;
 
+use App\Traits\LogsActivity;
+
 class TarifController extends Controller
 {
+    use LogsActivity;
+
     public function index()
     {
         $items = Tarif::orderBy('id_tarif','desc')->paginate(15);
@@ -27,7 +31,13 @@ class TarifController extends Controller
             'tarif_perjam' => 'required|numeric|min:0',
         ]);
 
-        Tarif::create($data);
+        $tarif = Tarif::create($data);
+        $this->logActivity(
+            "Menambahkan tarif baru: {$tarif->jenis_kendaraan} (Rp {$tarif->tarif_perjam}/jam)",
+            'config',
+            $tarif,
+            $data
+        );
         return redirect()->route('tarif.index')->with('success','Tarif added');
     }
 
@@ -45,7 +55,14 @@ class TarifController extends Controller
             'jenis_kendaraan' => 'required|in:motor,mobil,lainnya',
             'tarif_perjam' => 'required|numeric|min:0',
         ]);
+        $oldData = $item->toArray();
         $item->update($data);
+        $this->logActivity(
+            "Mengubah tarif: {$item->jenis_kendaraan}",
+            'config',
+            $item,
+            ['old' => $oldData, 'new' => $data]
+        );
         return redirect()->route('tarif.index')->with('success','Tarif updated');
     }
 
@@ -57,6 +74,13 @@ class TarifController extends Controller
         if ($tarif->transaksis()->exists()) {
             return redirect()->route('tarif.index')->with('error', 'Tarif tidak dapat dihapus karena masih digunakan dalam transaksi.');
         }
+
+        $this->logActivity(
+            "Menghapus tarif: {$tarif->jenis_kendaraan}",
+            'config',
+            $tarif,
+            $tarif->toArray()
+        );
 
         $tarif->delete();
 

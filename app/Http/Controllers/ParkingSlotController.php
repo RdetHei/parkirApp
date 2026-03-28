@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ParkingMap;
 use App\Models\ParkingMapSlot;
 use App\Models\ParkingMapCamera;
+use App\Models\ParkingSlotReservation;
 use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class ParkingSlotController extends Controller
 
         $slots = [];
         $cameras = [];
-        $summary = ['total' => 0, 'empty' => 0, 'occupied' => 0, 'reserved' => 0];
+        $summary = ['total' => 0, 'empty' => 0, 'occupied' => 0, 'reserved' => 0, 'unassigned' => 0];
 
         if ($map) {
             $currentUserId = Auth::user()?->id ?? null;
@@ -40,7 +41,20 @@ class ParkingSlotController extends Controller
             $slotIds = $slotModels->pluck('id')->all();
             $areaIds = $slotModels->pluck('area_parkir_id')->filter()->unique()->values()->all();
             $activeBySlot = $this->getActiveTransactionsBySlot($slotIds);
-            $activeByArea = $this->getActiveTransactionsByArea($areaIds);
+            $activeReservationsBySlot = $this->getActiveReservationsBySlot($slotIds);
+            if (!empty($areaIds)) {
+                $tenMinutesAgo = Carbon::now()->subMinutes(10);
+                $summary['unassigned'] = Transaksi::whereIn('id_area', $areaIds)
+                    ->whereNull('parking_map_slot_id')
+                    ->where(function ($q) use ($tenMinutesAgo) {
+                        $q->where(function ($q2) {
+                            $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                        })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                            $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                        });
+                    })
+                    ->count();
+            }
 
             foreach ($slotModels as $slot) {
                 $status = 'empty';
@@ -58,10 +72,12 @@ class ParkingSlotController extends Controller
                     }
                     $vehiclePlate = $tx['vehicle_plate'] ?? null;
                     $transaksiId = $tx['transaksi_id'] ?? null;
-                } elseif ($slot->area_parkir_id && isset($activeByArea[$slot->area_parkir_id])) {
-                    $tx = $activeByArea[$slot->area_parkir_id];
-                    $status = $tx['status'] === 'bookmarked' ? 'reserved' : 'occupied';
-                    $vehiclePlate = $tx['vehicle_plate'] ?? null;
+                } elseif (isset($activeReservationsBySlot[$slot->id])) {
+                    $rsv = $activeReservationsBySlot[$slot->id];
+                    $isMine = $currentUserId && $rsv['user_id'] === $currentUserId;
+                    $status = $isMine ? 'reserved-by-me' : 'reserved';
+                    $vehiclePlate = $rsv['vehicle_plate'] ?? null;
+                    $transaksiId = $rsv['reservation_id'] ?? null;
                 }
 
                 $slots[] = [
@@ -147,6 +163,28 @@ class ParkingSlotController extends Controller
         return $bySlot;
     }
 
+    private function getActiveReservationsBySlot(array $slotIds): array
+    {
+        if (empty($slotIds)) {
+            return [];
+        }
+
+        $reservations = ParkingSlotReservation::active()
+            ->whereIn('parking_map_slot_id', $slotIds)
+            ->with(['kendaraan'])
+            ->get();
+
+        $bySlot = [];
+        foreach ($reservations as $r) {
+            $bySlot[$r->parking_map_slot_id] = [
+                'user_id' => $r->id_user,
+                'vehicle_plate' => $r->kendaraan?->plat_nomor ?? null,
+                'reservation_id' => $r->id,
+            ];
+        }
+        return $bySlot;
+    }
+
     private function getActiveTransactionsByArea(array $areaIds): array
     {
         if (empty($areaIds)) {
@@ -182,20 +220,34 @@ class ParkingSlotController extends Controller
             ->get(['id', 'code', 'area_parkir_id', 'parking_map_id']);
 
         $slotIds = $slots->pluck('id')->all();
-        $occupiedSlotIds = [];
+        $blockedSlotIds = [];
         if (!empty($slotIds)) {
-            $occupiedSlotIds = Transaksi::whereIn('parking_map_slot_id', $slotIds)
-                ->whereNull('waktu_keluar')
-                ->where('status', 'masuk')
+            $tenMinutesAgo = Carbon::now()->subMinutes(10);
+            $txBlocked = Transaksi::whereIn('parking_map_slot_id', $slotIds)
+                ->whereNotNull('parking_map_slot_id')
+                ->where(function ($q) use ($tenMinutesAgo) {
+                    $q->where(function ($q2) {
+                        $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                    })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                        $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                    });
+                })
                 ->pluck('parking_map_slot_id')
                 ->all();
+
+            $rsvBlocked = ParkingSlotReservation::active()
+                ->whereIn('parking_map_slot_id', $slotIds)
+                ->pluck('parking_map_slot_id')
+                ->all();
+
+            $blockedSlotIds = array_values(array_unique(array_merge($txBlocked, $rsvBlocked)));
         }
 
-        $list = $slots->map(function ($s) use ($occupiedSlotIds) {
+        $list = $slots->map(function ($s) use ($blockedSlotIds) {
             return [
                 'id' => $s->id,
                 'code' => $s->code,
-                'occupied' => in_array($s->id, $occupiedSlotIds, true),
+                'occupied' => in_array($s->id, $blockedSlotIds, true),
             ];
         });
 

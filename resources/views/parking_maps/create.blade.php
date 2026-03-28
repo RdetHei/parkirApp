@@ -15,6 +15,20 @@
         'submitText' => 'Simpan'
     ])
         <div>
+            <label for="area_parkir_id" class="block text-sm font-semibold text-gray-700 mb-2">Area Parkir</label>
+            <select name="area_parkir_id" id="area_parkir_id"
+                    class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('area_parkir_id') border-red-500 @enderror">
+                <option value="">— Tidak ditautkan —</option>
+                @foreach($areas as $a)
+                    <option value="{{ $a->id_area }}" {{ old('area_parkir_id') == $a->id_area ? 'selected' : '' }}>
+                        {{ $a->nama_area }}
+                    </option>
+                @endforeach
+            </select>
+            @error('area_parkir_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+
+        <div>
             <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Nama Layout <span class="text-red-500">*</span></label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -87,4 +101,3 @@
         </div>
     @endcomponent
 @endsection
-

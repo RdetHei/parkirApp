@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AreaParkir;
+use App\Models\ParkingSlotReservation;
 use App\Models\Transaksi;
 use App\Models\ParkingMapSlot;
+use App\Models\Tarif;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth; // Import Auth facade
+use Illuminate\Support\Facades\DB;
 
 class ParkingMapController extends Controller
 {
@@ -86,7 +89,7 @@ class ParkingMapController extends Controller
 
         $request->validate([
             'id_kendaraan' => 'required|exists:tb_kendaraan,id_kendaraan',
-            'id_tarif' => 'required|exists:tb_tarif,id_tarif',
+            'id_tarif' => 'nullable|exists:tb_tarif,id_tarif',
             'parking_map_slot_id' => 'nullable|exists:tb_parking_map_slots,id',
             'slot_code' => 'nullable|string|max:50',
         ]);
@@ -97,75 +100,158 @@ class ParkingMapController extends Controller
             return response()->json(['message' => 'Kendaraan tidak valid untuk akun Anda.'], 403);
         }
 
-        // Optional: booking per slot (parking_map_slot_id) untuk integrasi dengan peta visual
+        $tarifId = $request->input('id_tarif');
+        if (!$tarifId) {
+            $tarif = Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->orderBy('id_tarif')->first();
+            if (!$tarif) {
+                return response()->json(['message' => 'Tarif tidak ditemukan untuk jenis kendaraan ini.'], 422);
+            }
+            $tarifId = $tarif->id_tarif;
+        }
+
         $slotId = $request->input('parking_map_slot_id');
         $slotCode = $request->input('slot_code');
-        $parkingMapSlotId = null;
 
-        if ($slotId) {
-            $slot = ParkingMapSlot::find($slotId);
-            if (!$slot || (int) $slot->area_parkir_id !== (int) $area->id_area) {
-                return response()->json(['message' => 'Slot tidak valid untuk area ini.'], 422);
+        $expiresAt = now()->addMinutes(10);
+        $reservedAt = now();
+
+        try {
+            $reservation = DB::transaction(function () use ($area, $kendaraan, $tarifId, $slotId, $slotCode, $reservedAt, $expiresAt) {
+                $userId = (int) Auth::id();
+
+                $existingMine = ParkingSlotReservation::active()
+                    ->where('id_user', $userId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existingMine) {
+                    throw new \Exception('Anda masih memiliki booking aktif. Silakan batalkan terlebih dahulu.');
+                }
+
+                $tenMinutesAgo = Carbon::now()->subMinutes(10);
+
+                if ($slotId) {
+                    $slot = ParkingMapSlot::with('parkingMap')->lockForUpdate()->findOrFail($slotId);
+                    if ((int) $slot->effectiveAreaId() !== (int) $area->id_area) {
+                        throw new \Exception('Slot tidak valid untuk area ini.');
+                    }
+                } else {
+                    $candidateSlots = ParkingMapSlot::forArea($area)
+                        ->orderBy('code')
+                        ->get(['id', 'code', 'area_parkir_id', 'parking_map_id']);
+
+                    $slotIds = $candidateSlots->pluck('id')->all();
+                    $blockedTx = [];
+                    if (!empty($slotIds)) {
+                        $blockedTx = Transaksi::whereIn('parking_map_slot_id', $slotIds)
+                            ->whereNotNull('parking_map_slot_id')
+                            ->where(function ($q) use ($tenMinutesAgo) {
+                                $q->where(function ($q2) {
+                                    $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                                })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                                    $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                                });
+                            })
+                            ->pluck('parking_map_slot_id')
+                            ->all();
+                    }
+
+                    $blockedRsv = ParkingSlotReservation::active()
+                        ->whereIn('parking_map_slot_id', $slotIds)
+                        ->pluck('parking_map_slot_id')
+                        ->all();
+
+                    $blocked = array_flip(array_unique(array_merge($blockedTx, $blockedRsv)));
+
+                    $picked = $candidateSlots->first(function ($s) use ($blocked) {
+                        return !isset($blocked[$s->id]);
+                    });
+
+                    if (!$picked) {
+                        throw new \Exception('Tidak ada slot tersedia di area ini.');
+                    }
+
+                    $slotId = $picked->id;
+                    $slotCode = $slotCode ?: $picked->code;
+                }
+
+                $existsOnSlot = ParkingSlotReservation::active()
+                    ->where('parking_map_slot_id', $slotId)
+                    ->lockForUpdate()
+                    ->exists();
+                if ($existsOnSlot) {
+                    throw new \Exception('Slot ini sudah dibooking.');
+                }
+
+                $occupied = Transaksi::where('parking_map_slot_id', $slotId)
+                    ->where(function ($q) use ($tenMinutesAgo) {
+                        $q->where(function ($q2) {
+                            $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                        })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                            $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                        });
+                    })
+                    ->exists();
+                if ($occupied) {
+                    throw new \Exception('Slot ini sedang terisi.');
+                }
+
+                return ParkingSlotReservation::create([
+                    'parking_map_slot_id' => $slotId,
+                    'id_area' => $area->id_area,
+                    'id_user' => $userId,
+                    'id_kendaraan' => $kendaraan->id_kendaraan,
+                    'id_tarif' => $tarifId,
+                    'reserved_at' => $reservedAt,
+                    'expires_at' => $expiresAt,
+                ]);
+            });
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Booking berhasil dibuat.', 'reservation' => $reservation], 200);
             }
-            $parkingMapSlotId = $slot->id;
+
+            return back()->with('success', 'Booking berhasil dibuat.');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 409);
+            }
+            return back()->with('error', $e->getMessage());
         }
-
-        // Check if area is actually empty (no active 'masuk' or unexpired 'bookmarked' transactions)
-        $existingActiveTransaction = Transaksi::where('id_area', $area->id_area)
-            ->where(function($query) {
-                $query->whereNull('waktu_keluar') // Active 'masuk'
-                      ->where('status', 'masuk');
-            })->orWhere(function($query) {
-                $query->where('status', 'bookmarked')
-                      ->where('bookmarked_at', '>', Carbon::now()->subMinutes(10)); // Unexpired bookmarked
-            })
-            ->first();
-
-        if ($existingActiveTransaction) {
-            return response()->json(['message' => 'Slot parkir ini sedang terisi atau sudah dibookmark.'], 409);
-        }
-
-        // Create a new Transaksi entry for bookmarking
-        $transaksi = Transaksi::create([
-            'id_kendaraan' => $request->id_kendaraan,
-            // Simpan waktu booking sebagai waktu_masuk (akan dioverwrite saat check-in)
-            'waktu_masuk' => Carbon::now(),
-            'waktu_keluar' => null,
-            'id_tarif' => $request->id_tarif,
-            'durasi_jam' => null,
-            'biaya_total' => 0,
-            'status' => 'bookmarked',
-            'catatan' => $slotCode ? ('Booking slot ' . $slotCode) : 'Slot dibookmark',
-            'id_user' => Auth::id(), // User who bookmarked
-            'id_area' => $area->id_area,
-            'parking_map_slot_id' => $parkingMapSlotId,
-            'status_pembayaran' => 'pending',
-            'id_pembayaran' => null,
-            'bookmarked_at' => Carbon::now(),
-        ]);
-        
-        // Optionally increment terisi for area, but only for 'masuk' status.
-        // For bookmarked, 'terisi' shouldn't necessarily increment.
-        // If 'terisi' should reflect bookmarked too, this logic needs adjustment.
-        // For now, it only counts actual parked vehicles.
-
-        return response()->json(['message' => 'Slot berhasil dibookmark.', 'transaksi' => $transaksi], 200);
     }
 
-    public function unbookmark($id_transaksi)
+    public function unbookmark(Request $request, $id_transaksi)
     {
-        $transaksi = Transaksi::where('id_parkir', $id_transaksi)
-                              ->where('status', 'bookmarked')
-                              ->where('id_user', Auth::id()) // Only allow user to unbookmark their own slot
-                              ->first();
+        $reservation = ParkingSlotReservation::where('id', $id_transaksi)
+            ->where('id_user', Auth::id())
+            ->first();
 
-        if (!$transaksi) {
-            return response()->json(['message' => 'Bookmark tidak ditemukan atau Anda tidak memiliki izin untuk membatalkannya.'], 404);
+        if ($reservation) {
+            $reservation->delete();
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Booking berhasil dibatalkan.'], 200);
+            }
+            return back()->with('success', 'Booking berhasil dibatalkan.');
         }
 
-        $transaksi->delete(); // Delete the temporary bookmark transaction
+        $transaksi = Transaksi::where('id_parkir', $id_transaksi)
+            ->where('status', 'bookmarked')
+            ->where('id_user', Auth::id())
+            ->first();
 
-        return response()->json(['message' => 'Bookmark berhasil dibatalkan.'], 200);
+        if (!$transaksi) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Bookmark tidak ditemukan atau Anda tidak memiliki izin untuk membatalkannya.'], 404);
+            }
+            return back()->with('error', 'Bookmark tidak ditemukan atau Anda tidak memiliki izin untuk membatalkannya.');
+        }
+
+        $transaksi->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Bookmark berhasil dibatalkan.'], 200);
+        }
+        return back()->with('success', 'Bookmark berhasil dibatalkan.');
     }
 
     // Method to display the SVG parking map view

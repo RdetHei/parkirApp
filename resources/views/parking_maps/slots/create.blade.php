@@ -185,7 +185,7 @@
                                     >
                                         <option value="">— Tidak dikaitkan —</option>
                                         @foreach($areas as $a)
-                                            <option value="{{ $a->id_area }}" {{ old('area_parkir_id') == $a->id_area ? 'selected' : '' }}>
+                                            <option value="{{ $a->id_area }}" {{ (string) old('area_parkir_id', $parkingMap->area_parkir_id) === (string) $a->id_area ? 'selected' : '' }}>
                                                 {{ $a->nama_area }}
                                             </option>
                                         @endforeach

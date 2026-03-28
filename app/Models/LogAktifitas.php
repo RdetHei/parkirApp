@@ -10,12 +10,19 @@ class LogAktifitas extends Model
     protected $primaryKey = 'id_log';
     protected $fillable = [
         'id_user',
+        'ip_address',
+        'user_agent',
         'aktivitas',
+        'tipe_aktivitas',
+        'model_type',
+        'model_id',
+        'metadata',
         'waktu_aktivitas',
     ];
 
     protected $casts = [
         'waktu_aktivitas' => 'datetime',
+        'metadata' => 'array',
     ];
 
     // Relationships

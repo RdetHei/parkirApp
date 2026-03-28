@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ParkingMap;
+use App\Models\AreaParkir;
 use App\Models\Camera;
 use Illuminate\Http\Request;
 
@@ -16,12 +17,14 @@ class ParkingMapController extends Controller
 
     public function create()
     {
-        return view('parking_maps.create');
+        $areas = AreaParkir::orderBy('nama_area')->get();
+        return view('parking_maps.create', compact('areas'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
+            'area_parkir_id' => 'required|exists:tb_area_parkir,id_area',
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:50|unique:tb_parking_maps,code',
             'image_path' => 'required|string|max:255',
@@ -46,7 +49,8 @@ class ParkingMapController extends Controller
         $item = ParkingMap::findOrFail($id);
         $item->load('mapCameras.camera');
         $cameras = Camera::orderBy('nama')->get();
-        return view('parking_maps.edit', compact('item', 'cameras'));
+        $areas = AreaParkir::orderBy('nama_area')->get();
+        return view('parking_maps.edit', compact('item', 'cameras', 'areas'));
     }
 
     public function update(Request $request, $id)
@@ -54,6 +58,7 @@ class ParkingMapController extends Controller
         $item = ParkingMap::findOrFail($id);
 
         $data = $request->validate([
+            'area_parkir_id' => 'required|exists:tb_area_parkir,id_area',
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:50|unique:tb_parking_maps,code,' . $item->id,
             'image_path' => 'required|string|max:255',
@@ -81,4 +86,3 @@ class ParkingMapController extends Controller
         return redirect()->route('parking-maps.index')->with('success', 'Peta parkir berhasil dihapus.');
     }
 }
-

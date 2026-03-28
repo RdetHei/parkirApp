@@ -7,8 +7,12 @@ use App\Models\LogAktifitas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Traits\LogsActivity;
+
 class LoginController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Display the login view.
      *
@@ -41,15 +45,11 @@ class LoginController extends Controller
 
             // Catat login ke log aktivitas (siapa yang login)
             $roleLabel = ucfirst($user->role ?? 'user');
-            $aktivitas = sprintf('Login ke sistem - %s (%s)', $user->name, $roleLabel);
-            if (strlen($aktivitas) > 100) {
-                $aktivitas = substr($aktivitas, 0, 97) . '...';
-            }
-            LogAktifitas::create([
-                'id_user' => $user->id,
-                'aktivitas' => $aktivitas,
-                'waktu_aktivitas' => now(),
-            ]);
+            $this->logActivity(
+                "Login ke sistem - {$user->name} ({$roleLabel})",
+                'auth',
+                $user
+            );
 
             switch ($user->role) {
                 case 'admin':
@@ -78,25 +78,21 @@ class LoginController extends Controller
     {
         $user = Auth::user();
 
+        // Catat logout ke log aktivitas (sebelum logout agar Auth::id() masih valid)
+        if ($user) {
+            $roleLabel = ucfirst($user->role ?? 'user');
+            $this->logActivity(
+                "Logout - {$user->name} ({$roleLabel})",
+                'auth',
+                $user
+            );
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
-
-        // Catat logout ke log aktivitas (setelah logout, pakai data user yang masih di memory)
-        if ($user) {
-            $roleLabel = ucfirst($user->role ?? 'user');
-            $aktivitas = sprintf('Logout - %s (%s)', $user->name, $roleLabel);
-            if (strlen($aktivitas) > 100) {
-                $aktivitas = substr($aktivitas, 0, 97) . '...';
-            }
-            LogAktifitas::create([
-                'id_user' => $user->id,
-                'aktivitas' => $aktivitas,
-                'waktu_aktivitas' => now(),
-            ]);
-        }
 
         return redirect('/');
     }

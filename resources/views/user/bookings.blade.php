@@ -87,8 +87,10 @@
 
                         <div class="mt-4">
                             @if($status === 'empty')
-                                <form method="POST" action="{{ route('user.bookings.book', $area->id_area) }}">
+                                <form method="POST" action="{{ route('user.bookings.book', $area->id_area) }}" class="booking-area-form">
                                     @csrf
+                                    <input type="hidden" name="id_kendaraan" value="">
+                                    <input type="hidden" name="id_tarif" value="">
                                     <button type="submit"
                                             class="w-full inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
                                         Booking area ini
@@ -189,7 +191,22 @@
             if (kendaraanSelect) {
                 kendaraanSelect.addEventListener('change', autoTarifFromJenis);
             }
+
+            document.querySelectorAll('form.booking-area-form').forEach(function (form) {
+                form.addEventListener('submit', function (e) {
+                    const kendaraanId = kendaraanSelect ? kendaraanSelect.value : '';
+                    const tarifId = tarifSelect ? tarifSelect.value : '';
+                    if (!kendaraanId) {
+                        e.preventDefault();
+                        alert('Pilih kendaraan terlebih dahulu sebelum booking.');
+                        return;
+                    }
+                    const kendaraanInput = form.querySelector('input[name="id_kendaraan"]');
+                    const tarifInput = form.querySelector('input[name="id_tarif"]');
+                    if (kendaraanInput) kendaraanInput.value = kendaraanId;
+                    if (tarifInput) tarifInput.value = tarifId || '';
+                });
+            });
         });
     </script>
 @endpush
-

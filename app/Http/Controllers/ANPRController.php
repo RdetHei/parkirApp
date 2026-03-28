@@ -15,8 +15,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+use App\Traits\LogsActivity;
+
 class ANPRController extends Controller
 {
+    use LogsActivity;
+
     public function handleDetection(Request $request)
     {
         $request->validate([
@@ -32,7 +36,7 @@ class ANPRController extends Controller
         try {
             $plateNumber = strtoupper(str_replace(' ', '', $request->plate));
             $confidence = $request->confidence;
-            
+
             // 1. Threshold check
             if ($confidence < 0.8) {
                 return response()->json(['error' => 'Confidence too low'], 422);
@@ -97,6 +101,13 @@ class ANPRController extends Controller
                 ]);
 
                 $defaultArea->increment('terisi');
+
+                $this->logActivity(
+                    "ANPR Detection (Entry): Kendaraan {$plateNumber} masuk",
+                    'transaksi',
+                    $transaksi,
+                    ['plate' => $plateNumber, 'confidence' => $confidence]
+                );
             } else {
                 // EXIT LOGIC
                 $statusAction = 'exit';
@@ -104,13 +115,20 @@ class ANPRController extends Controller
                     'waktu_keluar' => now(),
                     'status' => 'keluar',
                 ]);
-                
+
                 $activeTransaksi->durasi_jam = $activeTransaksi->durasi_jam; // Trigger accessor
                 $activeTransaksi->biaya_total = $activeTransaksi->biaya_total; // Trigger accessor
                 $activeTransaksi->save();
 
                 $activeTransaksi->area->decrement('terisi');
                 $transaksi = $activeTransaksi;
+
+                $this->logActivity(
+                    "ANPR Detection (Exit): Kendaraan {$plateNumber} keluar",
+                    'transaksi',
+                    $transaksi,
+                    ['plate' => $plateNumber, 'confidence' => $confidence]
+                );
             }
 
             // 4. Logging
@@ -282,6 +300,13 @@ class ANPRController extends Controller
 
                 // Update area occupancy
                 $defaultArea->increment('terisi');
+
+                $this->logActivity(
+                    "ANPR Scan (Entry): Kendaraan {$plateNumber} masuk",
+                    'transaksi',
+                    $transaksi,
+                    ['plate' => $plateNumber, 'confidence' => $confidence]
+                );
             } else {
                 // EXIT LOGIC
                 $statusAction = 'exit';
@@ -298,6 +323,13 @@ class ANPRController extends Controller
                 // Update area occupancy
                 $activeTransaksi->area->decrement('terisi');
                 $transaksi = $activeTransaksi;
+
+                $this->logActivity(
+                    "ANPR Scan (Exit): Kendaraan {$plateNumber} keluar",
+                    'transaksi',
+                    $transaksi,
+                    ['plate' => $plateNumber, 'confidence' => $confidence]
+                );
             }
 
             // 5. Save ANPR Scan log

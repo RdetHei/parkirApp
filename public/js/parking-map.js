@@ -200,8 +200,8 @@ if (!container) {
                             const tarifEl = document.getElementById('booking_tarif_id');
                             const kendaraanId = kendaraanEl ? kendaraanEl.value : '';
                             const tarifId = tarifEl ? tarifEl.value : '';
-                            if (!kendaraanId || !tarifId) {
-                                alert('Pilih kendaraan dan tarif terlebih dahulu sebelum booking.');
+                            if (!kendaraanId) {
+                                alert('Pilih kendaraan terlebih dahulu sebelum booking.');
                                 return;
                             }
                             const url = bookUrlTemplate.replace('AREA_ID_PLACEHOLDER', encodeURIComponent(slot.area_id));
@@ -214,7 +214,9 @@ if (!container) {
                                 body.append('slot_code', String(slot.code));
                             }
                             body.append('id_kendaraan', String(kendaraanId));
-                            body.append('id_tarif', String(tarifId));
+                            if (tarifId) {
+                                body.append('id_tarif', String(tarifId));
+                            }
                             await fetch(url, {
                                 method: 'POST',
                                 headers: {

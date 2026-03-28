@@ -6,8 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\AreaParkir;
 use App\Models\ParkingMap;
 
+use App\Traits\LogsActivity;
+
 class AreaParkirController extends Controller
 {
+    use LogsActivity;
+
     public function index()
     {
         $areas = AreaParkir::with('parkingMap')->orderBy('id_area', 'desc')->paginate(15);
@@ -29,6 +33,13 @@ class AreaParkirController extends Controller
         ]);
 
         $area = AreaParkir::create($data);
+
+        $this->logActivity(
+            "Menambahkan area parkir baru: {$area->nama_area}",
+            'config',
+            $area,
+            $data
+        );
 
         // Trigger: buat layout peta otomatis (1:1 dengan area)
         ParkingMap::create([
@@ -58,7 +69,15 @@ class AreaParkirController extends Controller
             'nama_area' => 'required|string|max:50|unique:tb_area_parkir,nama_area,' . $id . ',id_area',
             'kapasitas' => 'required|integer|min:1',
         ]);
+        $oldData = $area->toArray();
         $area->update($data);
+
+        $this->logActivity(
+            "Mengubah area parkir: {$area->nama_area}",
+            'config',
+            $area,
+            ['old' => $oldData, 'new' => $data]
+        );
 
         // Sinkron: nama layout peta ikut nama area
         if ($area->parkingMap) {
@@ -75,6 +94,13 @@ class AreaParkirController extends Controller
         if ($area->transaksis()->exists()) {
             return redirect()->route('area-parkir.index')->with('error', 'Area parkir tidak dapat dihapus karena masih digunakan dalam transaksi.');
         }
+
+        $this->logActivity(
+            "Menghapus area parkir: {$area->nama_area}",
+            'config',
+            $area,
+            $area->toArray()
+        );
 
         // Hapus area; layout peta terkait ikut terhapus (cascade)
         $area->delete();

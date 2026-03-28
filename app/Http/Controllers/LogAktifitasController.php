@@ -8,11 +8,36 @@ use App\Models\User;
 
 class LogAktifitasController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = LogAktifitas::with('user')->orderBy('id_log','desc')->paginate(15);
+        $query = LogAktifitas::with('user');
+
+        if ($request->filled('id_user')) {
+            $query->where('id_user', $request->id_user);
+        }
+
+        if ($request->filled('tipe_aktivitas')) {
+            $query->where('tipe_aktivitas', $request->tipe_aktivitas);
+        }
+
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('waktu_aktivitas', '>=', $request->tanggal_dari);
+        }
+
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('waktu_aktivitas', '<=', $request->tanggal_sampai);
+        }
+
+        if ($request->filled('q')) {
+            $query->where('aktivitas', 'like', '%' . $request->q . '%');
+        }
+
+        $items = $query->orderBy('waktu_aktivitas', 'desc')->paginate(15)->withQueryString();
+        $users = User::orderBy('name')->get();
+        $types = LogAktifitas::whereNotNull('tipe_aktivitas')->distinct()->pluck('tipe_aktivitas');
+        
         $title = 'Data Log Aktivitas';
-        return view('log_aktivitas.index', compact('items', 'title'));
+        return view('log_aktivitas.index', compact('items', 'title', 'users', 'types'));
     }
 
     public function create()

@@ -75,22 +75,30 @@
         $headerTitle = 'Profil Saya';
     }
 @endphp
-<header class="h-16 bg-zinc-950/50 backdrop-blur-md border-b border-white/5 sticky top-0 z-40">
-    <div class="h-16 w-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center gap-3 min-w-0">
-            <h1 class="text-xs font-bold text-white uppercase tracking-[0.3em] truncate">{{ $headerTitle }}</h1>
+<header class="h-20 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 transition-all duration-300">
+    <div class="h-full w-full flex items-center justify-between px-8">
+        <div class="flex items-center gap-4 min-w-0">
+            <div class="h-8 w-1 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+            <h1 class="text-xs font-bold text-white uppercase tracking-[0.4em] truncate">{{ $headerTitle }}</h1>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-6">
             @if($addButton)
                 <a href="{{ $addButton['route'] }}"
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-zinc-100 text-black text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all active:scale-95">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                   class="btn-pro-primary !py-2.5 !px-5 !text-[10px] !rounded-lg flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     <span>{{ $addButton['label'] }}</span>
                 </a>
             @endif
+
+            <div class="h-6 w-px bg-white/10 mx-2"></div>
+            
+            <button class="relative p-2 text-slate-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#020617]"></span>
+            </button>
         </div>
     </div>
 </header>

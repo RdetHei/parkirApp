@@ -10,8 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+use App\Traits\LogsActivity;
+
 class SaldoController extends Controller
 {
+    use LogsActivity;
+
     public function index()
     {
         $user = Auth::user();
@@ -76,6 +80,16 @@ class SaldoController extends Controller
                 'id_pembayaran' => $pembayaran->id_pembayaran,
             ]);
 
+            $this->logActivity(
+                "Pembayaran NestonPay berhasil untuk transaksi #{$id_parkir}",
+                'transaksi',
+                $pembayaran,
+                [
+                    'nominal' => $amount,
+                    'plat_nomor' => $transaksi->kendaraan->plat_nomor
+                ]
+            );
+
             DB::commit();
             return redirect()->route('payment.success', $transaksi->id_parkir)->with('success', 'Pembayaran menggunakan NestonPay berhasil!');
         } catch (\Exception $e) {
@@ -103,12 +117,19 @@ class SaldoController extends Controller
             }
             $user->save();
 
-            SaldoHistory::create([
+            $history = SaldoHistory::create([
                 'user_id' => $user->id,
                 'amount' => $amount,
                 'type' => 'topup',
                 'description' => 'Top Up Saldo NestonPay (Manual)',
             ]);
+
+            $this->logActivity(
+                "Topup saldo manual berhasil",
+                'transaksi',
+                $history,
+                ['nominal' => $amount]
+            );
 
             DB::commit();
             return redirect()->route('user.saldo.index')->with('success', 'Top Up sebesar Rp ' . number_format($amount, 0, ',', '.') . ' berhasil!');

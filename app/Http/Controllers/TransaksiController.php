@@ -12,8 +12,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use App\Traits\LogsActivity;
+
 class TransaksiController extends Controller
 {
+    use LogsActivity;
+
     // == ALUR UTAMA PARKIR ==
 
     /**
@@ -30,6 +34,7 @@ class TransaksiController extends Controller
             'plat_nomor' => 'required|string|max:15',
             'id_tarif' => 'required|exists:tb_tarif,id_tarif',
             'id_area' => 'required|exists:tb_area_parkir,id_area',
+            'parking_map_slot_id' => 'nullable|integer|exists:tb_parking_map_slots,id',
         ], [
             'plat_nomor.required' => 'Plat nomor wajib diisi.',
             'id_tarif.required' => 'Tarif wajib dipilih.',
@@ -73,28 +78,6 @@ class TransaksiController extends Controller
             return back()->withInput()->with('error', 'Kendaraan dengan plat ' . $request->plat_nomor . ' sudah tercatat masuk dan belum keluar.');
         }
 
-        // Cek Slot (jika diisi)
-        if ($request->filled('parking_map_slot_id')) {
-            $slot = \App\Models\ParkingMapSlot::find($request->parking_map_slot_id);
-            if (!$slot) {
-                return back()->withInput()->with('error', 'Slot parkir tidak ditemukan.');
-            }
-
-            // Validasi apakah slot ini milik area yang dipilih
-            if ((int)$slot->effectiveAreaId() !== (int)$request->id_area) {
-                return back()->withInput()->with('error', 'Slot parkir ' . $slot->code . ' tidak tersedia untuk area yang dipilih.');
-            }
-
-            $occupied = Transaksi::where('parking_map_slot_id', $slot->id)
-                ->whereNull('waktu_keluar')
-                ->where('status', 'masuk')
-                ->exists();
-
-            if ($occupied) {
-                return back()->withInput()->with('error', 'Slot ' . $slot->code . ' sudah terisi.');
-            }
-        }
-
         try {
             $transaksi = DB::transaction(function () use ($request, $id_kendaraan) {
                 $area = AreaParkir::lockForUpdate()->findOrFail($request->id_area);
@@ -104,7 +87,44 @@ class TransaksiController extends Controller
                 }
 
                 $now = Carbon::now();
-                $slotId = $request->parking_map_slot_id ?: null;
+                $slotId = $request->filled('parking_map_slot_id') ? (int) $request->parking_map_slot_id : null;
+
+                if ($slotId) {
+                    $slot = \App\Models\ParkingMapSlot::with('parkingMap')
+                        ->lockForUpdate()
+                        ->findOrFail($slotId);
+
+                    if ((int) $slot->effectiveAreaId() !== (int) $request->id_area) {
+                        throw new \Exception('Slot parkir ' . $slot->code . ' tidak tersedia untuk area yang dipilih.');
+                    }
+
+                    $tenMinutesAgo = Carbon::now()->subMinutes(10);
+                    $occupied = Transaksi::where('parking_map_slot_id', $slot->id)
+                        ->where(function ($q) use ($tenMinutesAgo) {
+                            $q->where(function ($q2) {
+                                $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                            })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                                $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                            });
+                        })
+                        ->exists();
+
+                    if ($occupied) {
+                        throw new \Exception('Slot ' . $slot->code . ' sudah terisi.');
+                    }
+
+                    $reservation = \App\Models\ParkingSlotReservation::active()
+                        ->where('parking_map_slot_id', $slot->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($reservation) {
+                        if ((int) $reservation->id_kendaraan !== (int) $id_kendaraan) {
+                            throw new \Exception('Slot ' . $slot->code . ' sedang dibooking.');
+                        }
+                        $reservation->delete();
+                    }
+                }
 
                 // Buat transaksi
                 $transaksi = Transaksi::create([
@@ -119,6 +139,14 @@ class TransaksiController extends Controller
                 ]);
 
                 $area->increment('terisi');
+                
+                $this->logActivity(
+                    "Kendaraan {$request->plat_nomor} masuk ke area {$area->nama_area}",
+                    'transaksi',
+                    $transaksi,
+                    ['plat_nomor' => $request->plat_nomor, 'area' => $area->nama_area]
+                );
+
                 return $transaksi;
             });
 
@@ -167,6 +195,17 @@ class TransaksiController extends Controller
                 if ($area->terisi > 0) {
                     $area->decrement('terisi');
                 }
+
+                $this->logActivity(
+                    "Kendaraan {$transaksi->kendaraan->plat_nomor} checkout dari area {$area->nama_area}",
+                    'transaksi',
+                    $transaksi,
+                    [
+                        'plat_nomor' => $transaksi->kendaraan->plat_nomor,
+                        'area' => $area->nama_area,
+                        'biaya' => $biaya_total
+                    ]
+                );
             });
 
             return redirect()->route('payment.select-transaction')
@@ -231,7 +270,13 @@ class TransaksiController extends Controller
             'catatan' => 'nullable|string|max:255',
         ]);
 
-        Transaksi::create($data);
+        $transaksi = Transaksi::create($data);
+        $this->logActivity(
+            "Membuat transaksi manual (ID: {$transaksi->id_transaksi})",
+            'transaksi',
+            $transaksi,
+            $data
+        );
         return redirect()->route('transaksi.index')->with('success','Transaksi manual berhasil dibuat');
     }
 
@@ -290,6 +335,12 @@ class TransaksiController extends Controller
         ]);
 
         $item->update($data);
+        $this->logActivity(
+            "Mengupdate transaksi manual (ID: {$item->id_transaksi})",
+            'transaksi',
+            $item,
+            $data
+        );
         return redirect()->route('transaksi.index')->with('success','Transaksi manual berhasil diupdate');
     }
 
@@ -301,7 +352,14 @@ class TransaksiController extends Controller
 
     public function destroy($id)
     {
-        Transaksi::destroy($id);
+        $transaksi = Transaksi::findOrFail($id);
+        $this->logActivity(
+            "Menghapus transaksi (ID: {$transaksi->id_transaksi})",
+            'transaksi',
+            $transaksi,
+            $transaksi->toArray()
+        );
+        $transaksi->delete();
         return redirect()->route('transaksi.index')->with('success','Transaksi berhasil dihapus');
     }
 

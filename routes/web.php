@@ -214,28 +214,48 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         $myBookingIds = [];
 
         foreach ($areas as $area) {
-            $existing = \App\Models\Transaksi::where('id_area', $area->id_area)
-                ->where(function ($q) use ($now) {
-                    $q->where(function ($q2) {
-                        $q2->whereNull('waktu_keluar')
-                            ->where('status', 'masuk');
-                    })->orWhere(function ($q2) use ($now) {
-                        $q2->where('status', 'bookmarked')
-                            ->where('bookmarked_at', '>', $now->copy()->subMinutes(10));
-                    });
-                })
+            $occupied = \App\Models\Transaksi::where('id_area', $area->id_area)
+                ->whereNull('waktu_keluar')
+                ->where('status', 'masuk')
+                ->exists();
+
+            if ($occupied) {
+                $statusPerArea[$area->id_area] = 'occupied';
+                continue;
+            }
+
+            $reservation = \App\Models\ParkingSlotReservation::active()
+                ->where('id_area', $area->id_area)
+                ->orderByDesc('expires_at')
                 ->first();
 
-            if (! $existing) {
-                $statusPerArea[$area->id_area] = 'empty';
-            } elseif ($existing->status === 'bookmarked' && $existing->id_user === $user->id) {
-                $statusPerArea[$area->id_area] = 'bookmarked-by-me';
-                $myBookingIds[$area->id_area] = $existing->id_parkir;
-            } elseif ($existing->status === 'bookmarked') {
-                $statusPerArea[$area->id_area] = 'bookmarked';
-            } else {
-                $statusPerArea[$area->id_area] = 'occupied';
+            if ($reservation) {
+                if ((int) $reservation->id_user === (int) $user->id) {
+                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
+                    $myBookingIds[$area->id_area] = $reservation->id;
+                } else {
+                    $statusPerArea[$area->id_area] = 'bookmarked';
+                }
+                continue;
             }
+
+            $legacy = \App\Models\Transaksi::where('id_area', $area->id_area)
+                ->where('status', 'bookmarked')
+                ->where('bookmarked_at', '>', $now->copy()->subMinutes(10))
+                ->orderByDesc('bookmarked_at')
+                ->first();
+
+            if ($legacy) {
+                if ((int) $legacy->id_user === (int) $user->id) {
+                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
+                    $myBookingIds[$area->id_area] = $legacy->id_parkir;
+                } else {
+                    $statusPerArea[$area->id_area] = 'bookmarked';
+                }
+                continue;
+            }
+
+            $statusPerArea[$area->id_area] = 'empty';
         }
 
         return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs'));
@@ -261,10 +281,6 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
-        Route::get('/admin/users/{id}/scan-rfid', [\App\Http\Controllers\UserController::class, 'showScanPage'])
-            ->name('admin.users.scan-rfid');
-        Route::post('/admin/users/{id}/save-rfid', [\App\Http\Controllers\UserController::class, 'saveRfid'])
-            ->name('admin.users.save-rfid');
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);
         Route::post('area-parkir/{area}/create-layout', [\App\Http\Controllers\AreaParkirController::class, 'createLayout'])->name('area-parkir.create-layout');
         Route::resource('kendaraan', \App\Http\Controllers\KendaraanController::class);
