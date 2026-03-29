@@ -28,6 +28,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'role',
         'saldo',
@@ -40,6 +41,11 @@ class User extends Authenticatable
     public function saldoHistories()
     {
         return $this->hasMany(SaldoHistory::class, 'user_id');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'user_id');
     }
 
     /**

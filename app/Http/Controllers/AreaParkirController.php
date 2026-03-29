@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\AreaParkir;
-use App\Models\ParkingMap;
-
+use App\Models\Camera;
+use App\Models\ParkingMapCamera;
+use App\Models\ParkingMapSlot;
 use App\Traits\LogsActivity;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AreaParkirController extends Controller
 {
@@ -14,7 +16,7 @@ class AreaParkirController extends Controller
 
     public function index()
     {
-        $areas = AreaParkir::with('parkingMap')->orderBy('id_area', 'desc')->paginate(15);
+        $areas = AreaParkir::withCount('slots')->orderBy('id_area', 'desc')->paginate(15);
         $title = 'Data Area Parkir';
         return view('area_parkir.index', compact('areas', 'title'));
     }
@@ -30,7 +32,28 @@ class AreaParkirController extends Controller
         $data = $request->validate([
             'nama_area' => 'required|string|max:50|unique:tb_area_parkir,nama_area',
             'kapasitas' => 'required|integer|min:1',
+            'map_code' => 'nullable|string|max:50',
+            'map_image' => 'nullable|image|max:2048',
+            'map_width' => 'nullable|integer|min:100',
+            'map_height' => 'nullable|integer|min:100',
+            'is_default_map' => 'nullable',
         ]);
+
+        $data['is_default_map'] = $request->has('is_default_map');
+
+        if ($data['is_default_map']) {
+            AreaParkir::where('is_default_map', true)->update(['is_default_map' => false]);
+        }
+
+        if ($request->hasFile('map_image')) {
+            $data['map_image'] = $request->file('map_image')->store('parking_maps', 'public');
+        } else {
+            $data['map_image'] = 'parking_maps/default.png';
+        }
+
+        if (empty($data['map_code'])) {
+            $data['map_code'] = 'area-' . time();
+        }
 
         $area = AreaParkir::create($data);
 
@@ -40,17 +63,6 @@ class AreaParkirController extends Controller
             $area,
             $data
         );
-
-        // Trigger: buat layout peta otomatis (1:1 dengan area)
-        ParkingMap::create([
-            'area_parkir_id' => $area->id_area,
-            'name' => $area->nama_area,
-            'code' => 'area-' . $area->id_area,
-            'image_path' => 'images/floor1.png',
-            'width' => 1000,
-            'height' => 800,
-            'is_default' => false,
-        ]);
 
         return redirect()->route('area-parkir.index')->with('success', 'Area parkir dan layout peta berhasil dibuat.');
     }
@@ -68,8 +80,28 @@ class AreaParkirController extends Controller
         $data = $request->validate([
             'nama_area' => 'required|string|max:50|unique:tb_area_parkir,nama_area,' . $id . ',id_area',
             'kapasitas' => 'required|integer|min:1',
+            'map_code' => 'nullable|string|max:50',
+            'map_image' => 'nullable|image|max:2048',
+            'map_width' => 'nullable|integer|min:100',
+            'map_height' => 'nullable|integer|min:100',
+            'is_default_map' => 'nullable',
         ]);
+
+        $data['is_default_map'] = $request->has('is_default_map');
+
+        if ($data['is_default_map']) {
+            AreaParkir::where('id_area', '!=', $id)->where('is_default_map', true)->update(['is_default_map' => false]);
+        }
+
         $oldData = $area->toArray();
+
+        if ($request->hasFile('map_image')) {
+            if ($area->map_image && $area->map_image !== 'parking_maps/default.png') {
+                Storage::disk('public')->delete($area->map_image);
+            }
+            $data['map_image'] = $request->file('map_image')->store('parking_maps', 'public');
+        }
+
         $area->update($data);
 
         $this->logActivity(
@@ -78,11 +110,6 @@ class AreaParkirController extends Controller
             $area,
             ['old' => $oldData, 'new' => $data]
         );
-
-        // Sinkron: nama layout peta ikut nama area
-        if ($area->parkingMap) {
-            $area->parkingMap->update(['name' => $area->nama_area]);
-        }
 
         return redirect()->route('area-parkir.index')->with('success', 'Area parkir dan layout peta berhasil diubah.');
     }
@@ -95,35 +122,75 @@ class AreaParkirController extends Controller
             return redirect()->route('area-parkir.index')->with('error', 'Area parkir tidak dapat dihapus karena masih digunakan dalam transaksi.');
         }
 
+        if ($area->map_image && $area->map_image !== 'parking_maps/default.png') {
+            Storage::disk('public')->delete($area->map_image);
+        }
+
         $this->logActivity(
             "Menghapus area parkir: {$area->nama_area}",
             'config',
-            $area,
+            null,
             $area->toArray()
         );
 
-        // Hapus area; layout peta terkait ikut terhapus (cascade)
         $area->delete();
 
-        return redirect()->route('area-parkir.index')->with('success', 'Area parkir dan layout peta berhasil dihapus.');
+        return redirect()->route('area-parkir.index')->with('success', 'Area parkir berhasil dihapus.');
     }
 
-    /** Buat layout peta untuk area yang sudah ada (belum punya layout). */
-    public function createLayout(AreaParkir $area)
+    /**
+     * Editor Visual untuk Peta Area
+     */
+    public function design($id)
     {
-        if ($area->parkingMap) {
-            return redirect()->route('parking-maps.edit', $area->parkingMap)->with('info', 'Area ini sudah punya layout peta.');
-        }
-        $map = ParkingMap::create([
-            'area_parkir_id' => $area->id_area,
-            'name' => $area->nama_area,
-            'code' => 'area-' . $area->id_area,
-            'image_path' => 'images/floor1.png',
-            'width' => 1000,
-            'height' => 800,
-            'is_default' => false,
+        $area = AreaParkir::findOrFail($id);
+        $cameras = Camera::all();
+        $title = "Desain Peta: " . $area->nama_area;
+        
+        return view('area_parkir.design', compact('area', 'cameras', 'title'));
+    }
+
+    /**
+     * Simpan Layout Peta (Slots & Cameras)
+     */
+    public function saveDesign(Request $request, $id)
+    {
+        $area = AreaParkir::findOrFail($id);
+        $data = $request->validate([
+            'slots' => 'nullable|array',
+            'cameras' => 'nullable|array',
         ]);
-        return redirect()->route('parking-maps.edit', $map)->with('success', 'Layout peta untuk area ini telah dibuat.');
+
+        // Sync Slots
+        ParkingMapSlot::where('area_parkir_id', $area->id_area)->delete();
+        if (!empty($data['slots'])) {
+            foreach ($data['slots'] as $slot) {
+                ParkingMapSlot::create([
+                    'area_parkir_id' => $area->id_area,
+                    'code' => $slot['code'],
+                    'x' => $slot['x'],
+                    'y' => $slot['y'],
+                    'width' => $slot['width'] ?? 60,
+                    'height' => $slot['height'] ?? 40,
+                    'camera_id' => $slot['camera_id'] ?? null,
+                    'notes' => $slot['notes'] ?? null,
+                ]);
+            }
+        }
+
+        // Sync Cameras
+        ParkingMapCamera::where('area_parkir_id', $area->id_area)->delete();
+        if (!empty($data['cameras'])) {
+            foreach ($data['cameras'] as $cam) {
+                ParkingMapCamera::create([
+                    'area_parkir_id' => $area->id_area,
+                    'camera_id' => $cam['camera_id'],
+                    'x' => $cam['x'],
+                    'y' => $cam['y'],
+                ]);
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Desain peta berhasil disimpan.']);
     }
 }
-

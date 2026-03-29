@@ -69,18 +69,26 @@ class NfcController extends Controller
     public function nfcScan(Request $request)
     {
         $data = $request->validate([
-            'encrypted_id' => 'required|string',
+            'encrypted_id' => 'nullable|string|required_without:nfc_uid',
+            'nfc_uid' => 'nullable|string|max:128|required_without:encrypted_id',
         ]);
 
-        try {
-            $userId = Crypt::decryptString($data['encrypted_id']);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => 'Encrypted id tidak valid',
-            ], 422);
+        $user = null;
+        if (!empty($data['nfc_uid'])) {
+            $user = User::where('nfc_uid', $data['nfc_uid'])->first();
         }
 
-        $user = User::find($userId);
+        if (!$user && !empty($data['encrypted_id'])) {
+            try {
+                $userId = Crypt::decryptString($data['encrypted_id']);
+                $user = User::find($userId);
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'error' => 'Encrypted id tidak valid',
+                ], 422);
+            }
+        }
+
         if (! $user) {
             return response()->json([
                 'error' => 'User tidak ditemukan',
@@ -111,6 +119,7 @@ class NfcController extends Controller
         $data = $request->validate([
             'user_id' => 'nullable|integer|exists:tb_user,id',
             'encrypted_id' => 'nullable|string',
+            'nfc_uid' => 'nullable|string|max:128',
         ]);
 
         $userId = $this->resolveUserId($data);
@@ -171,6 +180,7 @@ class NfcController extends Controller
         $data = $request->validate([
             'user_id' => 'nullable|integer|exists:tb_user,id',
             'encrypted_id' => 'nullable|string',
+            'nfc_uid' => 'nullable|string|max:128',
             // Opsional jika ingin menentukan tarif dari UI
             'id_tarif' => 'nullable|integer|exists:tb_tarif,id_tarif',
         ]);
@@ -279,6 +289,13 @@ class NfcController extends Controller
 
     private function resolveUserId(array $data): ?int
     {
+        if (!empty($data['nfc_uid'])) {
+            $id = User::where('nfc_uid', $data['nfc_uid'])->value('id');
+            if ($id) {
+                return (int) $id;
+            }
+        }
+
         if (!empty($data['encrypted_id'])) {
             try {
                 return (int) Crypt::decryptString($data['encrypted_id']);

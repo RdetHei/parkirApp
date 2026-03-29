@@ -80,9 +80,9 @@
             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
             <span class="sidebar-label">Zones & Areas</span>
         </a>
-        <a href="{{ route('nfc.admin.write') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('nfc.admin.write') ? 'active' : '' }}">
-            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            <span class="sidebar-label">Card Provisioning</span>
+        <a href="{{ route('admin.rfid.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('admin.rfid.*') ? 'active' : '' }}">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm5 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
+            <span class="sidebar-label">RFID Management</span>
         </a>
         <a href="{{ route('log-aktivitas.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('log-aktivitas.*') ? 'active' : '' }}">
             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>

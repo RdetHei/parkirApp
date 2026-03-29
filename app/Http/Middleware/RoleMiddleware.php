@@ -19,6 +19,7 @@ class RoleMiddleware
         }
 
         $user = Auth::user();
+        \Illuminate\Support\Facades\Log::info('RoleMiddleware check', ['user_id' => $user->id, 'user_role' => $user->role, 'allowed_roles' => $roles]);
 
         $allowedRoles = array_map(function ($r) {
             return strtolower(trim($r));

@@ -42,6 +42,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+            \Illuminate\Support\Facades\Log::info('User logged in', ['id' => $user->id, 'email' => $user->email, 'role' => $user->role]);
 
             // Catat login ke log aktivitas (siapa yang login)
             $roleLabel = ucfirst($user->role ?? 'user');
@@ -51,7 +52,10 @@ class LoginController extends Controller
                 $user
             );
 
-            switch ($user->role) {
+            $userRole = strtolower($user->role ?? 'user');
+            \Illuminate\Support\Facades\Log::info('Redirecting user based on role', ['role' => $userRole]);
+            
+            switch ($userRole) {
                 case 'admin':
                     return redirect()->intended(route('dashboard'));
                 case 'owner':
@@ -59,10 +63,11 @@ class LoginController extends Controller
                 case 'petugas':
                     return redirect()->intended(route('petugas.dashboard'));
                 default:
-                    return redirect()->intended(route('transaksi.create-check-in'));
+                    return redirect()->intended(route('user.dashboard'));
             }
         }
 
+        \Illuminate\Support\Facades\Log::warning('Login failed', ['email' => $request->email]);
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');

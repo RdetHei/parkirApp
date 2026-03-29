@@ -39,6 +39,40 @@
         </div>
 
         <div>
+            <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                </div>
+                <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}" placeholder="08123456789"
+                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('phone') border-red-500 @enderror">
+            </div>
+            @error('phone')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+
+        <div>
+            <label for="photo" class="block text-sm font-semibold text-gray-700 mb-2">Foto User (Ubah jika perlu)</label>
+            <div class="relative">
+                <input type="file" name="photo" id="photo" 
+                       class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('photo') border-red-500 @enderror">
+            </div>
+            @error('photo')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Status Kartu RFID</p>
+                <p class="text-sm font-bold {{ $user->rfid_uid ? 'text-green-600' : 'text-red-600' }}">
+                    {{ $user->rfid_uid ? 'Terdaftar (' . $user->rfid_uid . ')' : 'Belum Terdaftar' }}
+                </p>
+            </div>
+            <a href="{{ route('users.scan-rfid', $user->id) }}" 
+               class="px-4 py-2 bg-blue-500 text-white text-xs font-bold rounded-xl hover:bg-blue-600 transition-colors uppercase tracking-widest">
+                {{ $user->rfid_uid ? 'Ubah RFID' : 'Daftarkan RFID' }}
+            </a>
+        </div>
+
+        <div>
             <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password (kosongkan jika tidak diubah)</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

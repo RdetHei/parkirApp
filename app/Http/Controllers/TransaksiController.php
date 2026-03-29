@@ -8,6 +8,8 @@ use App\Models\Kendaraan;
 use App\Models\Tarif;
 use App\Models\User;
 use App\Models\AreaParkir;
+use App\Models\ParkingMapSlot;
+use App\Models\ParkingSlotReservation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -90,8 +92,7 @@ class TransaksiController extends Controller
                 $slotId = $request->filled('parking_map_slot_id') ? (int) $request->parking_map_slot_id : null;
 
                 if ($slotId) {
-                    $slot = \App\Models\ParkingMapSlot::with('parkingMap')
-                        ->lockForUpdate()
+                    $slot = \App\Models\ParkingMapSlot::lockForUpdate()
                         ->findOrFail($slotId);
 
                     if ((int) $slot->effectiveAreaId() !== (int) $request->id_area) {
@@ -286,26 +287,57 @@ class TransaksiController extends Controller
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
         $cameras = \App\Models\Camera::scanner()->orderBy('is_default', 'desc')->orderBy('id')->get();
-        
-        // Fallback UI: slot + id_area efektif (langsung di slot atau lewat peta area)
-        $slots = \App\Models\ParkingMapSlot::with('parkingMap')
-            ->orderBy('code')
-            ->get()
-            ->map(function ($s) {
-                $occupied = Transaksi::where('parking_map_slot_id', $s->id)
-                    ->whereNull('waktu_keluar')
-                    ->where('status', 'masuk')
-                    ->exists();
 
-                return [
-                    'id' => $s->id,
-                    'code' => $s->code,
-                    'id_area' => $s->effectiveAreaId(),
-                    'occupied' => $occupied,
-                ];
-            });
+        /** @var \Illuminate\Support\Collection<int, array{id:int, code:string, id_area:int, occupied:bool}> $slots */
+        $slots = $this->buildCheckInSlotsPayload();
 
         return view('parkir.create', compact('kendaraans', 'tarifs', 'areas', 'cameras', 'slots'));
+    }
+
+    /**
+     * Data slot untuk form check-in: satu sumber kebenaran dengan validasi checkIn()
+     * (masuk aktif + bookmark + reservasi aktif = tidak bisa dipilih).
+     */
+    private function buildCheckInSlotsPayload()
+    {
+        $models = ParkingMapSlot::query()
+            ->whereNotNull('area_parkir_id')
+            ->orderBy('code')
+            ->get();
+
+        $slotIds = $models->pluck('id')->all();
+        $blockedSlotIds = [];
+
+        if (!empty($slotIds)) {
+            $tenMinutesAgo = Carbon::now()->subMinutes(10);
+            $txBlocked = Transaksi::whereIn('parking_map_slot_id', $slotIds)
+                ->whereNotNull('parking_map_slot_id')
+                ->where(function ($q) use ($tenMinutesAgo) {
+                    $q->where(function ($q2) {
+                        $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                    })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                        $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                    });
+                })
+                ->pluck('parking_map_slot_id')
+                ->all();
+
+            $rsvBlocked = ParkingSlotReservation::active()
+                ->whereIn('parking_map_slot_id', $slotIds)
+                ->pluck('parking_map_slot_id')
+                ->all();
+
+            $blockedSlotIds = array_values(array_unique(array_merge($txBlocked, $rsvBlocked)));
+        }
+
+        return $models->map(function (ParkingMapSlot $s) use ($blockedSlotIds) {
+            return [
+                'id' => (int) $s->id,
+                'code' => (string) $s->code,
+                'id_area' => (int) $s->area_parkir_id,
+                'occupied' => in_array($s->id, $blockedSlotIds, true),
+            ];
+        })->values();
     }
 
     public function show($id)

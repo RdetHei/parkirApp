@@ -9,15 +9,15 @@ class ParkingMapCamera extends Model
     protected $table = 'tb_parking_map_cameras';
 
     protected $fillable = [
-        'parking_map_id',
+        'area_parkir_id',
         'camera_id',
         'x',
         'y',
     ];
 
-    public function parkingMap()
+    public function areaParkir()
     {
-        return $this->belongsTo(ParkingMap::class, 'parking_map_id', 'id');
+        return $this->belongsTo(AreaParkir::class, 'area_parkir_id', 'id_area');
     }
 
     public function camera()

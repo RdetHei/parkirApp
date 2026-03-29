@@ -185,24 +185,24 @@
                                 <td class="px-8 py-6">
                                     <div class="flex items-center gap-5">
                                         <div class="w-12 h-12 rounded-2xl bg-slate-950 border border-white/10 flex flex-col items-center justify-center font-black text-white group-hover:border-emerald-500/50 transition-all shadow-xl">
-                                            <span class="text-[9px] text-slate-500 leading-none mb-1 uppercase tracking-tighter">{{ substr($trx->kendaraan->plat_nomor ?? '-', 0, 2) }}</span>
-                                            <span class="text-sm leading-none tracking-tight">{{ substr($trx->kendaraan->plat_nomor ?? '-', 2, 4) }}</span>
+                                            <span class="text-[9px] text-slate-500 leading-none mb-1 uppercase tracking-tighter">{{ substr($trx->kendaraan?->plat_nomor ?? '-', 0, 2) }}</span>
+                                            <span class="text-sm leading-none tracking-tight">{{ substr($trx->kendaraan?->plat_nomor ?? '-', 2, 4) }}</span>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-black text-white tracking-tight">{{ $trx->kendaraan->plat_nomor ?? '-' }}</p>
-                                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">{{ $trx->kendaraan->jenis_kendaraan ?? 'Vehicle' }}</p>
+                                            <p class="text-sm font-black text-white tracking-tight">{{ $trx->kendaraan?->plat_nomor ?? '-' }}</p>
+                                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">{{ $trx->kendaraan?->jenis_kendaraan ?? 'Vehicle' }}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-8 py-6">
                                     <div class="flex items-center gap-3">
                                         <div class="w-2 h-2 rounded-full bg-emerald-500/30"></div>
-                                        <span class="text-xs text-slate-300 font-bold uppercase tracking-wider">{{ $trx->area->nama_area ?? '-' }}</span>
+                                        <span class="text-xs text-slate-300 font-bold uppercase tracking-wider">{{ $trx->area?->nama_area ?? '-' }}</span>
                                     </div>
                                 </td>
                                 <td class="px-8 py-6">
-                                    <p class="text-xs font-black text-white">{{ $trx->waktu_masuk->format('H:i') }}</p>
-                                    <p class="text-[10px] text-slate-500 font-bold uppercase">{{ $trx->waktu_masuk->translatedFormat('d M Y') }}</p>
+                                    <p class="text-xs font-black text-white">{{ $trx->waktu_masuk ? $trx->waktu_masuk->format('H:i') : '-' }}</p>
+                                    <p class="text-[10px] text-slate-500 font-bold uppercase">{{ $trx->waktu_masuk ? $trx->waktu_masuk->translatedFormat('d M Y') : '-' }}</p>
                                 </td>
                                 <td class="px-8 py-6 text-right">
                                     <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest border {{ $trx->status === 'masuk' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-white/10' }}">

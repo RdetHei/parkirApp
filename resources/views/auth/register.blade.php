@@ -101,6 +101,28 @@
                     @enderror
                 </div>
 
+                <div class="space-y-2">
+                    <label for="nfc_uid" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        NFC UID <span class="text-slate-600 font-medium lowercase">(optional)</span>
+                    </label>
+                    <input
+                        id="nfc_uid"
+                        type="text"
+                        name="nfc_uid"
+                        value="{{ old('nfc_uid') }}"
+                        placeholder="Tempel kartu atau isi token"
+                        class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
+                    >
+                    <button type="button"
+                            id="btnScanNfcRegister"
+                            class="w-full px-4 py-3 bg-slate-900 border border-white/5 rounded-xl text-xs font-bold text-slate-300 uppercase tracking-widest hover:bg-slate-800 transition-all">
+                        Scan NFC
+                    </button>
+                    @error('nfc_uid')
+                        <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Password -->
                 <div class="space-y-2">
                     <label for="password" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -221,6 +243,31 @@
                 submitBtn.disabled = true;
                 if (spinner) spinner.classList.remove('hidden');
                 if (buttonText) buttonText.textContent = 'Memproses...';
+            });
+        }
+
+        var btnScanNfcRegister = document.getElementById('btnScanNfcRegister');
+        var nfcUidInput = document.getElementById('nfc_uid');
+        if (btnScanNfcRegister) {
+            btnScanNfcRegister.addEventListener('click', async function () {
+                try {
+                    if (!('NDEFReader' in window)) return;
+                    const reader = new NDEFReader();
+                    await reader.scan();
+                    reader.onreading = function (event) {
+                        const records = event?.message?.records || [];
+                        let text = null;
+                        for (const record of records) {
+                            if (record.recordType === 'text') {
+                                text = new TextDecoder().decode(record.data);
+                                break;
+                            }
+                        }
+                        if (!text) return;
+                        if (nfcUidInput) nfcUidInput.value = text;
+                    };
+                } catch (e) {
+                }
             });
         }
     </script>

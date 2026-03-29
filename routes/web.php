@@ -15,11 +15,17 @@ use App\Http\Controllers\RfidParkingController;
 use App\Http\Controllers\RfidIdentifyController;
 use App\Http\Controllers\RfidAccessController;
 use App\Http\Controllers\RfidLoginController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RfidAdminController;
 
 // Public Routes
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/docs', function () {
+    return view('docs');
+})->name('docs');
 
 // RFID Login (for fun): scan kartu untuk Auth::login()
 Route::get('/login/rfid', [RfidLoginController::class, 'page'])->name('rfid.login.page');
@@ -77,12 +83,12 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         // Halaman peta parkir (Leaflet + image overlay)
         Route::get('/parking-map', [ParkingSlotController::class, 'view'])->name('parking.map.index');
         // API data slot + kamera + summary (untuk Leaflet)
-        Route::get('/api/parking-slots', [ParkingSlotController::class, 'index'])->name('api.parking-slots');
+        Route::get('/api/parking-slots', [ParkingSlotController::class, 'index'])->name('api.parking-slots.index');
         Route::get('/api/areas/{area}/slots', [ParkingSlotController::class, 'slotsByArea'])->name('api.areas.slots');
 
-        // Endpoint lain untuk fitur bookmark lama tetap menggunakan ParkingMapController
-        Route::post('/api/parking-slots/{area_id}/bookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])->name('api.parking-slots.bookmark');
-        Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
+        // Endpoint lain untuk fitur bookmark lama tetap menggunakan ParkingSlotController
+        Route::post('/api/parking-slots/{area_id}/bookmark', [ParkingSlotController::class, 'bookmark'])->name('api.parking-slots.bookmark');
+        Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [ParkingSlotController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
 
         // Plate Recognizer API
         Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
@@ -204,7 +210,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         $user = $request->user();
 
         $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
-        $map = \App\Models\ParkingMap::getDefaultOrFirst();
+        $map = \App\Models\AreaParkir::getDefaultMap();
         $kendaraans = \App\Models\Kendaraan::where('id_user', $user->id)->orderBy('plat_nomor')->get();
         $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
 
@@ -261,11 +267,8 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs'));
     })->name('user.bookings');
 
-    Route::post('/user/bookings/areas/{area}', [\App\Http\Controllers\Api\ParkingMapController::class, 'bookmark'])
-        ->name('user.bookings.book');
-
-    Route::delete('/user/bookings/areas/{transaksi}', [\App\Http\Controllers\Api\ParkingMapController::class, 'unbookmark'])
-        ->name('user.bookings.unbook');
+    Route::post('/user/bookings/areas/{area}', [ParkingSlotController::class, 'bookmark'])->name('user.bookings.book');
+    Route::delete('/user/bookings/areas/{transaksi}', [ParkingSlotController::class, 'unbookmark'])->name('user.bookings.unbook');
 
     // User: Tagihan sendiri (transaksi keluar tapi belum dibayar)
     Route::get('/user/bills', [\App\Http\Controllers\PaymentController::class, 'userBills'])
@@ -281,23 +284,26 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
+        
+        // Unified Area & Map Management
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);
-        Route::post('area-parkir/{area}/create-layout', [\App\Http\Controllers\AreaParkirController::class, 'createLayout'])->name('area-parkir.create-layout');
+        Route::get('area-parkir/{area}/design', [\App\Http\Controllers\AreaParkirController::class, 'design'])->name('area-parkir.design');
+        Route::post('area-parkir/{area}/design', [\App\Http\Controllers\AreaParkirController::class, 'saveDesign'])->name('area-parkir.save-design');
+
         Route::resource('kendaraan', \App\Http\Controllers\KendaraanController::class);
         Route::resource('tarif', \App\Http\Controllers\TarifController::class);
-        Route::resource('parking-maps', ParkingMapController::class);
-        Route::get('parking-maps/{parking_map}/slots', [\App\Http\Controllers\ParkingMapSlotController::class, 'index'])->name('parking-maps.slots.index');
-        Route::get('parking-maps/{parking_map}/slots/create', [\App\Http\Controllers\ParkingMapSlotController::class, 'create'])->name('parking-maps.slots.create');
-        Route::post('parking-maps/{parking_map}/slots', [\App\Http\Controllers\ParkingMapSlotController::class, 'store'])->name('parking-maps.slots.store');
-        Route::get('parking-maps/{parking_map}/slots/{slot}/edit', [\App\Http\Controllers\ParkingMapSlotController::class, 'edit'])->name('parking-maps.slots.edit');
-        Route::put('parking-maps/{parking_map}/slots/{slot}', [\App\Http\Controllers\ParkingMapSlotController::class, 'update'])->name('parking-maps.slots.update');
-        Route::delete('parking-maps/{parking_map}/slots/{slot}', [\App\Http\Controllers\ParkingMapSlotController::class, 'destroy'])->name('parking-maps.slots.destroy');
-        Route::get('parking-maps/{parking_map}/cameras', [\App\Http\Controllers\ParkingMapCameraController::class, 'index'])->name('parking-maps.cameras.index');
-        Route::post('parking-maps/{parking_map}/cameras', [\App\Http\Controllers\ParkingMapCameraController::class, 'store'])->name('parking-maps.cameras.store');
-        Route::delete('parking-maps/{parking_map}/cameras/{map_camera}', [\App\Http\Controllers\ParkingMapCameraController::class, 'destroy'])->name('parking-maps.cameras.destroy');
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
         Route::resource('kamera', \App\Http\Controllers\CameraController::class);
         Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
+        
+        // User RFID Registration (Admin Only)
+        Route::get('/users/{id}/scan-rfid', [UserController::class, 'showScanPage'])->name('users.scan-rfid');
+        Route::post('/users/{id}/save-rfid', [UserController::class, 'saveRfid'])->name('users.save-rfid');
+        
+        // RFID Management (Admin Only)
+        Route::get('/admin/rfid', [RfidAdminController::class, 'index'])->name('admin.rfid.index');
+        Route::post('/admin/rfid', [RfidAdminController::class, 'store'])->name('admin.rfid.store');
+        Route::delete('/admin/rfid/{id}/unlink', [RfidAdminController::class, 'unlink'])->name('admin.rfid.unlink');
     });
 
     // Transaksi: index & show untuk Admin dan Petugas (lihat riwayat tanpa edit/hapus)
@@ -308,6 +314,10 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])
             ->whereNumber('transaksi')
             ->name('transaksi.show');
+
+        // RFID Parking Operation (Admin & Petugas)
+        Route::get('/parkir/scan', [RfidParkingController::class, 'index'])->name('parkir.scan');
+        Route::post('/api/parkir/rfid-scan', [RfidParkingController::class, 'processScan'])->name('api.parkir.rfid-scan');
     });
 
     // Transaksi: CRUD hanya untuk Admin
@@ -365,7 +375,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
 
     // NFC: halaman write (admin saja)
     Route::middleware(['role:admin'])->group(function () {
-        Route::get('/nfc/admin/write', [NfcAdminController::class, 'index'])->name('nfc.admin.write');
+        // 
     });
 
     // Pembayaran Midtrans & struk: bisa diakses user (hanya untuk transaksi miliknya) dan petugas

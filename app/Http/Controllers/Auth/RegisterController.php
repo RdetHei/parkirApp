@@ -40,12 +40,14 @@ class RegisterController extends Controller
                 'max:255',
                 Rule::unique((new User)->getTable()),
             ],
+            'nfc_uid' => ['nullable', 'string', 'max:128', Rule::unique((new User)->getTable(), 'nfc_uid')],
             'password' => ['required', 'string', 'confirmed', 'min:8'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'nfc_uid' => $request->nfc_uid ?: null,
             'password' => Hash::make($request->password),
             'role' => 'user',
         ]);

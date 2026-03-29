@@ -1,226 +1,211 @@
 @extends('layouts.app')
 
-@section('title', 'Parkir Scan RFID')
+@section('title', 'Parking Scan RFID')
 
 @section('content')
-    <div class="p-4 sm:p-6 lg:p-8">
-        <div class="max-w-3xl mx-auto">
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div class="text-center">
-                    <div class="text-3xl font-extrabold tracking-tight text-white">
-                        TAP KARTU UNTUK MASUK / KELUAR
+<div class="flex flex-col items-center justify-center min-h-[70vh] px-4">
+    <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-2xl text-center border border-gray-100">
+        <div class="mb-10">
+            <div class="w-28 h-28 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <svg class="w-14 h-14 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-3.682A14.29 14.29 0 005.34 20M12 11c1.744 2.772 2.753 6.054 2.753 9.571m3.44-3.682c.535 1.1.883 2.267 1.023 3.49M12 11V3m0 0L9 6m3-3l3 3"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-black text-gray-900 mb-3 tracking-tight">TAP KARTU UNTUK MASUK / KELUAR</h1>
+            <p class="text-gray-500 text-lg font-medium">Dekatkan kartu Anda pada scanner</p>
+        </div>
+
+        <!-- Hidden Input for RFID -->
+        <input type="text" id="rfid_uid" class="opacity-0 absolute" autofocus autocomplete="off">
+
+        <!-- Result Container -->
+        <div id="result-container" class="hidden transform transition-all duration-500 scale-95 opacity-0">
+            <div class="bg-gray-50 rounded-3xl p-8 border border-gray-100 flex flex-col items-center">
+                <div class="mb-6 relative">
+                    <img id="user-photo" src="" alt="User Photo" 
+                         class="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-lg">
+                    <div id="status-badge" class="absolute -bottom-3 -right-3 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md">
+                        STATUS
                     </div>
-                    <div class="text-sm text-slate-300 mt-2">
-                        Scanner bertindak seperti keyboard. Tidak perlu klik tombol.
+                </div>
+                
+                <h2 id="user-name" class="text-2xl font-bold text-gray-900 mb-1">NAMA USER</h2>
+                <p id="user-status" class="text-blue-600 font-semibold mb-4"></p>
+                
+                <div class="grid grid-cols-2 gap-4 w-full max-w-sm mt-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-50">
+                        <p class="text-xs text-gray-400 uppercase font-bold mb-1">Saldo</p>
+                        <p id="user-balance" class="text-xl font-bold text-gray-900">Rp 0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-50">
+                        <p class="text-xs text-gray-400 uppercase font-bold mb-1">Biaya</p>
+                        <p id="parking-fee" class="text-xl font-bold text-gray-900">-</p>
                     </div>
                 </div>
 
-                <div class="mt-6 flex items-start justify-between gap-4">
-                    <div class="flex-1">
-                        <label class="block text-xs font-semibold text-slate-300 mb-2">RFID UID (auto-capture)</label>
-                        <input
-                            id="rfid_uid_input"
-                            name="rfid_uid"
-                            type="text"
-                            autocomplete="off"
-                            inputmode="numeric"
-                            autofocus
-                            tabindex="0"
-                            class="sr-only"
-                            aria-label="RFID UID"
-                        />
-
-                        <div class="mt-4 rounded-xl border border-white/10 bg-slate-950/20 p-4">
-                            <div class="flex items-center gap-3">
-                                <img id="user-photo" src="" alt="foto user"
-                                     class="w-14 h-14 rounded-xl bg-gray-200 object-cover hidden"/>
-                                <div>
-                                    <div class="text-sm font-bold text-white" id="user-name">-</div>
-                                    <div class="text-xs text-slate-300" id="user-saldo">-</div>
-                                    <div class="text-xs inline-flex px-2 py-1 rounded-lg font-bold mt-1"
-                                         id="parkir-status" style="background:#f4f4f5;color:#333">-</div>
-                                </div>
-                            </div>
-                            <div class="mt-3 text-xs text-slate-300" id="parkir-meta">-</div>
-                        </div>
-
-                        <div class="mt-4 text-sm font-semibold" id="loading_state" style="display:none;color:#93c5fd;">
-                            Memproses...
-                        </div>
-                    </div>
-
-                    <div class="w-72">
-                        <div class="text-xs text-slate-300">Log</div>
-                        <pre id="log" class="mt-2 text-xs text-slate-200 whitespace-pre-wrap min-h-[160px]"></pre>
-                        <div class="mt-2 text-xs font-semibold" id="error_box" style="color:#f87171;"></div>
-                    </div>
+                <div id="message-container" class="mt-6 p-4 w-full rounded-2xl text-center font-bold">
+                    Pesan Berhasil/Gagal
                 </div>
             </div>
         </div>
+
+        <!-- Default State / Scanner Waiting -->
+        <div id="scanner-waiting" class="mt-8 flex flex-col items-center">
+            <div class="relative w-full max-w-xs h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div class="absolute top-0 left-0 h-full bg-blue-500 w-1/3 animate-[scan_2s_infinite_linear]"></div>
+            </div>
+            <p class="text-sm text-gray-400 mt-4 font-medium uppercase tracking-widest">Scanning active...</p>
+        </div>
     </div>
-@endsection
+</div>
+
+<style>
+    @keyframes scan {
+        0% { left: -30%; }
+        100% { left: 100%; }
+    }
+</style>
 
 @push('scripts')
-    <script>
-        const $log = document.getElementById('log');
-        const $errorBox = document.getElementById('error_box');
-        const $loading = document.getElementById('loading_state');
+<script>
+    const rfidInput = document.getElementById('rfid_uid');
+    const resultContainer = document.getElementById('result-container');
+    const scannerWaiting = document.getElementById('scanner-waiting');
+    const userName = document.getElementById('user-name');
+    const userPhoto = document.getElementById('user-photo');
+    const userStatus = document.getElementById('user-status');
+    const userBalance = document.getElementById('user-balance');
+    const parkingFee = document.getElementById('parking-fee');
+    const statusBadge = document.getElementById('status-badge');
+    const messageContainer = document.getElementById('message-container');
 
-        const $input = document.getElementById('rfid_uid_input');
-        const $photo = document.getElementById('user-photo');
-        const $name = document.getElementById('user-name');
-        const $saldo = document.getElementById('user-saldo');
-        const $status = document.getElementById('parkir-status');
-        const $meta = document.getElementById('parkir-meta');
+    // Auto focus input
+    document.addEventListener('click', () => rfidInput.focus());
+    rfidInput.focus();
 
-        const scanUrl = @json(route('api.parkir.scan-rfid'));
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    let isProcessing = false;
 
-        let inFlight = false;
-        let debounceTimer = null;
+    let timer;
+    rfidInput.addEventListener('input', function(e) {
+        if (isProcessing) return;
+        
+        clearTimeout(timer);
+        const uid = e.target.value.trim();
+        
+        // Sebagian besar scanner mengirim "Enter" di akhir.
+        // Tapi untuk jaga-jaga, kita pakai debounce 300ms 
+        // untuk mendeteksi akhir input dari keyboard wedge.
+        timer = setTimeout(() => {
+            if (uid.length >= 4) {
+                processScan(uid);
+                e.target.value = '';
+            }
+        }, 300);
+    });
 
-        const log = (msg) => {
-            $log.textContent = ($log.textContent ? $log.textContent + "\n" : "") + msg;
-        };
+    // Juga tangani jika scanner mengirim "Enter"
+    rfidInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (isProcessing) return;
+            
+            clearTimeout(timer);
+            const uid = e.target.value.trim();
+            if (uid.length >= 4) {
+                processScan(uid);
+                e.target.value = '';
+            }
+        }
+    });
 
-        const focusInput = () => {
-            $errorBox.textContent = '';
-            $input.focus();
-        };
+    async function processScan(uid) {
+        isProcessing = true;
+        rfidInput.disabled = true;
+        
+        // UI Reset & Loading State
+        scannerWaiting.classList.add('opacity-50');
 
-        const setLoading = (on) => {
-            $loading.style.display = on ? 'block' : 'none';
-        };
+        try {
+            const response = await fetch("{{ route('api.parkir.rfid-scan') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ rfid_uid: uid })
+            });
 
-        function setStatusUI({ action, parkir_active }) {
-            if (parkir_active) {
-                $status.textContent = 'PARKIR MASUK';
-                $status.style.background = '#10b98133';
-                $status.style.color = '#065f46';
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Sistem bermasalah (Server Error)");
+            }
+
+            const data = await response.json();
+
+            // Display Results
+            showResult(data, response.ok);
+
+        } catch (error) {
+            console.error('Error:', error);
+            showResult({ 
+                success: false, 
+                message: error.message || 'Koneksi error atau sistem bermasalah' 
+            }, false);
+        } finally {
+            setTimeout(() => {
+                isProcessing = false;
+                rfidInput.disabled = false;
+                rfidInput.focus();
+                scannerWaiting.classList.remove('opacity-50');
+            }, 3000); // Wait 3 seconds before allowing next scan
+        }
+    }
+
+    function showResult(data, isOk) {
+        // Reset animation
+        resultContainer.classList.remove('scale-100', 'opacity-100');
+        resultContainer.classList.add('scale-95', 'opacity-0', 'hidden');
+
+        if (data.user) {
+            userName.innerText = data.user.name;
+            userPhoto.src = data.user.photo;
+            userStatus.innerText = data.user.status;
+            userBalance.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.user.balance);
+            parkingFee.innerText = data.amount ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data.amount) : '-';
+            
+            // Status Badge
+            if (data.user.status.includes('Masuk')) {
+                statusBadge.className = 'absolute -bottom-3 -right-3 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md bg-green-500 text-white';
+                statusBadge.innerText = 'IN';
             } else {
-                $status.textContent = 'PARKIR KELUAR';
-                $status.style.background = '#f59e0b33';
-                $status.style.color = '#92400e';
+                statusBadge.className = 'absolute -bottom-3 -right-3 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md bg-blue-500 text-white';
+                statusBadge.innerText = 'OUT';
             }
         }
 
-        async function sendScan(uid) {
-            if (inFlight) return;
-
-            const trimmed = (uid || '').trim();
-            if (!trimmed) return;
-
-            inFlight = true;
-            setLoading(true);
-            $errorBox.textContent = '';
-
-            log('UID terbaca: ' + trimmed);
-
-            // Simpan UID lalu clear input untuk scan berikutnya.
-            const currentUid = trimmed;
-            $input.value = '';
-
-            try {
-                const res = await fetch(scanUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
-                    body: JSON.stringify({ rfid_uid: currentUid }),
-                });
-
-                const data = await res.json().catch(() => ({}));
-
-                if (!res.ok || !data.ok) {
-                    const msg = data.error || data.message || 'Scan gagal.';
-                    $errorBox.textContent = msg;
-                    log('Gagal: ' + msg);
-                    return;
-                }
-
-                // Update UI user
-                const u = data.user || {};
-                $name.textContent = u.name || '-';
-                $saldo.textContent = 'Saldo: ' + (Number(u.saldo || 0).toFixed(2));
-                setStatusUI({ action: data.action, parkir_active: !!data.parkir_active });
-
-                if (u.photo) {
-                    $photo.src = u.photo;
-                    $photo.classList.remove('hidden');
-                } else {
-                    $photo.src = '';
-                    $photo.classList.add('hidden');
-                }
-
-                if (data.action === 'IN') {
-                    $meta.textContent = 'Status: masuk. Transaction: ' + (data.in_transaction_id || '-') ;
-                } else {
-                    const hours = data.hours ?? '-';
-                    const amount = data.amount ?? '-';
-                    $meta.textContent = 'Status: keluar. ' + hours + ' jam. Tarif: ' + Number(amount || 0).toFixed(2);
-                }
-
-                log(data.message || 'Berhasil.');
-            } catch (e) {
-                const msg = e?.message || 'Error jaringan.';
-                $errorBox.textContent = msg;
-                log('Error: ' + msg);
-            } finally {
-                inFlight = false;
-                setLoading(false);
-                focusInput();
-            }
+        // Message Container
+        messageContainer.innerText = data.message;
+        if (isOk) {
+            messageContainer.className = 'mt-6 p-4 w-full rounded-2xl text-center font-bold bg-green-100 text-green-700';
+        } else {
+            messageContainer.className = 'mt-6 p-4 w-full rounded-2xl text-center font-bold bg-red-100 text-red-700';
         }
 
-        $input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendScan($input.value);
-            }
-        });
+        // Show container
+        resultContainer.classList.remove('hidden');
+        setTimeout(() => {
+            resultContainer.classList.remove('scale-95', 'opacity-0');
+            resultContainer.classList.add('scale-100', 'opacity-100');
+        }, 10);
 
-        // Fallback jika scanner tidak mengirim Enter
-        $input.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            const v = $input.value.trim();
-            if (v.length < 4) return;
-            debounceTimer = setTimeout(() => sendScan($input.value), 300);
-        });
-
-        // Refocus: klik di mana pun tetap fokus ke input
-        document.addEventListener('click', () => focusInput());
-
-        // Fallback global capture: jika input tidak fokus, tetap tangkap ketikan scanner
-        let globalBuffer = '';
-        let globalTimer = null;
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.altKey || e.metaKey) return;
-            if (document.activeElement === $input) return;
-
-            if (e.key === 'Enter') {
-                if (globalBuffer.trim()) sendScan(globalBuffer);
-                globalBuffer = '';
-                return;
-            }
-
-            if (e.key.length === 1) {
-                globalBuffer += e.key;
-                clearTimeout(globalTimer);
-                globalTimer = setTimeout(() => {
-                    if (globalBuffer.trim()) sendScan(globalBuffer);
-                    globalBuffer = '';
-                }, 300);
-            }
-        });
-
-        window.addEventListener('load', () => {
-            setLoading(false);
-            focusInput();
-            $meta.textContent = 'Siap scan...';
-            log('Siap scan RFID.');
-        });
-    </script>
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            resultContainer.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => resultContainer.classList.add('hidden'), 500);
+        }, 5000);
+    }
+</script>
 @endpush
-
+@endsection

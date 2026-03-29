@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\ParkingMap;
+use App\Models\AreaParkir;
 use App\Models\ParkingMapSlot;
 use App\Models\ParkingMapCamera;
 use App\Models\ParkingSlotReservation;
@@ -17,44 +17,43 @@ class ParkingSlotController extends Controller
      */
     public function index(Request $request)
     {
-        $mapId = $request->query('map_id');
-        $map = null;
+        $areaId = $request->query('map_id'); // map_id parameter is now area_id
+        $area = null;
 
-        if ($mapId) {
-            $map = ParkingMap::find((int) $mapId);
+        if ($areaId) {
+            $area = AreaParkir::find((int) $areaId);
         }
-        if (!$map) {
-            $map = ParkingMap::getDefaultOrFirst();
+        if (!$area) {
+            $area = AreaParkir::getDefaultMap();
         }
 
         $slots = [];
         $cameras = [];
         $summary = ['total' => 0, 'empty' => 0, 'occupied' => 0, 'reserved' => 0, 'unassigned' => 0];
 
-        if ($map) {
+        if ($area) {
             $currentUserId = Auth::user()?->id ?? null;
-            $slotModels = ParkingMapSlot::where('parking_map_id', $map->id)
+            $slotModels = ParkingMapSlot::where('area_parkir_id', $area->id_area)
                 ->with(['areaParkir', 'camera'])
                 ->orderBy('code')
                 ->get();
 
             $slotIds = $slotModels->pluck('id')->all();
-            $areaIds = $slotModels->pluck('area_parkir_id')->filter()->unique()->values()->all();
+            $areaIds = [$area->id_area];
             $activeBySlot = $this->getActiveTransactionsBySlot($slotIds);
             $activeReservationsBySlot = $this->getActiveReservationsBySlot($slotIds);
-            if (!empty($areaIds)) {
-                $tenMinutesAgo = Carbon::now()->subMinutes(10);
-                $summary['unassigned'] = Transaksi::whereIn('id_area', $areaIds)
-                    ->whereNull('parking_map_slot_id')
-                    ->where(function ($q) use ($tenMinutesAgo) {
-                        $q->where(function ($q2) {
-                            $q2->whereNull('waktu_keluar')->where('status', 'masuk');
-                        })->orWhere(function ($q2) use ($tenMinutesAgo) {
-                            $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
-                        });
-                    })
-                    ->count();
-            }
+            
+            $tenMinutesAgo = Carbon::now()->subMinutes(10);
+            $summary['unassigned'] = Transaksi::whereIn('id_area', $areaIds)
+                ->whereNull('parking_map_slot_id')
+                ->where(function ($q) use ($tenMinutesAgo) {
+                    $q->where(function ($q2) {
+                        $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                    })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                        $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                    });
+                })
+                ->count();
 
             foreach ($slotModels as $slot) {
                 $status = 'empty';
@@ -98,35 +97,34 @@ class ParkingSlotController extends Controller
                 ];
 
                 $summary['total']++;
-                if ($status === 'empty') {
-                    $summary['empty']++;
-                } elseif ($status === 'occupied') {
-                    $summary['occupied']++;
-                } else {
-                    $summary['reserved']++;
-                }
+                if ($status === 'empty') $summary['empty']++;
+                elseif ($status === 'occupied') $summary['occupied']++;
+                else $summary['reserved']++;
             }
 
-            $mapCameras = ParkingMapCamera::where('parking_map_id', $map->id)
+            $cameraModels = ParkingMapCamera::where('area_parkir_id', $area->id_area)
                 ->with('camera')
                 ->get();
 
-            foreach ($mapCameras as $pmc) {
-                if (!$pmc->camera) {
-                    continue;
-                }
+            foreach ($cameraModels as $mc) {
                 $cameras[] = [
-                    'id' => $pmc->camera->id,
-                    'name' => $pmc->camera->nama,
-                    'type' => $pmc->camera->tipe,
-                    'url' => $pmc->camera->url,
-                    'x' => (int) $pmc->x,
-                    'y' => (int) $pmc->y,
+                    'id' => $mc->camera_id,
+                    'name' => $mc->camera?->nama ?? 'Unknown',
+                    'x' => (int) $mc->x,
+                    'y' => (int) $mc->y,
+                    'stream_url' => $mc->camera?->url_stream,
                 ];
             }
         }
 
         return response()->json([
+            'map' => $area ? [
+                'id' => $area->id_area,
+                'name' => $area->nama_area,
+                'image' => asset('storage/' . $area->map_image),
+                'width' => (int) $area->map_width,
+                'height' => (int) $area->map_height,
+            ] : null,
             'slots' => $slots,
             'cameras' => $cameras,
             'summary' => $summary,
@@ -217,7 +215,8 @@ class ParkingSlotController extends Controller
     {
         $slots = ParkingMapSlot::forArea($area)
             ->orderBy('code')
-            ->get(['id', 'code', 'area_parkir_id', 'parking_map_id']);
+            // `parking_map_id` sudah dihapus (area adalah map).
+            ->get(['id', 'code', 'area_parkir_id']);
 
         $slotIds = $slots->pluck('id')->all();
         $blockedSlotIds = [];
@@ -256,22 +255,21 @@ class ParkingSlotController extends Controller
 
     public function view(Request $request)
     {
-        $maps = ParkingMap::orderBy('name')->get();
+        $areaId = $request->query('map_id');
+        $area = $areaId ? AreaParkir::find($areaId) : AreaParkir::getDefaultMap();
+        $maps = AreaParkir::whereNotNull('map_image')->orderBy('nama_area')->get();
+        $title = 'Peta Parkir';
 
-        $selectedId = $request->query('map');
-        $map = null;
+        return view('parking-map', compact('area', 'maps', 'title'));
+    }
 
-        if ($selectedId) {
-            $map = $maps->firstWhere('id', (int) $selectedId);
-        }
+    public function bookmark(Request $request, AreaParkir $area)
+    {
+        return response()->json(['message' => 'Not implemented'], 501);
+    }
 
-        if (!$map) {
-            $map = ParkingMap::getDefaultOrFirst();
-        }
-
-        return view('parking-map', [
-            'map' => $map,
-            'maps' => $maps,
-        ]);
+    public function unbookmark(Request $request, Transaksi $transaksi)
+    {
+        return response()->json(['message' => 'Not implemented'], 501);
     }
 }

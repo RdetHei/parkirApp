@@ -88,13 +88,12 @@
     const statusEl = document.getElementById('user-status');
     const userIdEl = document.getElementById('user-id');
 
-    let encryptedId = null;
+    let scannedToken = null;
     let currentUser = null;
     let reader = null;
 
     function setPopup(user) {
         currentUser = user;
-        encryptedId = user.encrypted_id;
 
         photoEl.src = user.photo ? user.photo : '';
         nameEl.textContent = user.name || '-';
@@ -165,16 +164,14 @@
                 }
 
                 encryptedId = text;
+                scannedToken = text;
                 log('encrypted_id didapat, kirim ke backend...');
 
-                const {res, data} = await postJson('{{ url('/api/nfc-scan') }}', { encrypted_id: encryptedId });
+                const {res, data} = await postJson('{{ url('/api/nfc-scan') }}', { nfc_uid: scannedToken, encrypted_id: scannedToken });
                 if (!res.ok) {
                     log('Gagal scan: ' + (data.error || res.status));
                     return;
                 }
-
-                // Tambahkan encrypted_id agar tombol bisa panggil parkir/masuk/keluar
-                data.encrypted_id = encryptedId;
 
                 setPopup(data);
                 nfcStatus.textContent = 'Kartu valid. Siap tap.';
@@ -191,13 +188,14 @@
     });
 
     btnIn.addEventListener('click', async () => {
-        if (!currentUser || !encryptedId) return;
+        if (!currentUser || !scannedToken) return;
         log('Tap Masuk...');
         btnIn.disabled = true;
 
         const {res, data} = await postJson('{{ url('/api/parkir/masuk') }}', {
-            encrypted_id: encryptedId,
-            user_id: currentUser.user_id
+            nfc_uid: scannedToken,
+            encrypted_id: scannedToken,
+            user_id: currentUser.user_id,
         });
 
         if (!res.ok) {
@@ -211,12 +209,13 @@
     });
 
     btnOut.addEventListener('click', async () => {
-        if (!currentUser || !encryptedId) return;
+        if (!currentUser || !scannedToken) return;
         log('Tap Keluar...');
         btnOut.disabled = true;
 
         const {res, data} = await postJson('{{ url('/api/parkir/keluar') }}', {
-            encrypted_id: encryptedId,
+            nfc_uid: scannedToken,
+            encrypted_id: scannedToken,
             user_id: currentUser.user_id,
         });
 

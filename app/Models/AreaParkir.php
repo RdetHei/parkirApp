@@ -12,6 +12,15 @@ class AreaParkir extends Model
         'nama_area',
         'kapasitas',
         'terisi',
+        'map_code',
+        'map_image',
+        'map_width',
+        'map_height',
+        'is_default_map',
+    ];
+
+    protected $casts = [
+        'is_default_map' => 'boolean',
     ];
 
     public function getRouteKeyName()
@@ -24,9 +33,18 @@ class AreaParkir extends Model
         return $this->hasMany(Transaksi::class, 'id_area', 'id_area');
     }
 
-    /** Satu area punya satu layout peta (1:1). Dibuat otomatis saat area dibuat. */
-    public function parkingMap()
+    public function slots()
     {
-        return $this->hasOne(ParkingMap::class, 'area_parkir_id', 'id_area');
+        return $this->hasMany(ParkingMapSlot::class, 'area_parkir_id', 'id_area');
+    }
+
+    public function mapCameras()
+    {
+        return $this->hasMany(ParkingMapCamera::class, 'area_parkir_id', 'id_area');
+    }
+
+    public static function getDefaultMap(): ?self
+    {
+        return static::where('is_default_map', true)->first() ?? static::first();
     }
 }

@@ -48,6 +48,7 @@
                         <th class="px-8 py-4">Total Capacity</th>
                         <th class="px-8 py-4">Current Load</th>
                         <th class="px-8 py-4">Utilization</th>
+                        <th class="px-8 py-4">Map Progress</th>
                         <th class="px-8 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -65,11 +66,15 @@
                             </td>
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-emerald-500 group-hover:border-emerald-500/30 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        </svg>
+                                    <div class="w-10 h-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-emerald-500 group-hover:border-emerald-500/30 transition-colors overflow-hidden">
+                                        @if($area->map_image && $area->map_image !== 'parking_maps/default.png')
+                                            <img src="{{ asset('storage/' . $area->map_image) }}" class="w-full h-full object-cover">
+                                        @else
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-white tracking-tight">{{ $area->nama_area }}</p>
@@ -103,40 +108,33 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-8 py-5 text-right space-x-2">
-                                <div class="flex items-center justify-end gap-2">
-                                    @if($area->parkingMap)
-                                    <a href="{{ route('parking-maps.edit', $area->parkingMap) }}"
-                                       class="p-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-slate-950 rounded-lg border border-emerald-500/20 transition-all"
-                                       title="Edit layout peta">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h2l3 7 4-4 4 8 3-6h2"></path></svg>
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex -space-x-2">
+                                        @if($area->slots_count > 0)
+                                            <div class="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/50 flex items-center justify-center text-[8px] font-black text-blue-400">
+                                                {{ $area->slots_count }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <span class="text-[10px] font-bold {{ $area->slots_count == $area->kapasitas ? 'text-emerald-500' : 'text-slate-500' }} uppercase tracking-widest">
+                                        {{ $area->slots_count }}/{{ $area->kapasitas }} Mapped
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-5 text-right">
+                                <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href="{{ route('area-parkir.design', $area->id_area) }}" class="p-2 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all border border-blue-500/20" title="Design Layout">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 012-2V6a2 2 0 01-2-2H6a2 2 0 01-2 2v12a2 2 0 012 2z"></path></svg>
                                     </a>
-                                    @else
-                                    <form action="{{ route('area-parkir.create-layout', $area) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" class="p-2 bg-slate-800 hover:bg-emerald-500 text-slate-500 hover:text-slate-950 rounded-lg border border-white/5 transition-all" title="Buat layout peta">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                        </button>
-                                    </form>
-                                    @endif
-                                    
-                                    <a href="{{ route('area-parkir.edit', $area) }}"
-                                       class="p-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 rounded-lg border border-amber-500/20 transition-all"
-                                       title="Edit Details">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
+                                    <a href="{{ route('area-parkir.edit', $area->id_area) }}" class="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20" title="Edit Properties">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                     </a>
-
-                                    <form action="{{ route('area-parkir.destroy', $area) }}" method="POST" class="inline" onsubmit="return confirm('Archive this zone? This action cannot be undone.')">
+                                    <form action="{{ route('area-parkir.destroy', $area->id_area) }}" method="POST" onsubmit="return confirm('Hapus area ini? Seluruh data slot terkait akan terhapus.')" class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit"
-                                                class="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
-                                                title="Archive Zone">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
+                                        <button type="submit" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20" title="Delete Zone">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </form>
                                 </div>

@@ -62,7 +62,7 @@
                     <a href="#about" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">About</a>
                     <a href="#workflow" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Workflow</a>
                     <a href="#fitur" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Features</a>
-                    <a href="#docs" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Docs</a>
+                    <a href="{{ route('docs') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Docs</a>
                     <a href="#contact" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Contact</a>
                     <div class="h-4 w-px bg-white/10"></div>
                     <button onclick="openCardLogin()" class="group flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">

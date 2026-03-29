@@ -2,7 +2,7 @@
     $headerTitle = 'Dashboard';
     $addButton = null; // ['label' => '...', 'route' => '...', 'routeName' => '...']
 
-    if (request()->routeIs('dashboard')) {
+    if (request()->routeIs('dashboard', 'petugas.dashboard', 'owner.dashboard')) {
         $headerTitle = 'Dashboard';
     } elseif (request()->routeIs('transaksi.create-check-in')) {
         $headerTitle = 'Catat Masuk';

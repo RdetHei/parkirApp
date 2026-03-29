@@ -2,10 +2,6 @@
 
 @section('title', 'Check-In Vehicle')
 
-@php
-    $areaSlotUrlPlaceholder = route('api.areas.slots', ['area' => '999999999'], false);
-@endphp
-
 @section('content')
     @component('components.form-card', [
         'backUrl' => route('transaksi.parkir.index'),
@@ -151,26 +147,25 @@
                     </select>
                 </div>
 
-                <!-- Slot -->
+                {{-- Slot: data dari server (json slots), filter di browser per id_area — tanpa fetch kedua --}}
                 <div class="space-y-2">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Assigned Slot</label>
                     <div class="relative">
-                        <select name="parking_map_slot_id" 
-                                x-model="idSlot" 
-                                :disabled="!idArea || loadingSlots"
+                        {{-- Jangan pakai <template x-for> di dalam <select>: tidak valid HTML, browser tidak merender <option> di dalam select --}}
+                        <select name="parking_map_slot_id"
+                                x-ref="slotSelect"
+                                x-model="idSlot"
+                                :disabled="!idArea"
                                 class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                             <option value="">Optional Slot</option>
-                            <template x-for="s in filteredSlots" :key="s.id">
-                                <option :value="s.id" :disabled="s.occupied"
-                                        x-text="s.code + (s.occupied ? ' (Occupied)' : '')"></option>
-                            </template>
                         </select>
-                        <template x-if="loadingSlots">
-                            <div class="absolute right-10 top-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </div>
-                        </template>
                     </div>
+                    <p x-show="idArea && (!allSlots || allSlots.length === 0)" x-cloak class="text-[10px] text-amber-400/90 mt-1">
+                        Belum ada slot di database untuk check-in (kolom area_parkir_id kosong atau belum ada baris slot).
+                    </p>
+                    <p x-show="idArea && allSlots.length && filteredSlots.length === 0" x-cloak class="text-[10px] text-amber-400/90 mt-1">
+                        Tidak ada slot untuk area ini. Pastikan slot di peta sudah terikat ke area yang sama (area_parkir_id).
+                    </p>
                 </div>
             </div>
 
@@ -193,7 +188,7 @@
 <style>
     [x-cloak] { display: none !important; }
     .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 @endpush
 
@@ -213,15 +208,11 @@
             
             allSlots: @json($slots ?? []),
             filteredSlots: [],
-            loadingSlots: false,
-            slotsLoadError: '',
             errorMessage: '',
-            
-            slotsUrlTemplate: '{{ $areaSlotUrlPlaceholder }}',
 
             init() {
                 if (this.platNomor.length >= 3) this.searchVehicle();
-                if (this.idArea) this.filterSlots();
+                this.filterSlots();
             },
 
             async searchVehicle() {
@@ -233,13 +224,16 @@
                 
                 this.isSearching = true;
                 try {
-                    const response = await fetch(`/api/vehicles/search?plat_nomor=${plat}`);
+                    const response = await fetch('/api/kendaraan/check-plat?plat=' + encodeURIComponent(plat), {
+                        credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
                     const data = await response.json();
                     
-                    if (data.success) {
+                    if (data.found && data.kendaraan) {
                         this.vehicleFound = true;
-                        this.selectedVehicle = data.vehicle;
-                        this.jenisKendaraan = data.vehicle.jenis_kendaraan;
+                        this.selectedVehicle = data.kendaraan;
+                        this.jenisKendaraan = data.kendaraan.jenis_kendaraan;
                         this.syncTarifByJenis();
                     } else {
                         this.resetVehicleState();
@@ -264,32 +258,62 @@
                 if (match) this.idTarif = match.value;
             },
 
-            async filterSlots() {
-                if (!this.idArea) {
+            filterSlots() {
+                const raw = this.idArea;
+                if (raw === '' || raw === null || raw === undefined) {
                     this.filteredSlots = [];
+                    this.idSlot = '';
+                    this.syncSlotSelectOptions();
                     return;
                 }
+                const aid = parseInt(String(raw), 10);
+                if (Number.isNaN(aid)) {
+                    this.filteredSlots = [];
+                    this.idSlot = '';
+                    this.syncSlotSelectOptions();
+                    return;
+                }
+                this.filteredSlots = (this.allSlots || []).filter((s) => {
+                    const sid = s.id_area != null ? parseInt(String(s.id_area), 10) : NaN;
+                    return !Number.isNaN(sid) && sid === aid;
+                });
+                if (this.idSlot && !this.filteredSlots.some((s) => String(s.id) === String(this.idSlot))) {
+                    this.idSlot = '';
+                }
+                this.syncSlotSelectOptions();
+            },
 
-                this.loadingSlots = true;
-                this.slotsLoadError = '';
-
+            /** Isi <option> lewat DOM — satu-satunya cara yang konsisten di semua browser untuk <select> dinamis */
+            syncSlotSelectOptions() {
                 try {
-                    const url = this.slotsUrlTemplate.replace('999999999', this.idArea);
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Failed to load slots');
-                    
-                    const data = await response.json();
-                    this.filteredSlots = data;
-                    
-                    // Reset slot if current selected slot is not in the new list
-                    if (this.idSlot && !this.filteredSlots.find(s => s.id == this.idSlot)) {
-                        this.idSlot = '';
+                    const sel = this.$refs.slotSelect;
+                    // Debug cepat: lihat apakah refs terbaca dan filteredSlots terisi
+                    console.log('[checkin] syncSlotSelectOptions', {
+                        hasRef: !!sel,
+                        tag: sel?.tagName,
+                        idArea: this.idArea,
+                        allSlots: (this.allSlots || []).length,
+                        filteredSlots: (this.filteredSlots || []).length,
+                    });
+
+                    if (!sel || sel.tagName !== 'SELECT') return;
+
+                    while (sel.options.length > 1) {
+                        sel.remove(1);
                     }
+
+                    (this.filteredSlots || []).forEach((s) => {
+                        const opt = new Option(
+                            s.code + (s.occupied ? ' (Occupied)' : ''),
+                            String(s.id),
+                            false,
+                            false
+                        );
+                        opt.disabled = !!s.occupied;
+                        sel.add(opt);
+                    });
                 } catch (e) {
-                    this.slotsLoadError = 'Could not sync slots with server.';
-                    console.error(e);
-                } finally {
-                    this.loadingSlots = false;
+                    console.error('[checkin] syncSlotSelectOptions error', e);
                 }
             }
         }

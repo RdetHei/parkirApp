@@ -14,8 +14,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Statistik Utama
-        $totalKendaraan = Kendaraan::count();
+        try {
+            \Illuminate\Support\Facades\Log::info('DashboardController@index hit');
+            // Statistik Utama
+            $totalKendaraan = Kendaraan::count();
         $totalTransaksi = Transaksi::count();
         $transaksiAktif = Transaksi::where('status', 'masuk')->count();
         $totalPendapatan = Pembayaran::where('status', 'berhasil')->sum('nominal');
@@ -78,23 +80,28 @@ class DashboardController extends Controller
         $title = 'Admin Dashboard';
 
         return view('dashboard', compact(
-            'title',
-            'totalKendaraan',
-            'totalTransaksi',
-            'transaksiAktif',
-            'totalPendapatan',
-            'pendapatanHariIni',
-            'totalKapasitas',
-            'totalTerisi',
-            'pembayaranPending',
-            'transaksiHariIni',
-            'totalUser',
-            'areaParkir',
-            'grafikPendapatan',
-            'grafikKendaraan',
-            'aktivitasTerbaru',
-            'revenueByHour',
-            'topAreas'
-        ));
+                'title',
+                'totalKendaraan',
+                'totalTransaksi',
+                'transaksiAktif',
+                'totalPendapatan',
+                'pendapatanHariIni',
+                'totalKapasitas',
+                'totalTerisi',
+                'pembayaranPending',
+                'transaksiHariIni',
+                'totalUser',
+                'areaParkir',
+                'grafikPendapatan',
+                'grafikKendaraan',
+                'aktivitasTerbaru',
+                'revenueByHour',
+                'topAreas'
+            ));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('DashboardController@index error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
+            return response()->json(['error' => 'Internal Server Error', 'message' => $e->getMessage()], 500);
+        }
     }
 }
