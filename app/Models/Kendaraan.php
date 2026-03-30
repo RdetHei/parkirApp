@@ -17,6 +17,7 @@ class Kendaraan extends Model
         'warna',
         'pemilik',
         'id_user',
+        'foto_url',
     ];
 
     public function user()

@@ -18,9 +18,9 @@
                 <i class="fa-solid fa-camera-viewfinder text-sm"></i>
                 AI Scanner
             </a>
-            <a href="{{ route('nfc.scan') }}" class="group relative px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center gap-2">
+            <a href="{{ route('parkir.scan') }}" class="group relative px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center gap-2">
                 <i class="fa-solid fa-id-card text-sm"></i>
-                NFC Terminal
+                RFID Terminal
             </a>
         </div>
     </div>

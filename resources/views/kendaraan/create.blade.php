@@ -78,5 +78,18 @@
             </div>
             @error('id_user')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
         </div>
+
+        <div>
+            <label for="foto" class="block text-sm font-semibold text-gray-700 mb-2">Foto Kendaraan</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </div>
+                <input type="file" name="foto" id="foto" accept="image/*"
+                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('foto') border-red-500 @enderror">
+            </div>
+            <p class="mt-1 text-xs text-gray-500 italic">Format: JPG, PNG, JPEG. Maks: 2MB</p>
+            @error('foto')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
     @endcomponent
 @endsection

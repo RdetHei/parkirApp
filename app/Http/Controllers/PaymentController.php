@@ -255,11 +255,9 @@ class PaymentController extends Controller
         $order_id = $payload['order_id'] ?? null;
         Log::info('Midtrans notification', ['order_id' => $order_id, 'transaction_status' => $payload['transaction_status'] ?? null]);
 
-        if (!$order_id || !preg_match('/^PARKIR-(\d+)-/', $order_id, $m)) {
+        if (!$order_id) {
             return response()->json(['message' => 'Invalid order_id'], 400);
         }
-
-        $id_parkir = (int) $m[1];
 
         // Verifikasi dengan mengambil status resmi dari API Midtrans (agar notifikasi benar-benar dari Midtrans)
         $serverKey = config('services.midtrans.server_key');
@@ -291,13 +289,56 @@ class PaymentController extends Controller
         }
 
         try {
-            $this->applyMidtransSuccess($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount);
+            if (str_starts_with($order_id, 'PARKIR-') && preg_match('/^PARKIR-(\d+)-/', $order_id, $m)) {
+                $id_parkir = (int) $m[1];
+                $this->applyMidtransSuccess($id_parkir, $order_id, $transaction_id, $payment_type, $gross_amount);
+            } else if (str_starts_with($order_id, 'TOPUP-') && preg_match('/^TOPUP-(\d+)-/', $order_id, $m)) {
+                $user_id = (int) $m[1];
+                $this->applyTopupSuccess($user_id, $order_id, $transaction_id, $payment_type, $gross_amount);
+            } else {
+                return response()->json(['message' => 'Unknown order_id prefix'], 400);
+            }
         } catch (\Exception $e) {
             Log::error('Midtrans notification handler error', ['order_id' => $order_id, 'error' => $e->getMessage()]);
             return response()->json(['message' => 'Processing error'], 500);
         }
 
         return response()->json(['received' => true]);
+    }
+
+    /**
+     * Handle top-up success
+     */
+    private function applyTopupSuccess($user_id, $order_id, $transaction_id, $payment_type, $gross_amount)
+    {
+        // Gunakan DB transaction agar sinkron dengan SaldoHistory
+        DB::transaction(function () use ($user_id, $order_id, $transaction_id, $payment_type, $gross_amount) {
+            // Cek apakah sudah diproses (idempotent)
+            $existing = \App\Models\SaldoHistory::where('reference_id', $order_id)->exists();
+            if ($existing) return;
+
+            $user = \App\Models\User::lockForUpdate()->findOrFail($user_id);
+            $user->saldo = (float) $user->saldo + $gross_amount;
+            if (array_key_exists('balance', $user->getAttributes())) {
+                $user->balance = (float) ($user->balance ?? 0) + $gross_amount;
+            }
+            $user->save();
+
+            \App\Models\SaldoHistory::create([
+                'user_id' => $user->id,
+                'amount' => $gross_amount,
+                'type' => 'topup',
+                'description' => 'Top Up NestonPay via Midtrans (' . $payment_type . ')',
+                'reference_id' => $order_id,
+            ]);
+
+            $this->logActivity(
+                "Topup saldo Midtrans berhasil",
+                'user',
+                $user,
+                ['nominal' => $gross_amount, 'order_id' => $order_id]
+            );
+        });
     }
 
     /**

@@ -17,6 +17,14 @@ class SaldoController extends Controller
 {
     use LogsActivity;
 
+    public function __construct()
+    {
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -29,7 +37,54 @@ class SaldoController extends Controller
 
     public function topup()
     {
-        return view('user.saldo.topup');
+        $user = Auth::user();
+        return view('user.saldo.topup', compact('user'));
+    }
+
+    /**
+     * Get Midtrans Snap Token for Top Up
+     */
+    public function midtransSnapToken(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:10000',
+        ]);
+
+        $user = Auth::user();
+        $amount = (float) $request->amount;
+        $order_id = 'TOPUP-' . $user->id . '-' . time();
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order_id,
+                'gross_amount' => $amount,
+            ],
+            'customer_details' => [
+                'first_name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ],
+            'item_details' => [
+                [
+                    'id' => 'TOPUP-' . $user->id,
+                    'price' => $amount,
+                    'quantity' => 1,
+                    'name' => 'Top Up Saldo NestonPay',
+                    'category' => 'Wallet',
+                ]
+            ],
+        ];
+
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+            return response()->json([
+                'snap_token' => $snapToken,
+                'order_id' => $order_id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Midtrans TopUp SnapToken Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal membuat sesi pembayaran: ' . $e->getMessage()], 500);
+        }
     }
 
     public function processPayWithSaldo(Request $request, $id_parkir)

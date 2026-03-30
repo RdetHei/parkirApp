@@ -37,6 +37,84 @@
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
+
+        /* Parking Animation */
+        .parking-lot {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            border: 2px solid rgba(255,255,255,0.05);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .parking-slot {
+            position: absolute;
+            width: 60px;
+            height: 100px;
+            border: 2px dashed rgba(255,255,255,0.1);
+            border-top: none;
+        }
+
+        .car {
+            position: absolute;
+            width: 40px;
+            height: 70px;
+            border-radius: 8px;
+            transition: all 1s ease-in-out;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .car-light {
+            position: absolute;
+            width: 6px;
+            height: 4px;
+            background: #fff;
+            border-radius: 2px;
+            opacity: 0.8;
+            top: 4px;
+        }
+
+        .car-light.left { left: 6px; }
+        .car-light.right { right: 6px; }
+
+        /* Animation Keyframes */
+        @keyframes car1-entry {
+            0% { left: -100px; top: 180px; transform: rotate(90deg); }
+            20% { left: 150px; top: 180px; transform: rotate(90deg); }
+            40% { left: 150px; top: 80px; transform: rotate(0deg); }
+            100% { left: 150px; top: 80px; transform: rotate(0deg); }
+        }
+
+        @keyframes car1-exit {
+            0% { left: 150px; top: 80px; transform: rotate(0deg); }
+            20% { left: 150px; top: 180px; transform: rotate(180deg); }
+            40% { left: 600px; top: 180px; transform: rotate(90deg); }
+            100% { left: 1200px; top: 180px; transform: rotate(90deg); }
+        }
+
+        @keyframes car2-entry {
+            0% { left: -100px; top: 180px; transform: rotate(90deg); }
+            30% { left: 350px; top: 180px; transform: rotate(90deg); }
+            60% { left: 350px; top: 80px; transform: rotate(0deg); }
+            100% { left: 350px; top: 80px; transform: rotate(0deg); }
+        }
+
+        @keyframes car3-exit {
+            0% { left: 550px; top: 80px; transform: rotate(0deg); }
+            30% { left: 550px; top: 180px; transform: rotate(180deg); }
+            60% { left: 800px; top: 180px; transform: rotate(90deg); }
+            100% { left: 1200px; top: 180px; transform: rotate(90deg); }
+        }
+
+        .animate-car-1 { animation: car1-entry 5s forwards, car1-exit 5s 10s forwards; animation-iteration-count: infinite; }
+        .animate-car-2 { animation: car2-entry 7s 2s infinite alternate; }
+        .animate-car-3 { animation: car3-exit 8s infinite; }
     </style>
 </head>
 <body class="bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
@@ -102,29 +180,109 @@
                 </div>
             </div>
 
-            <!-- Hero Visual (SaaS Style) -->
             <div class="mt-24 relative max-w-5xl mx-auto">
                 <div class="aspect-[16/9] rounded-2xl bg-slate-900 border border-white/5 shadow-2xl overflow-hidden relative group">
                     <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-indigo-500/5"></div>
-                    <!-- Mockup UI elements -->
-                    <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2">
-                        <div class="w-2 h-2 rounded-full bg-red-500/50"></div>
-                        <div class="w-2 h-2 rounded-full bg-amber-500/50"></div>
-                        <div class="w-2 h-2 rounded-full bg-emerald-500/50"></div>
+                    
+                    <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2 z-10">
+                        <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500/50"></div>
+                        <div class="ml-4 text-xs text-slate-500 font-mono">sipark-dashboard.io/monitoring</div>
                     </div>
-                    <div class="p-12 pt-20 grid grid-cols-3 gap-6">
-                        <div class="h-32 rounded-xl bg-white/5 border border-white/5 animate-pulse"></div>
-                        <div class="h-32 rounded-xl bg-white/5 border border-white/5 animate-pulse" style="animation-delay: 0.2s"></div>
-                        <div class="h-32 rounded-xl bg-white/5 border border-white/5 animate-pulse" style="animation-delay: 0.4s"></div>
-                        <div class="col-span-2 h-48 rounded-xl bg-white/5 border border-white/5 animate-pulse" style="animation-delay: 0.6s"></div>
-                        <div class="h-48 rounded-xl bg-white/5 border border-white/5 animate-pulse" style="animation-delay: 0.8s"></div>
+            
+                    <div class="p-8 pt-16 grid grid-cols-3 gap-6 h-full overflow-hidden absolute inset-0">
+                        
+                        <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
+                            <div class="text-slate-400 text-sm font-medium flex justify-between items-center">
+                                <span>Slot Tersedia</span>
+                                <span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded text-xs">Live</span>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-4xl font-bold text-white">142</span>
+                                <span class="text-slate-500 text-sm font-medium">/ 500 total</span>
+                            </div>
+                        </div>
+            
+                        <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
+                            <div class="text-slate-400 text-sm font-medium">Kendaraan Masuk</div>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-4xl font-bold text-white">358</span>
+                                <span class="text-emerald-400 text-sm font-medium">↑ 12%</span>
+                            </div>
+                        </div>
+            
+                        <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
+                            <div class="text-slate-400 text-sm font-medium">Pendapatan (Harian)</div>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-3xl font-bold text-white">Rp 2.4M</span>
+                            </div>
+                        </div>
+            
+                        <div class="col-span-2 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="text-slate-200 font-medium">Live Area Monitoring - Lantai 1</div>
+                                <div class="flex gap-3 text-xs">
+                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-400"></div> Kosong</span>
+                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-rose-500"></div> Terisi</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-8 gap-2 flex-1">
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md relative flex items-center justify-center">
+                                    <div class="w-2 h-2 bg-rose-500 rounded-full animate-ping"></div>
+                                </div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                            </div>
+                        </div>
+            
+                        <div class="rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
+                            <div class="text-slate-200 font-medium mb-4">Aktivitas Terakhir (ANPR)</div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center pb-2 border-b border-white/5">
+                                    <div>
+                                        <div class="text-sm font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">B 1234 XYZ</div>
+                                        <div class="text-xs text-emerald-400 mt-1">Masuk - Gate 1</div>
+                                    </div>
+                                    <div class="text-xs text-slate-500">Baru saja</div>
+                                </div>
+                                <div class="flex justify-between items-center pb-2 border-b border-white/5">
+                                    <div>
+                                        <div class="text-sm font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">D 5678 ABC</div>
+                                        <div class="text-xs text-rose-400 mt-1">Keluar - Gate 2</div>
+                                    </div>
+                                    <div class="text-xs text-slate-500">2 mnt lalu</div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">L 9999 OP</div>
+                                        <div class="text-xs text-emerald-400 mt-1">Masuk - Gate 1</div>
+                                    </div>
+                                    <div class="text-xs text-slate-500">5 mnt lalu</div>
+                                </div>
+                            </div>
+                        </div>
+            
                     </div>
                 </div>
-                <!-- Decoration -->
+                
                 <div class="absolute -top-12 -right-12 w-64 h-64 bg-emerald-500/20 rounded-full blur-[100px] -z-10"></div>
                 <div class="absolute -bottom-12 -left-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-[100px] -z-10"></div>
             </div>
-        </div>
     </section>
 
     <!-- Stats -->

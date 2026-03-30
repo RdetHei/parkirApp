@@ -17,6 +17,9 @@ use App\Http\Controllers\RfidAccessController;
 use App\Http\Controllers\RfidLoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RfidAdminController;
+use App\Http\Controllers\KendaraanController;
+
+Route::post('/kendaraan/upload', [KendaraanController::class, 'store']);
 
 // Public Routes
 Route::get('/', function () {
@@ -278,6 +281,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
     Route::get('/user/saldo', [\App\Http\Controllers\SaldoController::class, 'index'])->name('user.saldo.index');
     Route::get('/user/saldo/topup', [\App\Http\Controllers\SaldoController::class, 'topup'])->name('user.saldo.topup');
     Route::post('/user/saldo/topup', [\App\Http\Controllers\SaldoController::class, 'storeTopupManual'])->name('user.saldo.topup.store');
+    Route::post('/user/saldo/topup/token', [\App\Http\Controllers\SaldoController::class, 'midtransSnapToken'])->name('user.saldo.topup.token');
     Route::post('/user/saldo/pay/{id_parkir}', [\App\Http\Controllers\SaldoController::class, 'processPayWithSaldo'])->name('user.saldo.pay');
 
     // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
@@ -337,20 +341,6 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
-    });
-
-    // NFC: halaman scan (tampil untuk admin + petugas)
-    Route::middleware(['role:admin,petugas'])->group(function () {
-        Route::get('/nfc/scan', function () {
-            return view('nfc.scan');
-        })->name('nfc.scan');
-    });
-
-    // RFID: halaman scan operasional (tampil untuk admin + petugas)
-    Route::middleware(['role:admin,petugas'])->group(function () {
-        Route::get('/parkir/scan', [RfidParkingController::class, 'scanPage'])->name('parkir.scan');
-        Route::post('/api/parkir/scan-rfid', [RfidParkingController::class, 'scan'])
-            ->name('api.parkir.scan-rfid');
     });
 
     // RFID: identifikasi instan (tanpa transaksi) + kontrol akses berbasis kartu

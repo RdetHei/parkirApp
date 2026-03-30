@@ -59,9 +59,13 @@
                             </td>
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-slate-800 border border-white/5 flex flex-col items-center justify-center font-bold text-white group-hover:border-emerald-500/30 transition-colors">
-                                        <span class="text-[8px] text-slate-500 leading-none mb-0.5">{{ substr($item->plat_nomor ?? '-', 0, 2) }}</span>
-                                        <span class="text-sm leading-none">{{ substr($item->plat_nomor ?? '-', 2, 4) }}</span>
+                                    <div class="w-12 h-12 rounded-xl bg-slate-800 border border-white/5 flex flex-col items-center justify-center font-bold text-white group-hover:border-emerald-500/30 transition-colors overflow-hidden relative">
+                                        @if($item->foto_url)
+                                            <img src="{{ $item->foto_url }}" alt="Foto" class="w-full h-full object-cover">
+                                        @else
+                                            <span class="text-[8px] text-slate-500 leading-none mb-0.5">{{ substr($item->plat_nomor ?? '-', 0, 2) }}</span>
+                                            <span class="text-sm leading-none">{{ substr($item->plat_nomor ?? '-', 2, 4) }}</span>
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-white tracking-tight">{{ $item->plat_nomor }}</p>

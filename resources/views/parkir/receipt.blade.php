@@ -28,8 +28,6 @@
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 80mm;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
             }
             .no-print {
                 display: none !important;
@@ -40,7 +38,7 @@
                 width: 100% !important;
                 max-width: 100% !important;
                 margin: 0 !important;
-                padding: 4mm !important;
+                padding: 2mm !important;
                 border-radius: 0 !important;
             }
             .receipt-container * {
@@ -50,73 +48,41 @@
                 box-shadow: none !important;
             }
             .border-dashed {
-                border-bottom: 1pt dashed #000 !important;
+                border-bottom: 1px dashed #000 !important;
                 border-top: none !important;
                 border-left: none !important;
                 border-right: none !important;
             }
             .bg-zinc-900 {
-                background-color: #f4f4f5 !important; /* light gray for print visibility */
-                border: 1pt solid #000 !important;
+                background-color: transparent !important;
+                border: 1px solid #000 !important;
                 color: #000 !important;
-                -webkit-print-color-adjust: exact;
-            }
-            .rounded-2xl, .rounded-3xl, .rounded-\[2\.5rem\], .rounded-\[2rem\], .rounded-xl {
-                border-radius: 2mm !important;
-                border: 0.5pt solid #eee !important;
-            }
-            .p-8 {
-                padding: 4mm !important;
-            }
-            .p-6 {
-                padding: 3mm !important;
-            }
-            .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-                margin-top: 5mm !important;
-            }
-            .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-                margin-top: 3mm !important;
             }
             .receipt-font {
-                font-size: 12pt !important;
+                font-size: 10pt !important;
             }
-            h1 {
-                font-size: 18pt !important;
+            .text-2xl { font-size: 14pt !important; }
+            .text-xl { font-size: 12pt !important; }
+            .text-xs { font-size: 8pt !important; }
+            .text-\[10px\] { font-size: 7pt !important; }
+            
+            .w-14.h-14 { width: 10mm; height: 10mm; }
+            .p-8 { padding: 4mm !important; }
+            .p-6 { padding: 3mm !important; }
+            .mb-8 { margin-bottom: 4mm !important; }
+            .mb-4 { margin-bottom: 2mm !important; }
+            .mt-6 { margin-top: 3mm !important; }
+            
+            /* Hide decorative elements */
+            .animate-\[spin_20s_linear_infinite\] { display: none !important; }
+            .blur-2xl { display: none !important; }
+            
+            /* Force black text for everything */
+            * {
+                color: black !important;
+                border-color: black !important;
             }
-            .text-2xl {
-                font-size: 14pt !important;
-            }
-            .text-xl {
-                font-size: 12pt !important;
-            }
-            .text-xs {
-                font-size: 9pt !important;
-            }
-            .text-\[9px\], .text-\[8px\], .text-\[7px\], .text-\[10px\], .text-\[11px\] {
-                font-size: 8pt !important;
-                letter-spacing: 0.5pt !important;
-                opacity: 1 !important;
-            }
-            .fa-qrcode {
-                 color: #000 !important;
-                 font-size: 40pt !important;
-             }
-             .animate-\[spin_20s_linear_infinite\] {
-                 display: none !important;
-             }
-             .tracking-widest, .tracking-\[0\.3em\], .tracking-\[0\.4em\], .tracking-\[0\.2em\] {
-                  letter-spacing: 0.5pt !important;
-              }
-               img {
-                   filter: grayscale(100%) !important;
-                   width: 10mm !important;
-                   height: 10mm !important;
-               }
-               .bg-zinc-50, .bg-zinc-50\/50 {
-                   background-color: #fafafa !important;
-                   border: 0.5pt solid #eee !important;
-               }
-          }
+        }
     </style>
 </head>
 <body class="antialiased text-zinc-900 selection:bg-zinc-900 selection:text-white">

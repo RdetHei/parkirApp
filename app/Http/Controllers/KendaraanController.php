@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Kendaraan;
 use App\Models\User;
 use App\Support\PlatNomorNormalizer;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class KendaraanController extends Controller
 {
@@ -29,11 +30,20 @@ class KendaraanController extends Controller
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
             'id_user' => 'nullable|exists:tb_user,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $platNormalized = PlatNomorNormalizer::normalize($data['plat_nomor']);
         if (Kendaraan::where('plat_nomor', $platNormalized)->exists()) {
             return back()->withInput()->with('error', 'Plat nomor ini sudah ada.');
+        }
+
+        // Upload ke Cloudinary jika ada file foto
+        if ($request->hasFile('foto')) {
+            $uploadUrl = Cloudinary::upload($request->file('foto')->getRealPath(), [
+                'folder' => 'neston/kendaraan'
+            ])->getSecurePath();
+            $data['foto_url'] = $uploadUrl;
         }
 
         $data['plat_nomor'] = $platNormalized;
@@ -58,6 +68,7 @@ class KendaraanController extends Controller
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
             'id_user' => 'nullable|exists:tb_user,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $platNormalized = PlatNomorNormalizer::normalize($data['plat_nomor']);
@@ -66,6 +77,14 @@ class KendaraanController extends Controller
             ->exists();
         if ($exists) {
             return back()->withInput()->with('error', 'Plat nomor ini sudah ada.');
+        }
+
+        // Upload ke Cloudinary jika ada file foto baru
+        if ($request->hasFile('foto')) {
+            $uploadUrl = Cloudinary::upload($request->file('foto')->getRealPath(), [
+                'folder' => 'neston/kendaraan'
+            ])->getSecurePath();
+            $data['foto_url'] = $uploadUrl;
         }
 
         $data['plat_nomor'] = $platNormalized;
