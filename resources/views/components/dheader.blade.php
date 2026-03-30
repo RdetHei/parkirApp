@@ -75,7 +75,7 @@
         $headerTitle = 'Profil Saya';
     }
 @endphp
-<header class="h-20 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 transition-all duration-300">
+<header class="h-16 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 transition-all duration-300">
     <div class="h-full w-full flex items-center justify-between px-8">
         <div class="flex items-center gap-4 min-w-0">
             <div class="h-8 w-1 bg-emerald-500 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
@@ -94,7 +94,7 @@
             @endif
 
             <div class="h-6 w-px bg-white/10 mx-2"></div>
-            
+
             <button class="relative p-2 text-slate-400 hover:text-white transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                 <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#020617]"></span>

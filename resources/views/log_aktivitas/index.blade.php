@@ -89,11 +89,11 @@
                 </div>
 
                 <div class="mt-8 flex items-center justify-end gap-3 pt-6 border-t border-white/5">
-                    <a href="{{ route('log-aktivitas.index') }}" 
+                    <a href="{{ route('log-aktivitas.index') }}"
                        class="btn-pro-outline !py-2 !px-6 !text-[11px] uppercase tracking-widest">
                         Reset
                     </a>
-                    <button type="submit" 
+                    <button type="submit"
                             class="btn-pro-primary !py-2 !px-6 !text-[11px] uppercase tracking-widest">
                         Apply Filters
                     </button>
@@ -211,7 +211,7 @@
             </table>
         </div>
 
-        <div class="px-6 py-4 border-t bg-gray-50">
+        <div class="px-6 py-4 border-t border-white/5">
             {{ $items->links() }}
         </div>
         @else
