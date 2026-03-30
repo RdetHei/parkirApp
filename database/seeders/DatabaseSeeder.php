@@ -17,16 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AccountsSeeder::class,
-            AreaParkirTableSeeder::class,
-            TarifTableSeeder::class,
-            KendaraanTableSeeder::class,
-            // KameraTableSeeder::class, // Dikosongkan sesuai instruksi user
-            ParkingMapTableSeeder::class,
-            ParkingSlotTableSeeder::class,
-            TransaksiTableSeeder::class,
-            PembayaranTableSeeder::class,
-            LogAktivitasTableSeeder::class,
-            SaldoHistoryTableSeeder::class,
+
         ]);
     }
 }

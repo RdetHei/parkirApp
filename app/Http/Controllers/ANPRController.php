@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 use App\Traits\LogsActivity;
+use App\Support\PlatNomorNormalizer;
 
 class ANPRController extends Controller
 {
@@ -34,7 +35,7 @@ class ANPRController extends Controller
         ]);
 
         try {
-            $plateNumber = strtoupper(str_replace(' ', '', $request->plate));
+            $plateNumber = PlatNomorNormalizer::normalize($request->plate);
             $confidence = $request->confidence;
 
             // 1. Threshold check
@@ -214,7 +215,7 @@ class ANPRController extends Controller
             if (isset($result['results']) && !empty($result['results'])) {
                 // Original Plate Recognizer format
                 $plateData = $result['results'][0];
-                $plateNumber = strtoupper(str_replace(' ', '', $plateData['plate'] ?? ''));
+                $plateNumber = PlatNomorNormalizer::normalize((string) ($plateData['plate'] ?? ''));
                 $confidence = $plateData['score'] ?? $plateData['confidence'] ?? 0;
                 $vehicleColor = $plateData['vehicle']['color'][0]['color'] ?? 'unknown';
                 $vehicleType = $plateData['vehicle']['type'][0]['type'] ?? 'mobil';
@@ -224,7 +225,7 @@ class ANPRController extends Controller
             } elseif (is_array($result) && isset($result[0]['plate'])) {
                 // New ALPR format from user
                 $item = $result[0];
-                $plateNumber = strtoupper(str_replace(' ', '', $item['plate']['props']['plate'][0]['value'] ?? ''));
+                $plateNumber = PlatNomorNormalizer::normalize((string) ($item['plate']['props']['plate'][0]['value'] ?? ''));
                 $confidence = $item['plate']['score'] ?? 0;
                 $vehicleColor = $item['vehicle']['props']['color'][0]['value'] ?? 'unknown';
                 $vehicleType = $item['vehicle']['type'] ?? 'mobil';

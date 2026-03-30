@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 use App\Traits\LogsActivity;
+use App\Support\PlatNomorNormalizer;
 
 class TransaksiController extends Controller
 {
@@ -43,49 +44,61 @@ class TransaksiController extends Controller
             'id_area.required' => 'Area parkir wajib dipilih.',
         ]);
 
-        $platNormalized = $this->normalizePlatNomor($request->plat_nomor);
-        
-        // Cek apakah kendaraan sudah ada di database
-        $kendaraan = $this->findKendaraanByNormalizedPlat($platNormalized);
-
-        if (!$kendaraan) {
-            // Jika belum ada, buat baru
-            $tarif = Tarif::findOrFail($request->id_tarif);
-            $jenis = $request->filled('jenis_kendaraan')
-                ? $request->jenis_kendaraan
-                : $tarif->jenis_kendaraan;
-
-            if (empty($jenis)) {
-                return back()->withInput()->with('error', 'Jenis kendaraan tidak valid. Silakan pilih jenis kendaraan.');
-            }
-
-            $kendaraan = Kendaraan::create([
-                'plat_nomor' => $platNormalized,
-                'jenis_kendaraan' => $jenis,
-                'warna' => $request->warna,
-                'pemilik' => $request->pemilik,
-                'id_user' => Auth::id(),
-            ]);
-        }
-
-        $id_kendaraan = $kendaraan->id_kendaraan;
-
-        // Cek apakah kendaraan ini sudah ada di dalam (status masuk)
-        $isAlreadyIn = Transaksi::where('id_kendaraan', $id_kendaraan)
-            ->whereNull('waktu_keluar')
-            ->where('status', 'masuk')
-            ->exists();
-        
-        if ($isAlreadyIn) {
-            return back()->withInput()->with('error', 'Kendaraan dengan plat ' . $request->plat_nomor . ' sudah tercatat masuk dan belum keluar.');
-        }
+        $platNormalized = PlatNomorNormalizer::normalize($request->plat_nomor);
 
         try {
-            $transaksi = DB::transaction(function () use ($request, $id_kendaraan) {
+            $transaksi = DB::transaction(function () use ($request, $platNormalized) {
                 $area = AreaParkir::lockForUpdate()->findOrFail($request->id_area);
 
                 if ($area->terisi >= $area->kapasitas) {
                     throw new \Exception('Kapasitas area ' . $area->nama_area . ' sudah penuh.');
+                }
+
+                // Lock baris kendaraan agar request paralel untuk plat yang sama terserialize.
+                // (Setelah unique index diterapkan, plat_nomor adalah canonical format).
+                $kendaraan = Kendaraan::where('plat_nomor', $platNormalized)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $kendaraan) {
+                    $tarif = Tarif::findOrFail($request->id_tarif);
+                    $jenis = $request->filled('jenis_kendaraan')
+                        ? $request->jenis_kendaraan
+                        : $tarif->jenis_kendaraan;
+
+                    if (empty($jenis)) {
+                        throw new \Exception('Jenis kendaraan tidak valid. Silakan pilih jenis kendaraan.');
+                    }
+
+                    try {
+                        $kendaraan = Kendaraan::create([
+                            'plat_nomor' => $platNormalized,
+                            'jenis_kendaraan' => $jenis,
+                            'warna' => $request->warna,
+                            'pemilik' => $request->pemilik,
+                            'id_user' => Auth::id(),
+                        ]);
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        // Kemungkinan unique key violation: ambil record yang sudah dibuat request paralel.
+                        $kendaraan = Kendaraan::where('plat_nomor', $platNormalized)
+                            ->lockForUpdate()
+                            ->firstOrFail();
+                    }
+                }
+
+                $id_kendaraan = (int) $kendaraan->id_kendaraan;
+
+                // Double-entry prevention: kendaraan tidak boleh punya transaksi status masuk yang aktif.
+                $activeTransaksi = Transaksi::where('id_kendaraan', $id_kendaraan)
+                    ->whereNull('waktu_keluar')
+                    ->where('status', 'masuk')
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($activeTransaksi) {
+                    throw new \Exception(
+                        'Kendaraan dengan plat ' . $request->plat_nomor . ' sudah tercatat masuk dan belum keluar.'
+                    );
                 }
 
                 $now = Carbon::now();
@@ -175,12 +188,22 @@ class TransaksiController extends Controller
 
                 // Kalkulasi durasi dan biaya
                 $waktu_keluar = Carbon::now();
-                $durasi_jam = ceil($waktu_keluar->diffInMinutes($transaksi->waktu_masuk) / 60);
+                $tarif = $transaksi->tarif;
 
-                if (!$transaksi->tarif) {
-                    return back()->with('error', 'Tarif tidak ditemukan untuk transaksi ini.');
+                if (! $tarif) {
+                    throw new \Exception('Tarif tidak ditemukan untuk transaksi ini.');
                 }
-                $biaya_total = $durasi_jam * $transaksi->tarif->tarif_perjam;
+
+                $durasi_detik = $waktu_keluar->diffInSeconds($transaksi->waktu_masuk);
+
+                // Grace period: jika keluar <5 menit, selalu minimal 1 jam tarif.
+                if ($durasi_detik < 300) {
+                    $durasi_jam = 1;
+                } else {
+                    $durasi_jam = (int) ceil($durasi_detik / 3600);
+                }
+
+                $biaya_total = $durasi_jam * $tarif->tarif_perjam;
 
                 // Update transaksi
                 $transaksi->update([
@@ -400,7 +423,8 @@ class TransaksiController extends Controller
      */
     private function normalizePlatNomor(string $plat): string
     {
-        return strtoupper(preg_replace('/[^A-Z0-9]/i', '', trim($plat)) ?? '');
+        // Backward compatibility: gunakan utilitas normalisasi terpusat.
+        return PlatNomorNormalizer::normalize($plat);
     }
 
     private function findKendaraanByNormalizedPlat(string $normalized): ?Kendaraan
@@ -413,7 +437,7 @@ class TransaksiController extends Controller
             ->orderByDesc('id_kendaraan')
             ->get(['id_kendaraan', 'plat_nomor'])
             ->first(function (Kendaraan $k) use ($normalized) {
-                return $this->normalizePlatNomor((string) $k->plat_nomor) === $normalized;
+                return PlatNomorNormalizer::normalize((string) $k->plat_nomor) === $normalized;
             });
     }
 }

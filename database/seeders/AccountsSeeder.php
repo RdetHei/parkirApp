@@ -4,15 +4,15 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class AccountsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reset akun agar hasil seed deterministik.
-        // `tb_user` memakai SoftDeletes, jadi pakai forceDelete supaya benar-benar hilang.
-        // Dengan cascade FK, record terkait (mis. tb_transaksi, tb_kendaraan) juga akan ikut terhapus.
         User::withTrashed()->forceDelete();
+
+        $defaultPassword = Hash::make('12345678');
 
         User::insert([
             [
@@ -20,8 +20,7 @@ class AccountsSeeder extends Seeder
                 'name' => 'Test User',
                 'email' => 'test@example.com',
                 'email_verified_at' => '2026-02-20 04:12:55',
-                // Password hash (sesuai seeder lama)
-                'password' => '$2y$12$/0ab1dF7IT27SE6j6.sUEurzN9EnGYIECD9oVE0yrABCxzCotHl4.',
+                'password' => $defaultPassword,
                 'role' => 'user',
                 'saldo' => 500000,
                 'remember_token' => 'L7anO6aS98',
@@ -34,7 +33,7 @@ class AccountsSeeder extends Seeder
                 'name' => 'Rudi',
                 'email' => 'admin@gmail.com',
                 'email_verified_at' => '2026-02-20 04:12:56',
-                'password' => '$2y$12$8sZS/viHyixCfahKdQoqqOqNop0pFek7FQ/GPc5t5ZdQZ34HcOQ46',
+                'password' => $defaultPassword,
                 'role' => 'admin',
                 'saldo' => 1000000,
                 'remember_token' => 'AEpwjkrVhv4K4s9sLBgQP6qQBC55RDyW0vU3z0ge3udlQeKl9o2Jc7NGUAau',
@@ -47,7 +46,7 @@ class AccountsSeeder extends Seeder
                 'name' => 'Petugas',
                 'email' => 'petugas@gmail.com',
                 'email_verified_at' => '2026-02-20 04:12:57',
-                'password' => '$2y$12$dCO1DugwBlRsIRxYGJNUuO9sbxlzfz1QcDqsrpnocKjpUTJqrQIgq',
+                'password' => $defaultPassword,
                 'role' => 'petugas',
                 'saldo' => 0,
                 'remember_token' => 'L6wQ5bhXkg',
@@ -60,7 +59,7 @@ class AccountsSeeder extends Seeder
                 'name' => 'Owner',
                 'email' => 'owner@gmail.com',
                 'email_verified_at' => '2026-02-20 04:12:58',
-                'password' => '$2y$12$X84PPJvI.6ch/wcROqjVs.hxE0EjVS.ZQJuPA2xQPLFeTVPBxwAyu',
+                'password' => $defaultPassword,
                 'role' => 'owner',
                 'saldo' => 2000000,
                 'remember_token' => 'udhXpAjD29',
@@ -71,4 +70,3 @@ class AccountsSeeder extends Seeder
         ]);
     }
 }
-

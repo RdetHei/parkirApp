@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kendaraan;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Support\PlatNomorNormalizer;
 
 class KendaraanSearchController extends Controller
 {
@@ -40,12 +41,12 @@ class KendaraanSearchController extends Controller
             return response()->json(['found' => false, 'kendaraan' => null]);
         }
 
-        $platNormalized = $this->normalizePlatNomor($plat);
+        $platNormalized = PlatNomorNormalizer::normalize($plat);
         $kendaraan = Kendaraan::query()
             ->orderBy('id_kendaraan', 'desc')
             ->get(['id_kendaraan', 'plat_nomor', 'jenis_kendaraan', 'warna', 'pemilik'])
             ->first(function ($item) use ($platNormalized) {
-                return $this->normalizePlatNomor((string) $item->plat_nomor) === $platNormalized;
+                return PlatNomorNormalizer::normalize((string) $item->plat_nomor) === $platNormalized;
             });
 
         return response()->json([
@@ -62,7 +63,7 @@ class KendaraanSearchController extends Controller
 
     private function normalizePlatNomor(string $plat): string
     {
-        return strtoupper(preg_replace('/[^A-Z0-9]/i', '', $plat) ?? '');
+        return PlatNomorNormalizer::normalize($plat);
     }
 }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Kendaraan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Support\PlatNomorNormalizer;
 
 class UserVehicleController extends Controller
 {
@@ -29,9 +30,9 @@ class UserVehicleController extends Controller
             'pemilik' => 'nullable|string|max:100',
         ]);
 
-        $platNormalized = strtoupper(str_replace(' ', '', trim($data['plat_nomor'])));
+        $platNormalized = PlatNomorNormalizer::normalize($data['plat_nomor']);
         $exists = Kendaraan::where('id_user', $user->id)
-            ->whereRaw('UPPER(REPLACE(plat_nomor, \' \', \'\')) = ?', [$platNormalized])
+            ->where('plat_nomor', $platNormalized)
             ->exists();
         if ($exists) {
             return back()->withInput()->with('error', 'Plat nomor ini sudah ada di daftar kendaraan Anda.');
@@ -62,10 +63,10 @@ class UserVehicleController extends Controller
             'pemilik' => 'nullable|string|max:100',
         ]);
 
-        $platNormalized = strtoupper(str_replace(' ', '', trim($data['plat_nomor'])));
+        $platNormalized = PlatNomorNormalizer::normalize($data['plat_nomor']);
         $exists = Kendaraan::where('id_user', $user->id)
             ->where('id_kendaraan', '!=', $vehicle->id_kendaraan)
-            ->whereRaw('UPPER(REPLACE(plat_nomor, \' \', \'\')) = ?', [$platNormalized])
+            ->where('plat_nomor', $platNormalized)
             ->exists();
         if ($exists) {
             return back()->withInput()->with('error', 'Plat nomor ini sudah ada di daftar kendaraan Anda.');

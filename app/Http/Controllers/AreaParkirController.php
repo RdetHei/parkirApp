@@ -161,36 +161,43 @@ class AreaParkirController extends Controller
             'cameras' => 'nullable|array',
         ]);
 
-        // Sync Slots
-        ParkingMapSlot::where('area_parkir_id', $area->id_area)->delete();
-        if (!empty($data['slots'])) {
-            foreach ($data['slots'] as $slot) {
-                ParkingMapSlot::create([
-                    'area_parkir_id' => $area->id_area,
-                    'code' => $slot['code'],
-                    'x' => $slot['x'],
-                    'y' => $slot['y'],
-                    'width' => $slot['width'] ?? 60,
-                    'height' => $slot['height'] ?? 40,
-                    'camera_id' => $slot['camera_id'] ?? null,
-                    'notes' => $slot['notes'] ?? null,
-                ]);
-            }
-        }
+        try {
+            return \Illuminate\Support\Facades\DB::transaction(function () use ($area, $data) {
+                // Sync Slots
+                ParkingMapSlot::where('area_parkir_id', $area->id_area)->delete();
+                if (!empty($data['slots'])) {
+                    foreach ($data['slots'] as $slot) {
+                        ParkingMapSlot::create([
+                            'area_parkir_id' => $area->id_area,
+                            'code' => $slot['code'],
+                            'x' => $slot['x'],
+                            'y' => $slot['y'],
+                            'width' => $slot['width'] ?? 60,
+                            'height' => $slot['height'] ?? 40,
+                            'camera_id' => (!empty($slot['camera_id'])) ? $slot['camera_id'] : null,
+                            'notes' => $slot['notes'] ?? null,
+                        ]);
+                    }
+                }
 
-        // Sync Cameras
-        ParkingMapCamera::where('area_parkir_id', $area->id_area)->delete();
-        if (!empty($data['cameras'])) {
-            foreach ($data['cameras'] as $cam) {
-                ParkingMapCamera::create([
-                    'area_parkir_id' => $area->id_area,
-                    'camera_id' => $cam['camera_id'],
-                    'x' => $cam['x'],
-                    'y' => $cam['y'],
-                ]);
-            }
-        }
+                // Sync Cameras
+                ParkingMapCamera::where('area_parkir_id', $area->id_area)->delete();
+                if (!empty($data['cameras'])) {
+                    foreach ($data['cameras'] as $cam) {
+                        ParkingMapCamera::create([
+                            'area_parkir_id' => $area->id_area,
+                            'camera_id' => $cam['camera_id'],
+                            'x' => $cam['x'],
+                            'y' => $cam['y'],
+                        ]);
+                    }
+                }
 
-        return response()->json(['success' => true, 'message' => 'Desain peta berhasil disimpan.']);
+                return response()->json(['success' => true, 'message' => 'Desain peta berhasil disimpan.']);
+            });
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error saving design: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menyimpan: ' . $e->getMessage()], 500);
+        }
     }
 }

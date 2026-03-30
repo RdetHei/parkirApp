@@ -268,15 +268,25 @@
                 }
                 const aid = parseInt(String(raw), 10);
                 if (Number.isNaN(aid)) {
+                    console.warn('[checkin] Invalid Area ID (NaN):', raw);
                     this.filteredSlots = [];
                     this.idSlot = '';
                     this.syncSlotSelectOptions();
                     return;
                 }
+                
+                // Debug: Periksa data allSlots yang diterima dari server
+                console.log('[checkin] Filtering slots for aid:', aid, 'from total slots:', (this.allSlots || []).length);
+                
                 this.filteredSlots = (this.allSlots || []).filter((s) => {
                     const sid = s.id_area != null ? parseInt(String(s.id_area), 10) : NaN;
-                    return !Number.isNaN(sid) && sid === aid;
+                    const match = !Number.isNaN(sid) && sid === aid;
+                    if (match) console.log('[checkin] Found matching slot:', s.code, 'for area:', sid);
+                    return match;
                 });
+
+                console.log('[checkin] Final filteredSlots count:', this.filteredSlots.length);
+
                 if (this.idSlot && !this.filteredSlots.some((s) => String(s.id) === String(this.idSlot))) {
                     this.idSlot = '';
                 }
