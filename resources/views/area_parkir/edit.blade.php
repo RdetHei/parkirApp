@@ -53,7 +53,7 @@
                     <label for="map_image" class="block text-sm font-semibold text-gray-700 mb-2">Gambar Peta (Blueprint)</label>
                     @if($area->map_image)
                         <div class="mb-3 relative group">
-                            <img src="{{ asset('storage/' . $area->map_image) }}" class="w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm">
+                            <img src="{{ str_starts_with($area->map_image, 'http') ? $area->map_image : asset('storage/' . $area->map_image) }}" class="w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
                                 <span class="text-white text-[10px] font-bold uppercase tracking-widest">Ganti Gambar</span>
                             </div>

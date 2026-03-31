@@ -5,11 +5,40 @@ namespace App\Http\Controllers;
 use App\Support\UserPhoto;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\SaldoHistory;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    public function topup(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'amount' => 'required|numeric|min:1000',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        DB::transaction(function () use ($user, $request) {
+            $amount = $request->amount;
+            
+            // Update both columns for consistency
+            $user->increment('balance', $amount);
+            $user->increment('saldo', $amount);
+
+            SaldoHistory::create([
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'type' => 'topup',
+                'description' => $request->description ?? 'Top up saldo manual oleh admin/petugas',
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Saldo berhasil ditambahkan.');
+    }
+
     public function index()
     {
         $users = User::orderBy('id', 'desc')->paginate(15);

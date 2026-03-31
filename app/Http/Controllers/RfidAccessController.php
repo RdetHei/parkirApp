@@ -19,7 +19,11 @@ class RfidAccessController extends Controller
             'rfid_uid' => ['required', 'string', 'max:128', 'regex:/^[0-9A-Za-z]+$/'],
         ]);
 
-        $user = User::query()->where('rfid_uid', $data['rfid_uid'])->first();
+        $user = User::query()
+            ->where('rfid_uid', $data['rfid_uid'])
+            ->orWhere('nfc_uid', $data['rfid_uid'])
+            ->first();
+
         if (! $user) {
             return response()->json([
                 'ok' => false,
@@ -37,8 +41,8 @@ class RfidAccessController extends Controller
             'user' => [
                 'user_id' => (int) $user->id,
                 'name' => $user->name,
-                'photo' => $user->photo,
-                'saldo' => (float) ($user->saldo ?? 0),
+                'photo' => $user->profile_photo_url,
+                'saldo' => (float) ($user->balance ?? $user->saldo ?? 0),
                 'role' => $user->role,
             ],
         ]);

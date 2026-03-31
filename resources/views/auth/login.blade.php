@@ -25,15 +25,15 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white flex items-center justify-center p-6 relative overflow-hidden">
+<body class="min-h-screen bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white flex items-center justify-center p-6 sm:p-10 relative overflow-y-auto">
     <!-- Grid Overlay -->
     <div class="fixed inset-0 auth-grid pointer-events-none z-0"></div>
     <div class="fixed inset-0 bg-batik opacity-[0.035] pointer-events-none z-0"></div>
     
     <!-- Background Glow -->
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
-    <div class="w-full max-w-[420px] relative z-10">
+    <div class="w-full max-w-[420px] relative z-10 my-auto">
         <!-- Logo -->
         <div class="text-center mb-12">
             <a href="/" class="inline-flex items-center space-x-3 group">

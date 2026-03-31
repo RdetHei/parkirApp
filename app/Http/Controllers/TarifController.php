@@ -27,7 +27,7 @@ class TarifController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'jenis_kendaraan' => 'required|in:motor,mobil,lainnya',
+            'jenis_kendaraan' => 'required|string|max:100',
             'tarif_perjam' => 'required|numeric|min:0',
         ]);
 
@@ -52,7 +52,7 @@ class TarifController extends Controller
     {
         $item = Tarif::findOrFail($id);
         $data = $request->validate([
-            'jenis_kendaraan' => 'required|in:motor,mobil,lainnya',
+            'jenis_kendaraan' => 'required|string|max:100',
             'tarif_perjam' => 'required|numeric|min:0',
         ]);
         $oldData = $item->toArray();

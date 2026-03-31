@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\Tarif;
 use App\Models\User;
+use App\Models\Kendaraan;
+use App\Models\Transaksi;
+use App\Models\AreaParkir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -35,21 +38,71 @@ class RfidParkingController extends Controller
             ], 404);
         }
 
-        // Cek apakah sedang parkir (transaksi IN terakhir belum ada OUT yang lebih baru)
-        $lastIn = Transaction::where('user_id', $user->id)
-            ->where('type', 'IN')
-            ->latest('created_at')
+        // Ambil kendaraan default user (yang pertama didaftarkan)
+        $kendaraan = Kendaraan::where('id_user', $user->id)->first();
+        if (!$kendaraan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User belum memiliki kendaraan terdaftar!',
+                'user' => [
+                    'name' => $user->name,
+                    'photo' => $user->profile_photo_url,
+                    'balance' => $user->balance ?? $user->saldo ?? 0,
+                    'status' => 'Data Kendaraan Kosong'
+                ]
+            ], 400);
+        }
+
+        // Cek apakah sedang parkir (transaksi dengan status 'masuk')
+        $activeTransaksi = Transaksi::where('id_user', $user->id)
+            ->where('status', 'masuk')
+            ->latest('waktu_masuk')
             ->first();
 
-        $lastOut = Transaction::where('user_id', $user->id)
-            ->where('type', 'OUT')
-            ->latest('created_at')
-            ->first();
+        if (!$activeTransaksi) {
+            // Check-in (ENTRY)
+            $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
+            $tarif = Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->first() ?? Tarif::first();
+            
+            if (!$area) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal check-in: Area parkir tidak tersedia.',
+                    'user' => [
+                        'name' => $user->name,
+                        'photo' => $user->profile_photo_url,
+                        'balance' => $user->balance ?? $user->saldo ?? 0,
+                        'status' => 'Area Tidak Tersedia',
+                        'vehicle' => $kendaraan->plat_nomor,
+                    ]
+                ], 400);
+            }
 
-        $isParking = $lastIn && (!$lastOut || $lastOut->created_at < $lastIn->created_at);
+            if (!$tarif) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal check-in: Tarif untuk jenis kendaraan ini (' . $kendaraan->jenis_kendaraan . ') tidak ditemukan. Silakan hubungi admin.',
+                    'user' => [
+                        'name' => $user->name,
+                        'photo' => $user->profile_photo_url,
+                        'balance' => $user->balance ?? $user->saldo ?? 0,
+                        'status' => 'Tarif Tidak Ditemukan',
+                        'vehicle' => $kendaraan->plat_nomor,
+                    ]
+                ], 400);
+            }
 
-        if (!$isParking) {
-            // Check-in (IN)
+            $transaksi = Transaksi::create([
+                'id_user' => $user->id,
+                'id_kendaraan' => $kendaraan->id_kendaraan,
+                'id_area' => $area->id_area,
+                'id_tarif' => $tarif->id_tarif,
+                'waktu_masuk' => now(),
+                'status' => 'masuk',
+                'status_pembayaran' => 'pending',
+            ]);
+
+            // Create legacy Transaction for backward compatibility if needed
             Transaction::create([
                 'user_id' => $user->id,
                 'type' => 'IN',
@@ -62,39 +115,58 @@ class RfidParkingController extends Controller
                 'message' => 'Check-in Berhasil',
                 'user' => [
                     'name' => $user->name,
-                    'photo' => $user->photo ? asset('storage/' . $user->photo) : asset('images/default-user.png'),
-                    'balance' => $user->balance,
-                    'status' => 'Parkir Masuk'
+                    'photo' => $user->profile_photo_url,
+                    'balance' => $user->balance ?? $user->saldo ?? 0,
+                    'status' => 'Parkir Masuk',
+                    'vehicle' => $kendaraan->plat_nomor . ' (' . $kendaraan->jenis_kendaraan . ')',
+                    'type' => 'IN'
                 ]
             ]);
         } else {
-            // Check-out (OUT + PAYMENT)
-            $tarif = Tarif::first(); // Asumsi ada tarif default, atau sesuaikan logika tarif
+            // Check-out (EXIT + PAYMENT)
+            $tarif = $activeTransaksi->tarif ?? Tarif::first();
             $rate = $tarif ? $tarif->tarif_perjam : 2000;
             
-            $startTime = Carbon::parse($lastIn->created_at);
+            $startTime = Carbon::parse($activeTransaksi->waktu_masuk);
             $endTime = now();
             $durationHours = max(1, ceil($startTime->diffInMinutes($endTime) / 60));
             $totalAmount = $durationHours * $rate;
 
-            if ($user->balance < $totalAmount) {
+            $currentBalance = $user->balance ?? $user->saldo ?? 0;
+
+            if ($currentBalance < $totalAmount) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Saldo tidak cukup! Biaya: Rp ' . number_format($totalAmount, 0, ',', '.'),
                     'user' => [
                         'name' => $user->name,
-                        'photo' => $user->photo ? asset('storage/' . $user->photo) : asset('images/default-user.png'),
-                        'balance' => $user->balance,
-                        'status' => 'Saldo Kurang'
+                        'photo' => $user->profile_photo_url,
+                        'balance' => $currentBalance,
+                        'status' => 'Saldo Kurang',
+                        'vehicle' => $kendaraan->plat_nomor,
+                        'fee' => $totalAmount
                     ]
                 ], 400);
             }
 
-            DB::transaction(function () use ($user, $totalAmount) {
-                // Update Balance
-                $user->decrement('balance', $totalAmount);
+            DB::transaction(function () use ($user, $activeTransaksi, $totalAmount, $durationHours) {
+                // Update User Balance (using balance field if exists, else saldo)
+                if (isset($user->balance)) {
+                    $user->decrement('balance', $totalAmount);
+                } else {
+                    $user->decrement('saldo', $totalAmount);
+                }
 
-                // Create OUT transaction
+                // Update Transaksi record
+                $activeTransaksi->update([
+                    'waktu_keluar' => now(),
+                    'durasi_jam' => $durationHours,
+                    'biaya_total' => $totalAmount,
+                    'status' => 'selesai',
+                    'status_pembayaran' => 'lunas'
+                ]);
+
+                // Create legacy OUT transaction for history
                 Transaction::create([
                     'user_id' => $user->id,
                     'type' => 'OUT',
@@ -102,7 +174,7 @@ class RfidParkingController extends Controller
                     'created_at' => now(),
                 ]);
 
-                // Create PAYMENT transaction
+                // Create legacy PAYMENT transaction
                 Transaction::create([
                     'user_id' => $user->id,
                     'type' => 'PAYMENT',
@@ -116,9 +188,11 @@ class RfidParkingController extends Controller
                 'message' => 'Check-out Berhasil',
                 'user' => [
                     'name' => $user->name,
-                    'photo' => $user->photo ? asset('storage/' . $user->photo) : asset('images/default-user.png'),
-                    'balance' => $user->balance - $totalAmount,
-                    'status' => 'Parkir Keluar'
+                    'photo' => $user->profile_photo_url,
+                    'balance' => ($user->balance ?? $user->saldo ?? 0) - $totalAmount,
+                    'status' => 'Parkir Keluar',
+                    'vehicle' => $kendaraan->plat_nomor,
+                    'type' => 'OUT'
                 ],
                 'amount' => $totalAmount
             ]);

@@ -137,7 +137,7 @@
                 const u = data.user || {};
                 $name.textContent = u.name || '-';
                 $role.textContent = 'Role: ' + (u.role || '-');
-                $saldo.textContent = 'Saldo: ' + (Number(u.saldo || 0).toFixed(2));
+                $saldo.textContent = 'Saldo: ' + (Number(u.saldo || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }));
 
                 if (u.photo) {
                     $photo.src = u.photo;

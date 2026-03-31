@@ -80,6 +80,9 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute(): ?string
     {
         if (filled($this->photo_cloudinary_path)) {
+            if (str_starts_with($this->photo_cloudinary_path, 'http')) {
+                return $this->photo_cloudinary_path;
+            }
             try {
                 /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
                 $disk = Storage::disk('cloudinary');

@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Kendaraan;
 use App\Models\User;
 use App\Support\PlatNomorNormalizer;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class KendaraanController extends Controller
 {
@@ -40,10 +39,11 @@ class KendaraanController extends Controller
 
         // Upload ke Cloudinary jika ada file foto
         if ($request->hasFile('foto')) {
-            $uploadUrl = Cloudinary::upload($request->file('foto')->getRealPath(), [
-                'folder' => 'neston/kendaraan'
-            ])->getSecurePath();
-            $data['foto_url'] = $uploadUrl;
+            $file = $request->file('foto');
+            $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                'folder' => 'neston/vehicle'
+            ]);
+            $data['foto_url'] = $upload['secure_url'];
         }
 
         $data['plat_nomor'] = $platNormalized;
@@ -81,10 +81,11 @@ class KendaraanController extends Controller
 
         // Upload ke Cloudinary jika ada file foto baru
         if ($request->hasFile('foto')) {
-            $uploadUrl = Cloudinary::upload($request->file('foto')->getRealPath(), [
-                'folder' => 'neston/kendaraan'
-            ])->getSecurePath();
-            $data['foto_url'] = $uploadUrl;
+            $file = $request->file('foto');
+            $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                'folder' => 'neston/vehicle'
+            ]);
+            $data['foto_url'] = $upload['secure_url'];
         }
 
         $data['plat_nomor'] = $platNormalized;

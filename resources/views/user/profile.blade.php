@@ -46,6 +46,19 @@
 
                 {{-- Meta info --}}
                 <div class="bg-[#020617] border border-white/[0.07] rounded-2xl p-5 flex flex-col gap-4">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Saldo NestonPay</p>
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Saldo Saat Ini</p>
+                            <p class="text-lg font-bold text-emerald-400">Rp {{ number_format($user->balance ?? $user->saldo ?? 0, 0, ',', '.') }}</p>
+                        </div>
+                        <a href="{{ route('user.saldo.index') }}" class="w-full py-2 px-4 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl text-[10px] font-bold text-emerald-400 uppercase tracking-widest text-center transition-all">
+                            Kelola Saldo
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-[#020617] border border-white/[0.07] rounded-2xl p-5 flex flex-col gap-4">
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Informasi Akun</p>
                     <div class="flex flex-col gap-3">
                         <div>

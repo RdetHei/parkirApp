@@ -12,8 +12,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 use App\Traits\LogsActivity;
 use App\Support\PlatNomorNormalizer;
@@ -47,8 +45,10 @@ class ANPRController extends Controller
             $fileName = null;
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
-                $fileName = 'anpr_yolo/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-                Storage::disk('public')->put($fileName, file_get_contents($file->getRealPath()));
+                $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                    'folder' => 'neston/anpr'
+                ]);
+                $fileName = $upload['secure_url'];
             }
 
             // 3. Vehicle & Transaction Logic
@@ -181,16 +181,18 @@ class ANPRController extends Controller
                 return response()->json(['error' => 'Invalid image data format'], 422);
             }
 
-            $fileName = 'anpr/' . Str::uuid() . '.' . $type;
-            Storage::disk('public')->put($fileName, $imageData);
-            $imagePath = Storage::disk('public')->path($fileName);
+            $upload = cloudinary()->uploadApi()->upload("data:image/{$type};base64," . base64_encode($imageData), [
+                'folder' => 'neston/anpr'
+            ]);
+            $imageUrl = $upload['secure_url'];
+            $fileName = $imageUrl;
 
             // 2. Send to Plate Recognizer API with Make/Model/Color detection
             /** @var \Illuminate\Http\Client\Response $response */
             $response = Http::withHeaders([
                 'Authorization' => 'Token ' . config('services.plate_recognizer.key'),
             ])->attach(
-                'upload', file_get_contents($imagePath), basename($imagePath)
+                'upload', $imageData, basename($fileName)
             )->post('https://api.platerecognizer.com/v1/plate-reader/', [
                 'mmc' => 'true' // Enable Make, Model, and Color detection
             ]);

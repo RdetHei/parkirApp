@@ -38,6 +38,23 @@
                                     <div class="text-xs text-slate-300" id="user-role">-</div>
                                 </div>
                             </div>
+                            <!-- New Sections -->
+                            <div id="user-details" class="mt-4 pt-4 border-t border-white/5 hidden">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <div class="text-[10px] uppercase font-bold text-slate-500 mb-1">Kendaraan Terdaftar</div>
+                                        <div id="user-vehicles" class="space-y-1">
+                                            <!-- dynamic -->
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] uppercase font-bold text-slate-500 mb-1">Status Parkir Aktif</div>
+                                        <div id="user-parking-status" class="text-xs text-white">
+                                            <!-- dynamic -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-4 text-sm font-semibold" id="loading_state" style="display:none;color:#93c5fd;">
@@ -67,6 +84,9 @@
         const $name = document.getElementById('user-name');
         const $saldo = document.getElementById('user-saldo');
         const $role = document.getElementById('user-role');
+        const $details = document.getElementById('user-details');
+        const $vehicles = document.getElementById('user-vehicles');
+        const $parkingStatus = document.getElementById('user-parking-status');
 
         const identifyUrl = @json(route('api.rfid.identify'));
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -122,8 +142,36 @@
 
                 const u = data.user || {};
                 $name.textContent = u.name || '-';
-                $saldo.textContent = 'Saldo: ' + (Number(u.saldo || 0).toFixed(2));
+                $saldo.textContent = 'Saldo: ' + (Number(u.balance || u.saldo || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }));
                 $role.textContent = 'Role: ' + (u.role || '-');
+
+                // Tampilkan detail tambahan
+                $details.classList.remove('hidden');
+
+                // Render kendaraan
+                if (u.kendaraans && u.kendaraans.length > 0) {
+                    $vehicles.innerHTML = u.kendaraans.map(k => `
+                        <div class="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                            <div class="text-[10px] font-mono font-bold text-emerald-400">${k.plat_nomor}</div>
+                            <div class="text-[9px] text-slate-400">${k.jenis} - ${k.warna}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    $vehicles.innerHTML = '<div class="text-[10px] text-slate-500 italic">Tidak ada kendaraan</div>';
+                }
+
+                // Render status parkir
+                if (u.active_parking) {
+                    $parkingStatus.innerHTML = `
+                        <div class="bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
+                            <div class="font-bold text-emerald-400 text-[10px]">${u.active_parking.plat_nomor}</div>
+                            <div class="text-[9px] text-emerald-300/80">Area: ${u.active_parking.area}</div>
+                            <div class="text-[9px] text-emerald-300/80">Masuk: ${u.active_parking.waktu_masuk}</div>
+                        </div>
+                    `;
+                } else {
+                    $parkingStatus.innerHTML = '<div class="text-[10px] text-slate-500 italic">Sedang tidak parkir</div>';
+                }
 
                 if (u.photo) {
                     $photo.src = u.photo;

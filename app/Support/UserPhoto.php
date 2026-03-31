@@ -19,29 +19,14 @@ class UserPhoto
     {
         self::purgeFromDisk($user);
 
-        $ext = strtolower((string) ($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg'));
-        $ext = preg_replace('/[^a-z0-9]/', '', $ext) ?: 'jpg';
-        $path = 'avatars/user-'.$user->id.'-'.Str::uuid()->toString().'.'.$ext;
-
-        // Cloudinary's upload API treats non-URL strings as *file paths* and calls fopen() on them.
-        // Raw image bytes can contain null bytes → ValueError. Upload via stream from temp path instead.
-        $realPath = $file->getRealPath();
-        if ($realPath === false || ! is_readable($realPath)) {
-            throw new \RuntimeException('File upload tidak valid atau tidak dapat dibaca.');
-        }
-
-        $stream = fopen($realPath, 'rb');
-        try {
-            Storage::disk('cloudinary')->put($path, $stream);
-        } finally {
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-        }
+        $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+            'folder' => 'neston/profile',
+            'public_id' => 'user-' . $user->id . '-' . Str::random(8)
+        ]);
 
         return [
             'photo' => null,
-            'photo_cloudinary_path' => $path,
+            'photo_cloudinary_path' => $upload['secure_url'],
         ];
     }
 

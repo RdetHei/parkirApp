@@ -20,13 +20,10 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
                 </div>
-                <select name="jenis_kendaraan" id="jenis_kendaraan" required
+                <input type="text" name="jenis_kendaraan" id="jenis_kendaraan" value="{{ old('jenis_kendaraan', $item->jenis_kendaraan) }}" required placeholder="Motor / Mobil / Bus / dll"
                         class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('jenis_kendaraan') border-red-500 @enderror">
-                    <option value="motor" {{ old('jenis_kendaraan', $item->jenis_kendaraan) == 'motor' ? 'selected' : '' }}>Motor</option>
-                    <option value="mobil" {{ old('jenis_kendaraan', $item->jenis_kendaraan) == 'mobil' ? 'selected' : '' }}>Mobil</option>
-                    <option value="lainnya" {{ old('jenis_kendaraan', $item->jenis_kendaraan) == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                </select>
             </div>
+            <p class="mt-1 text-xs text-gray-500 italic">Masukkan jenis kendaraan secara manual untuk memperbarui tarif.</p>
             @error('jenis_kendaraan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
         </div>
 

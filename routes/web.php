@@ -299,6 +299,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
+        Route::post('/users/{id}/topup', [\App\Http\Controllers\UserController::class, 'topup'])->name('users.topup');
 
         // Unified Area & Map Management
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);

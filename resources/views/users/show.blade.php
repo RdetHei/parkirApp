@@ -59,7 +59,40 @@
                         </div>
                         <div>
                             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Saldo Terakhir</p>
-                            <p class="text-white font-bold text-lg text-emerald-500">Rp {{ number_format($user->balance, 0, ',', '.') }}</p>
+                            <div class="flex items-center gap-3">
+                                <p class="text-white font-bold text-lg text-emerald-500">Rp {{ number_format($user->balance ?? $user->saldo ?? 0, 0, ',', '.') }}</p>
+                                <button onclick="openTopupModal()" class="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg border border-emerald-500/20 transition-all" title="Top Up Saldo">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Top Up Modal (Admin/Petugas Only View) -->
+                        <div id="topupModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                            <div class="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+                                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                                    <h4 class="text-sm font-bold text-white uppercase tracking-widest">Top Up Saldo Manual</h4>
+                                    <button onclick="closeTopupModal()" class="text-slate-500 hover:text-white transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                                <form action="{{ route('users.topup', $user->id) }}" method="POST" class="p-6 space-y-4">
+                                    @csrf
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Jumlah Top Up (Rp)</label>
+                                        <input type="number" name="amount" required min="1000" step="1000" placeholder="Contoh: 50000"
+                                               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Keterangan (Opsional)</label>
+                                        <input type="text" name="description" placeholder="Contoh: Top up tunai di kasir"
+                                               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500/50 transition-all">
+                                    </div>
+                                    <button type="submit" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-all uppercase tracking-widest text-xs">
+                                        Konfirmasi Top Up
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                         <div>
                             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Terdaftar Pada</p>
@@ -85,3 +118,21 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function openTopupModal() {
+        document.getElementById('topupModal').classList.remove('hidden');
+    }
+    function closeTopupModal() {
+        document.getElementById('topupModal').classList.add('hidden');
+    }
+    // Close on click outside
+    window.onclick = function(event) {
+        let modal = document.getElementById('topupModal');
+        if (event.target == modal) {
+            closeTopupModal();
+        }
+    }
+</script>
+@endpush

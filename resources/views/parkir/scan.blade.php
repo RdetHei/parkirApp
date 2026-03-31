@@ -96,6 +96,12 @@
                         </div>
                     </div>
 
+                    {{-- Vehicle Info (New) --}}
+                    <div id="vehicle-info-container" class="rounded-xl p-3.5 mb-5 hidden" style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.1);">
+                        <p class="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Kendaraan Terdeteksi</p>
+                        <p id="vehicle-name" class="text-sm font-bold text-white">—</p>
+                    </div>
+
                     {{-- Message --}}
                     <div id="message-container"
                          class="w-full rounded-xl px-4 py-3 text-sm font-semibold text-center"></div>
@@ -136,6 +142,8 @@
     const userStatus       = document.getElementById('user-status');
     const userBalance      = document.getElementById('user-balance');
     const parkingFee       = document.getElementById('parking-fee');
+    const vehicleName      = document.getElementById('vehicle-name');
+    const vehicleContainer = document.getElementById('vehicle-info-container');
     const statusBadge      = document.getElementById('status-badge');
     const messageContainer = document.getElementById('message-container');
     const countdownBar     = document.getElementById('countdown-bar');
@@ -208,14 +216,32 @@
             userName.innerText    = data.user.name;
             userPhoto.src         = data.user.photo;
             userStatus.innerText  = data.user.status;
-            userBalance.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(data.user.balance);
-            parkingFee.innerText  = data.amount ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data.amount) : '—';
+            userBalance.innerText = 'Rp ' + (data.user?.balance || 0).toLocaleString('id-ID');
+            parkingFee.innerText  = data.amount ? 'Rp ' + data.amount.toLocaleString('id-ID') : '—';
 
-            const isIn = data.user.status?.includes('Masuk');
-            statusBadge.className = 'absolute -bottom-1.5 -right-1.5 px-2 py-px rounded-full text-[9px] font-bold uppercase tracking-widest '
-                + (isIn ? 'bg-emerald-500 text-white' : 'bg-blue-500 text-white');
-            statusBadge.innerText    = isIn ? 'IN' : 'OUT';
-            resultTopbar.style.background = isIn ? '#10b981' : '#3b82f6';
+            if (data.user?.vehicle) {
+                vehicleName.innerText = data.user.vehicle;
+                vehicleContainer.classList.remove('hidden');
+            } else {
+                vehicleContainer.classList.add('hidden');
+            }
+
+            if (data.user?.type === 'IN') {
+                statusBadge.innerText = 'IN';
+                statusBadge.style.background = '#10b981'; // emerald-500
+                statusBadge.style.color = '#fff';
+                resultTopbar.style.background = '#10b981';
+            } else if (data.user?.type === 'OUT') {
+                statusBadge.innerText = 'OUT';
+                statusBadge.style.background = '#3b82f6'; // blue-500
+                statusBadge.style.color = '#fff';
+                resultTopbar.style.background = '#3b82f6';
+            } else {
+                statusBadge.innerText = 'ERR';
+                statusBadge.style.background = '#ef4444'; // red-500
+                statusBadge.style.color = '#fff';
+                resultTopbar.style.background = '#ef4444';
+            }
         } else {
             resultTopbar.style.background = '#ef4444';
         }

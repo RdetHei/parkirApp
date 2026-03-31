@@ -46,9 +46,13 @@ class AreaParkirController extends Controller
         }
 
         if ($request->hasFile('map_image')) {
-            $data['map_image'] = $request->file('map_image')->store('parking_maps', 'public');
+            $file = $request->file('map_image');
+            $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                'folder' => 'neston/maps'
+            ]);
+            $data['map_image'] = $upload['secure_url'];
         } else {
-            $data['map_image'] = 'parking_maps/default.png';
+            $data['map_image'] = 'https://res.cloudinary.com/' . env('CLOUDINARY_CLOUD_NAME') . '/image/upload/v1/neston/maps/default.png';
         }
 
         if (empty($data['map_code'])) {
@@ -96,10 +100,16 @@ class AreaParkirController extends Controller
         $oldData = $area->toArray();
 
         if ($request->hasFile('map_image')) {
-            if ($area->map_image && $area->map_image !== 'parking_maps/default.png') {
+            // Delete old local image if exists
+            if ($area->map_image && !str_starts_with($area->map_image, 'http')) {
                 Storage::disk('public')->delete($area->map_image);
             }
-            $data['map_image'] = $request->file('map_image')->store('parking_maps', 'public');
+
+            $file = $request->file('map_image');
+            $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                'folder' => 'neston/maps'
+            ]);
+            $data['map_image'] = $upload['secure_url'];
         }
 
         $area->update($data);
@@ -122,7 +132,7 @@ class AreaParkirController extends Controller
             return redirect()->route('area-parkir.index')->with('error', 'Area parkir tidak dapat dihapus karena masih digunakan dalam transaksi.');
         }
 
-        if ($area->map_image && $area->map_image !== 'parking_maps/default.png') {
+        if ($area->map_image && !str_starts_with($area->map_image, 'http')) {
             Storage::disk('public')->delete($area->map_image);
         }
 
@@ -146,7 +156,7 @@ class AreaParkirController extends Controller
         $area = AreaParkir::findOrFail($id);
         $cameras = Camera::all();
         $title = "Desain Peta: " . $area->nama_area;
-        
+
         return view('area_parkir.design', compact('area', 'cameras', 'title'));
     }
 

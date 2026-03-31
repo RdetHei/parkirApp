@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
@@ -25,15 +25,15 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white flex items-center justify-center p-6 relative overflow-hidden">
+<body class="min-h-screen bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white flex items-center justify-center p-6 sm:p-10 relative overflow-y-auto">
     <!-- Grid Overlay -->
     <div class="fixed inset-0 auth-grid pointer-events-none z-0"></div>
     <div class="fixed inset-0 bg-batik opacity-[0.035] pointer-events-none z-0"></div>
-    
-    <!-- Background Glow -->
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
-    <div class="w-full max-w-[450px] relative z-10">
+    <!-- Background Glow -->
+    <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+    <div class="w-full max-w-[450px] relative z-10 my-auto">
         <!-- Logo -->
         <div class="text-center mb-12">
             <a href="/" class="inline-flex items-center space-x-3 group">
@@ -44,11 +44,11 @@
             </a>
         </div>
 
-        <div class="bg-slate-900 border border-white/5 rounded-2xl p-10 shadow-2xl shadow-black/50">
+        <div class="bg-slate-900 border border-white/5 rounded-2xl p-6 sm:p-10 shadow-2xl shadow-black/50">
             <!-- Header -->
-            <div class="mb-10">
-                <h2 class="text-2xl font-extrabold text-white tracking-tight mb-2">Create Account</h2>
-                <p class="text-slate-500 text-sm font-medium">Join the intelligent parking ecosystem</p>
+            <div class="mb-8 sm:mb-10 text-center sm:text-left">
+                <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight mb-2">Create Account</h2>
+                <p class="text-slate-500 text-xs sm:text-sm font-medium">Join the intelligent parking ecosystem</p>
             </div>
 
             <!-- Alerts -->
@@ -63,92 +63,98 @@
                 @csrf
 
                 <!-- Name -->
-                <div class="space-y-2">
-                    <label for="name" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Full Name
-                    </label>
-                    <input
-                        id="name"
-                        type="text"
-                        name="name"
-                        value="{{ old('name') }}"
-                        required
-                        autofocus
-                        placeholder="John Doe"
-                        class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
-                    >
-                    @error('name')
-                        <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Email -->
-                <div class="space-y-2">
-                    <label for="email" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Email Address
-                    </label>
-                    <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        required
-                        placeholder="name@company.com"
-                        class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
-                    >
-                    @error('email')
-                        <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="space-y-2">
-                    <label for="nfc_uid" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        NFC UID <span class="text-slate-600 font-medium lowercase">(optional)</span>
-                    </label>
-                    <input
-                        id="nfc_uid"
-                        type="text"
-                        name="nfc_uid"
-                        value="{{ old('nfc_uid') }}"
-                        placeholder="Tempel kartu atau isi token"
-                        class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
-                    >
-                    <button type="button"
-                            id="btnScanNfcRegister"
-                            class="w-full px-4 py-3 bg-slate-900 border border-white/5 rounded-xl text-xs font-bold text-slate-300 uppercase tracking-widest hover:bg-slate-800 transition-all">
-                        Scan NFC
-                    </button>
-                    @error('nfc_uid')
-                        <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Password -->
-                <div class="space-y-2">
-                    <label for="password" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Password
-                    </label>
-                    <div class="relative">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="name" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            Full Name
+                        </label>
                         <input
-                            id="password"
-                            type="password"
-                            name="password"
+                            id="name"
+                            type="text"
+                            name="name"
+                            value="{{ old('name') }}"
                             required
-                            placeholder="Min. 8 characters"
+                            autofocus
+                            placeholder="John Doe"
                             class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
                         >
-                        <button
-                            type="button"
-                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white transition-colors"
-                            id="togglePassword"
-                        >
-                            <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
-                            <i id="eyeSlashIcon" class="fa-solid fa-eye-slash text-xs hidden"></i>
-                        </button>
+                        @error('name')
+                            <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
-                    @error('password')
-                        <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
-                    @enderror
+
+                    <!-- Email -->
+                    <div class="space-y-2">
+                        <label for="email" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            Email Address
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            required
+                            placeholder="name@company.com"
+                            class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
+                        >
+                        @error('email')
+                            <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="nfc_uid" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            NFC UID <span class="text-slate-600 font-medium lowercase">(optional)</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                id="nfc_uid"
+                                type="text"
+                                name="nfc_uid"
+                                value="{{ old('nfc_uid') }}"
+                                placeholder="Scan kartu"
+                                class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
+                            >
+                            <button type="button"
+                                    id="btnScanNfcRegister"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold text-slate-300 hover:bg-white/10 transition-all uppercase">
+                                Scan
+                            </button>
+                        </div>
+                        @error('nfc_uid')
+                            <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Password -->
+                    <div class="space-y-2">
+                        <label for="password" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                required
+                                placeholder="Min. 8 chars"
+                                class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
+                            >
+                            <button
+                                type="button"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white transition-colors"
+                                id="togglePassword"
+                            >
+                                <i id="eyeIcon" class="fa-solid fa-eye text-[10px]"></i>
+                                <i id="eyeSlashIcon" class="fa-solid fa-eye-slash text-[10px] hidden"></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Confirm Password -->
