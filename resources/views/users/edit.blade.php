@@ -51,9 +51,13 @@
         </div>
 
         <div>
-            <label for="photo" class="block text-sm font-semibold text-gray-700 mb-2">Foto User (Ubah jika perlu)</label>
+            <label for="photo" class="block text-sm font-semibold text-gray-700 mb-2">Foto User (Cloudinary — ubah jika perlu)</label>
+            <div class="flex items-center gap-4 mb-2">
+                <x-user-avatar :user="$user" size="md" round="lg" />
+                <p class="text-xs text-slate-500">Unggah gambar baru untuk mengganti foto saat ini.</p>
+            </div>
             <div class="relative">
-                <input type="file" name="photo" id="photo" 
+                <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/gif,image/webp"
                        class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('photo') border-red-500 @enderror">
             </div>
             @error('photo')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -66,7 +70,7 @@
                     {{ $user->rfid_uid ? 'Terdaftar (' . $user->rfid_uid . ')' : 'Belum Terdaftar' }}
                 </p>
             </div>
-            <a href="{{ route('users.scan-rfid', $user->id) }}" 
+            <a href="{{ route('users.scan-rfid', $user->id) }}"
                class="px-4 py-2 bg-blue-500 text-white text-xs font-bold rounded-xl hover:bg-blue-600 transition-colors uppercase tracking-widest">
                 {{ $user->rfid_uid ? 'Ubah RFID' : 'Daftarkan RFID' }}
             </a>

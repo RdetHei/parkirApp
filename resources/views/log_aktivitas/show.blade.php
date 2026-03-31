@@ -23,7 +23,7 @@
         <div class="lg:col-span-2 space-y-8">
             <div class="card-pro relative overflow-hidden group border-white/5">
                 <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>
-                
+
                 <div class="relative z-10">
                     <div class="flex items-center gap-3 mb-8 pb-6 border-b border-white/5">
                         <div class="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
@@ -128,9 +128,8 @@
                     <div class="flex flex-col pt-6 border-t border-white/5">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Initiated By</p>
                         <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/5">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold text-xs">
-                                {{ substr($item->user?->name ?? 'S', 0, 1) }}
-                            </div>
+                            <x-user-avatar :user="$item->user" :initials="$item->user ? null : 'SY'" size="md"
+                                class="!bg-emerald-500/10 !text-emerald-500 !border-emerald-500/20" />
                             <div>
                                 <p class="text-xs font-bold text-white">{{ $item->user?->name ?? 'System' }}</p>
                                 <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{{ $item->user?->role ?? 'Internal' }}</p>

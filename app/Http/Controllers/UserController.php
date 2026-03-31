@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\UserPhoto;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -36,17 +37,18 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
         $data['password'] = Hash::make($data['password']);
-
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('users', 'public');
-            $data['photo'] = $path;
-        }
+        $photoFile = $request->file('photo');
+        unset($data['photo']);
 
         $user = User::create($data);
+
+        if ($photoFile?->isValid()) {
+            $user->update(UserPhoto::replaceWithUpload($photoFile, $user));
+        }
 
         return redirect()
             ->route('users.scan-rfid', $user->id)
@@ -110,7 +112,7 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
         if (!empty($data['password'])) {
@@ -119,9 +121,11 @@ class UserController extends Controller
             unset($data['password']);
         }
 
-        if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('users', 'public');
-            $data['photo'] = $path;
+        $photoFile = $request->file('photo');
+        unset($data['photo']);
+
+        if ($photoFile?->isValid()) {
+            $data = array_merge($data, UserPhoto::replaceWithUpload($photoFile, $user));
         }
 
         $user->update($data);

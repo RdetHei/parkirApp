@@ -53,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -103,9 +103,7 @@
                             </td>
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded-full bg-slate-800 border border-white/5 flex items-center justify-center text-[10px] text-slate-400 font-bold">
-                                        {{ substr($transaksi->user->name ?? '?', 0, 1) }}
-                                    </div>
+                                    <x-user-avatar :user="$transaksi->user" size="xs" round="full" class="!bg-slate-800 !text-slate-400 !border-white/5" />
                                     <span class="text-xs text-slate-300 font-medium">{{ explode(' ', $transaksi->user->name ?? '-')[0] }}</span>
                                 </div>
                             </td>
@@ -113,7 +111,7 @@
                                 <form action="{{ route('transaksi.checkOut', $transaksi->id_parkir) }}" method="POST" class="inline">
                                     @csrf
                                     @method('PUT')
-                                    <button type="submit" 
+                                    <button type="submit"
                                             class="px-4 py-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 font-bold rounded-lg border border-amber-500/20 transition-all text-[10px] uppercase tracking-widest"
                                             onclick="return confirm('Process check-out for this vehicle?')">
                                         Check-Out

@@ -31,10 +31,18 @@ class RfidLoginController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
+        $role = strtolower($user->role ?? 'user');
+        $redirect = match ($role) {
+            'admin' => route('dashboard'),
+            'owner' => route('owner.dashboard'),
+            'petugas' => route('petugas.dashboard'),
+            default => route('user.dashboard'),
+        };
+
         return response()->json([
             'ok' => true,
             'message' => 'Login berhasil.',
-            'redirect' => url('/dashboard'),
+            'redirect' => $redirect,
             'user' => [
                 'user_id' => (int) $user->id,
                 'name' => $user->name,

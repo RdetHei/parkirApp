@@ -16,6 +16,7 @@ use App\Http\Controllers\RfidIdentifyController;
 use App\Http\Controllers\RfidAccessController;
 use App\Http\Controllers\RfidLoginController;
 use App\Http\Controllers\UserController;
+use App\Support\UserPhoto;
 use App\Http\Controllers\RfidAdminController;
 use App\Http\Controllers\KendaraanController;
 
@@ -107,8 +108,10 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         Route::get('/api/kendaraan/check-plat', [\App\Http\Controllers\Api\KendaraanSearchController::class, 'checkPlat'])->name('api.kendaraan.check-plat');
     });
 
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard (admin only)
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard')
+        ->middleware('role:admin');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     // Owner Dashboard
@@ -189,12 +192,20 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:tb_user,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
         if ($request->filled('password')) {
             $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
         } else {
             unset($data['password']);
+        }
+
+        $photoFile = $request->file('photo');
+        unset($data['photo']);
+
+        if ($photoFile?->isValid()) {
+            $data = array_merge($data, UserPhoto::replaceWithUpload($photoFile, $user));
         }
 
         $user->update($data);
@@ -288,7 +299,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', \App\Http\Controllers\UserController::class);
-        
+
         // Unified Area & Map Management
         Route::resource('area-parkir', \App\Http\Controllers\AreaParkirController::class);
         Route::get('area-parkir/{area}/design', [\App\Http\Controllers\AreaParkirController::class, 'design'])->name('area-parkir.design');
@@ -299,11 +310,11 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
         Route::resource('kamera', \App\Http\Controllers\CameraController::class);
         Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
-        
+
         // User RFID Registration (Admin Only)
         Route::get('/users/{id}/scan-rfid', [UserController::class, 'showScanPage'])->name('users.scan-rfid');
         Route::post('/users/{id}/save-rfid', [UserController::class, 'saveRfid'])->name('users.save-rfid');
-        
+
         // RFID Management (Admin Only)
         Route::get('/admin/rfid', [RfidAdminController::class, 'index'])->name('admin.rfid.index');
         Route::post('/admin/rfid', [RfidAdminController::class, 'store'])->name('admin.rfid.store');
@@ -365,7 +376,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
 
     // NFC: halaman write (admin saja)
     Route::middleware(['role:admin'])->group(function () {
-        // 
+        //
     });
 
     // Pembayaran Midtrans & struk: bisa diakses user (hanya untuk transaksi miliknya) dan petugas

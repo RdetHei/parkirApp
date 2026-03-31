@@ -52,8 +52,9 @@
 
         <div>
             <label for="photo" class="block text-sm font-semibold text-gray-700 mb-2">Foto User</label>
+            <p class="text-xs text-slate-500 mb-2">Disimpan di Cloudinary (opsional).</p>
             <div class="relative">
-                <input type="file" name="photo" id="photo"
+                <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/gif,image/webp"
                        class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('photo') border-red-500 @enderror">
             </div>
             @error('photo')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror

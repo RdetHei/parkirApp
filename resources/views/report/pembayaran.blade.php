@@ -183,10 +183,12 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xs font-bold">
-                                        {{ $item->petugas ? strtoupper(substr($item->petugas->name, 0, 1)) : '-' }}
-                                    </div>
-                                    <span class="text-sm text-gray-900">{{ $item->petugas?->name ?? '-' }}</span>
+                                    @if($item->petugas)
+                                        <x-user-avatar :user="$item->petugas" size="sm" round="full" class="!bg-green-100 !text-green-600 !border-0" />
+                                        <span class="text-sm text-gray-900">{{ $item->petugas->name }}</span>
+                                    @else
+                                        <span class="text-sm text-gray-400">-</span>
+                                    @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

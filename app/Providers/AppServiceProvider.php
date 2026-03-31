@@ -22,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Transaksi::observe(TransaksiObserver::class);
+
+        $this->loadMigrationsFrom([
+            database_path('migrations/framework'),
+            database_path('migrations/app'),
+        ]);
     }
 }
 

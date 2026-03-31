@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-[2rem] shadow-2xl shadow-zinc-100 border border-zinc-100 overflow-hidden">
+        <div class="bg-white rounded-4xl shadow-2xl shadow-zinc-100 border border-zinc-100 overflow-hidden">
             <div class="p-8">
                 <div class="space-y-8">
                     <div>
@@ -56,7 +56,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-zinc-50/50 p-8 border-t border-zinc-100">
                 <div class="flex items-start gap-4">
                     <div class="w-10 h-10 bg-white border border-zinc-100 rounded-xl flex items-center justify-center text-zinc-900 shrink-0 shadow-sm">
@@ -81,7 +81,7 @@
 
     payButton.addEventListener('click', function (e) {
         e.preventDefault();
-        
+
         const amount = amountInput.value;
         if (!amount || amount < 10000) {
             alert('Minimal top up Rp 10.000');
@@ -104,10 +104,12 @@
             if (data.snap_token) {
                 window.snap.pay(data.snap_token, {
                     onSuccess: function(result) {
-                        window.location.href = '{{ route("user.saldo.index") }}?success=1';
+                        const oid = encodeURIComponent(data.order_id || '');
+                        window.location.href = '{{ route("user.saldo.index") }}?success=1&order_id=' + oid;
                     },
                     onPending: function(result) {
-                        window.location.href = '{{ route("user.saldo.index") }}?pending=1';
+                        const oid = encodeURIComponent(data.order_id || '');
+                        window.location.href = '{{ route("user.saldo.index") }}?pending=1&order_id=' + oid;
                     },
                     onError: function(result) {
                         alert('Pembayaran gagal!');

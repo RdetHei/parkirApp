@@ -140,9 +140,8 @@
                                 </td>
                                 <td class="px-8 py-5 text-sm whitespace-nowrap">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold text-[10px] group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all">
-                                            {{ substr($item->user?->name ?? 'S', 0, 1) }}
-                                        </div>
+                                        <x-user-avatar :user="$item->user" :initials="$item->user ? null : 'SY'" size="sm" round="lg"
+                                            class="!bg-emerald-500/10 !text-emerald-500 !border-emerald-500/20 group-hover:!bg-emerald-500 group-hover:!text-slate-950 transition-all" />
                                         <span class="text-xs font-bold text-white">{{ $item->user?->name ?? 'System' }}</span>
                                     </div>
                                 </td>

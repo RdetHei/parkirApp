@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
+use App\Support\UserPhoto;
 
 class User extends Authenticatable
 {
@@ -36,6 +38,7 @@ class User extends Authenticatable
         'nfc_uid',
         'balance',
         'photo',
+        'photo_cloudinary_path',
     ];
 
     public function saldoHistories()
@@ -69,5 +72,31 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * URL for profile photo (Cloudinary, legacy local path, or full URL in photo).
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (filled($this->photo_cloudinary_path)) {
+            try {
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+                $disk = Storage::disk('cloudinary');
+                return $disk->url($this->photo_cloudinary_path);
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        if (filled($this->photo)) {
+            if (UserPhoto::isRemoteUrl($this->photo)) {
+                return $this->photo;
+            }
+
+            return asset('storage/'.$this->photo);
+        }
+
+        return null;
     }
 }

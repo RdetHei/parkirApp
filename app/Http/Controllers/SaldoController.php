@@ -28,6 +28,18 @@ class SaldoController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        // Fallback for localhost: Midtrans notification (webhook) may not reach the app.
+        // If user returns from Snap with an order_id, try to sync status and apply topup idempotently.
+        $orderId = request()->query('order_id');
+        if (is_string($orderId) && str_starts_with($orderId, 'TOPUP-')) {
+            try {
+                $this->syncTopupFromMidtrans($user, $orderId);
+            } catch (\Throwable $e) {
+                Log::info('Topup sync skipped', ['order_id' => $orderId, 'reason' => $e->getMessage()]);
+            }
+        }
+
         $histories = SaldoHistory::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -208,5 +220,78 @@ class SaldoController extends Controller
             DB::rollBack();
             return back()->with('error', 'Gagal memproses top up.');
         }
+    }
+
+    /**
+     * Sync Midtrans topup status and apply credit (idempotent).
+     */
+    private function syncTopupFromMidtrans(User $user, string $orderId): void
+    {
+        if (! preg_match('/^TOPUP-(\d+)-/', $orderId, $m)) {
+            return;
+        }
+
+        $userIdFromOrder = (int) $m[1];
+        if ((int) $user->id !== $userIdFromOrder) {
+            return;
+        }
+
+        // Already applied?
+        if (SaldoHistory::where('reference_id', $orderId)->exists()) {
+            return;
+        }
+
+        $serverKey = config('services.midtrans.server_key');
+        if (empty($serverKey)) {
+            return;
+        }
+
+        try {
+            \Midtrans\Config::$serverKey = $serverKey;
+            \Midtrans\Config::$isProduction = (bool) config('services.midtrans.is_production');
+            $status = \Midtrans\Transaction::status($orderId);
+        } catch (\Throwable $e) {
+            Log::info('Midtrans topup status fetch failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+            return;
+        }
+
+        $transactionStatus = strtolower((string) ($status->transaction_status ?? ''));
+        $paymentType = $status->payment_type ?? null;
+        $grossAmount = (float) ($status->gross_amount ?? 0);
+
+        if (! in_array($transactionStatus, ['capture', 'settlement'], true)) {
+            return;
+        }
+        if ($grossAmount <= 0) {
+            return;
+        }
+
+        DB::transaction(function () use ($user, $orderId, $grossAmount, $paymentType) {
+            if (SaldoHistory::where('reference_id', $orderId)->exists()) {
+                return;
+            }
+
+            $userLocked = User::lockForUpdate()->findOrFail($user->id);
+            $userLocked->saldo = (float) $userLocked->saldo + $grossAmount;
+            if (array_key_exists('balance', $userLocked->getAttributes())) {
+                $userLocked->balance = (float) ($userLocked->balance ?? 0) + $grossAmount;
+            }
+            $userLocked->save();
+
+            $history = SaldoHistory::create([
+                'user_id' => $userLocked->id,
+                'amount' => $grossAmount,
+                'type' => 'topup',
+                'description' => 'Top Up NestonPay via Midtrans (' . ($paymentType ?? 'online') . ')',
+                'reference_id' => $orderId,
+            ]);
+
+            $this->logActivity(
+                'Topup saldo Midtrans berhasil (sync)',
+                'user',
+                $userLocked,
+                ['nominal' => $grossAmount, 'order_id' => $orderId, 'saldo_history_id' => $history->id]
+            );
+        });
     }
 }

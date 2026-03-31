@@ -30,10 +30,9 @@
             <div class="lg:w-64 shrink-0 flex flex-col gap-4">
 
                 {{-- Avatar card --}}
-                <div class="bg-[#111520] border border-white/[0.07] rounded-2xl p-6 flex flex-col items-center gap-4">
-                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-white/10 flex items-center justify-center text-2xl font-bold text-emerald-400 uppercase select-none">
-                        {{ substr($user->name, 0, 2) }}
-                    </div>
+                <div class="bg-[#020617] border border-white/[0.07] rounded-2xl p-6 flex flex-col items-center gap-4">
+                    <x-user-avatar :user="$user" size="lg" round="2xl"
+                        class="!bg-gradient-to-br !from-emerald-500/20 !to-teal-500/20 !text-emerald-400 !border-white/10 select-none shadow-lg shadow-black/20" />
                     <div class="text-center">
                         <p class="text-sm font-bold text-white">{{ $user->name }}</p>
                         <p class="text-xs text-slate-500 mt-0.5 break-all">{{ $user->email }}</p>
@@ -46,7 +45,7 @@
                 </div>
 
                 {{-- Meta info --}}
-                <div class="bg-[#111520] border border-white/[0.07] rounded-2xl p-5 flex flex-col gap-4">
+                <div class="bg-[#020617] border border-white/[0.07] rounded-2xl p-5 flex flex-col gap-4">
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Informasi Akun</p>
                     <div class="flex flex-col gap-3">
                         <div>
@@ -64,19 +63,26 @@
 
             {{-- ── RIGHT: Form ── --}}
             <div class="flex-1 min-w-0">
-                <form method="POST" action="{{ route('user.profile.update') }}">
+                <form method="POST" action="{{ route('user.profile.update') }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
                     <div class="flex flex-col gap-4">
 
                         {{-- Section: Informasi Pribadi --}}
-                        <div class="bg-[#111520] border border-white/[0.07] rounded-2xl overflow-hidden">
+                        <div class="bg-[#020617] border border-white/[0.07] rounded-2xl overflow-hidden">
                             <div class="px-6 py-4 border-b border-white/[0.05] flex items-center gap-3">
                                 <span class="w-1 h-5 bg-emerald-500 rounded-full"></span>
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Informasi Pribadi</p>
                             </div>
                             <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <div class="sm:col-span-2">
+                                    <label for="photo" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Foto profil</label>
+                                    <p class="text-[11px] text-slate-500 mb-2">JPG, PNG, GIF, atau WebP — disimpan di Cloudinary (maks. 4&nbsp;MB).</p>
+                                    <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/gif,image/webp"
+                                           class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-500/15 file:text-emerald-400 hover:file:bg-emerald-500/25 cursor-pointer @error('photo') border border-red-500/50 rounded-xl @enderror">
+                                    @error('photo') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                                </div>
                                 <div class="sm:col-span-2">
                                     <label for="name" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nama Lengkap</label>
                                     <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
@@ -94,7 +100,7 @@
                         </div>
 
                         {{-- Section: Kata Sandi --}}
-                        <div class="bg-[#111520] border border-white/[0.07] rounded-2xl overflow-hidden">
+                        <div class="bg-[#020617] border border-white/[0.07] rounded-2xl overflow-hidden">
                             <div class="px-6 py-4 border-b border-white/[0.05] flex items-center gap-3">
                                 <span class="w-1 h-5 bg-slate-600 rounded-full"></span>
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Ubah Kata Sandi</p>

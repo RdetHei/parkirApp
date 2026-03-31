@@ -38,7 +38,7 @@
         <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
             <h2 class="text-sm font-bold text-white uppercase tracking-widest">Team Directory <span class="text-slate-500 ml-2 font-medium">({{ $users->total() }} total)</span></h2>
         </div>
-        
+
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -58,9 +58,7 @@
                             </td>
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-emerald-500 font-bold text-xs group-hover:border-emerald-500/30 transition-colors">
-                                        {{ strtoupper(substr($user->name, 0, 2)) }}
-                                    </div>
+                                    <x-user-avatar :user="$user" size="md" class="!text-emerald-500 !border-white/5 group-hover:!border-emerald-500/30 transition-colors" />
                                     <div>
                                         <p class="text-sm font-bold text-white tracking-tight">{{ $user->name }}</p>
                                         <div class="flex items-center gap-2 mt-1">

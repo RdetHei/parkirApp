@@ -53,9 +53,7 @@
                         <tr class="border-t border-white/5 hover:bg-white/[0.01] transition-colors group" id="row-{{ $user->id }}">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-white/10 flex items-center justify-center text-blue-400 font-bold uppercase">
-                                        {{ substr($user->name, 0, 2) }}
-                                    </div>
+                                    <x-user-avatar :user="$user" size="md" class="!bg-gradient-to-br !from-blue-500/20 !to-indigo-500/20 !text-blue-400 !border-white/10" />
                                     <div>
                                         <p class="text-sm font-bold text-white">{{ $user->name }}</p>
                                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ $user->email }}</p>
@@ -101,9 +99,7 @@
                                     <input type="hidden" name="user_id" value="{{ $user->id }}">
 
                                     <div class="flex items-center gap-3 mr-2">
-                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold uppercase text-xs">
-                                            {{ substr($user->name, 0, 2) }}
-                                        </div>
+                                        <x-user-avatar :user="$user" size="sm" round="lg" class="!bg-gradient-to-br !from-blue-500/20 !to-indigo-500/20 !text-blue-400 !border-blue-500/20" />
                                         <span class="text-sm font-bold text-white">{{ $user->name }}</span>
                                     </div>
 
