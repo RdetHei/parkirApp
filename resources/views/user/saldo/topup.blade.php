@@ -3,68 +3,70 @@
 @section('title', 'Top Up Saldo - NestonPay')
 
 @section('content')
-<div class="p-4 sm:p-6 lg:p-8">
+<div class="p-8 relative z-10">
     <div class="max-w-xl mx-auto">
-        <div class="flex items-center gap-4 mb-8">
-            <a href="{{ route('user.saldo.index') }}" class="w-10 h-10 bg-white border border-zinc-200 rounded-xl flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all shadow-sm hover:border-zinc-300">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-8 animate-fade-in-up">
+            <a href="{{ route('user.saldo.index') }}" class="w-11 h-11 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-xl flex items-center justify-center transition-all border border-white/10">
+                <i class="fa-solid fa-arrow-left"></i>
             </a>
             <div>
-                <h1 class="text-2xl font-bold text-zinc-900 tracking-tight">Top Up Saldo</h1>
-                <p class="text-sm text-zinc-500">Isi ulang saldo NestonPay Anda untuk kemudahan pembayaran.</p>
+                <h1 class="text-2xl font-bold text-white tracking-tight">Top Up Saldo</h1>
+                <p class="text-sm text-slate-400">Isi ulang saldo NestonPay Anda untuk kemudahan pembayaran.</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-4xl shadow-2xl shadow-zinc-100 border border-zinc-100 overflow-hidden">
+        <div class="card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.1s">
             <div class="p-8">
                 <div class="space-y-8">
                     <div>
-                        <label for="amount" class="block text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-4">Nominal Top Up</label>
+                        <label for="amount" class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">1. Masukkan Nominal Top Up</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                                <span class="text-zinc-400 font-bold text-xl">Rp</span>
+                                <span class="text-slate-500 font-bold text-xl">Rp</span>
                             </div>
                             <input type="number" name="amount" id="amount" required min="10000" step="1000"
-                                   class="block w-full pl-16 pr-6 py-5 bg-zinc-50 border border-zinc-100 rounded-2xl text-3xl font-extrabold text-zinc-900 focus:ring-0 focus:border-zinc-900 transition-all placeholder:text-zinc-200"
+                                   class="block w-full pl-16 pr-6 py-5 bg-slate-800/50 border border-white/10 rounded-2xl text-3xl font-extrabold text-white focus:ring-emerald-500 focus:border-emerald-500 transition-all placeholder:text-slate-700"
                                    placeholder="0">
                         </div>
-                        <p class="mt-4 text-xs text-zinc-400 font-medium">Minimal top up sebesar <span class="text-zinc-900">Rp 10.000</span>.</p>
+                        <p class="mt-4 text-xs text-slate-500 font-medium">Minimal top up sebesar <span class="text-white">Rp 10.000</span>.</p>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <button type="button" onclick="document.getElementById('amount').value = 20000" class="py-4 px-4 bg-zinc-50 hover:bg-zinc-900 hover:text-white rounded-2xl text-sm font-bold text-zinc-600 transition-all border border-zinc-100">
-                            Rp 20.000
-                        </button>
-                        <button type="button" onclick="document.getElementById('amount').value = 50000" class="py-4 px-4 bg-zinc-50 hover:bg-zinc-900 hover:text-white rounded-2xl text-sm font-bold text-zinc-600 transition-all border border-zinc-100">
-                            Rp 50.000
-                        </button>
-                        <button type="button" onclick="document.getElementById('amount').value = 100000" class="py-4 px-4 bg-zinc-50 hover:bg-zinc-900 hover:text-white rounded-2xl text-sm font-bold text-zinc-600 transition-all border border-zinc-100">
-                            Rp 100.000
-                        </button>
-                        <button type="button" onclick="document.getElementById('amount').value = 200000" class="py-4 px-4 bg-zinc-50 hover:bg-zinc-900 hover:text-white rounded-2xl text-sm font-bold text-zinc-600 transition-all border border-zinc-100">
-                            Rp 200.000
-                        </button>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">2. Pilih Nominal Cepat</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button type="button" onclick="setAmount(20000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
+                                Rp 20.000
+                            </button>
+                            <button type="button" onclick="setAmount(50000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
+                                Rp 50.000
+                            </button>
+                            <button type="button" onclick="setAmount(100000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
+                                Rp 100.000
+                            </button>
+                            <button type="button" onclick="setAmount(200000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
+                                Rp 200.000
+                            </button>
+                        </div>
                     </div>
 
                     <div class="pt-2">
-                        <button type="button" id="pay-button" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-bold py-5 rounded-2xl shadow-xl shadow-zinc-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Bayar dengan Midtrans
+                        <button type="button" id="pay-button" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] uppercase tracking-[0.2em] py-5 rounded-2xl transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            Lanjutkan ke Pembayaran Aman
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-zinc-50/50 p-8 border-t border-zinc-100">
+            <div class="p-8 border-t border-white/5 bg-white/[0.02]">
                 <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 bg-white border border-zinc-100 rounded-xl flex items-center justify-center text-zinc-900 shrink-0 shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="w-10 h-10 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center shrink-0 border border-emerald-500/20">
+                        <i class="fa-solid fa-info"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-zinc-900 mb-1">Informasi Pembayaran</h4>
-                        <p class="text-xs text-zinc-500 leading-relaxed font-medium">Pembayaran diproses secara aman melalui Midtrans. Saldo akan otomatis bertambah setelah status pembayaran menjadi <span class="font-bold">Settlement</span>.</p>
+                        <h4 class="text-sm font-bold text-white mb-1">Informasi Pembayaran</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed font-medium">Pembayaran diproses secara aman melalui Midtrans. Saldo akan otomatis bertambah setelah status pembayaran menjadi <span class="font-bold text-emerald-500">Settlement</span>.</p>
                     </div>
                 </div>
             </div>
@@ -78,6 +80,10 @@
 <script>
     const payButton = document.getElementById('pay-button');
     const amountInput = document.getElementById('amount');
+
+    function setAmount(value) {
+        amountInput.value = value;
+    }
 
     payButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -114,24 +120,24 @@
                     onError: function(result) {
                         alert('Pembayaran gagal!');
                         payButton.disabled = false;
-                        payButton.innerHTML = 'Bayar dengan Midtrans';
+                        payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
                     },
                     onClose: function() {
                         payButton.disabled = false;
-                        payButton.innerHTML = 'Bayar dengan Midtrans';
+                        payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
                     }
                 });
             } else {
                 alert(data.error || 'Terjadi kesalahan');
                 payButton.disabled = false;
-                payButton.innerHTML = 'Bayar dengan Midtrans';
+                payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Terjadi kesalahan koneksi');
             payButton.disabled = false;
-            payButton.innerHTML = 'Bayar dengan Midtrans';
+            payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
         });
     });
 </script>

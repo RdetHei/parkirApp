@@ -310,7 +310,6 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         Route::resource('tarif', \App\Http\Controllers\TarifController::class);
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
         Route::resource('kamera', \App\Http\Controllers\CameraController::class);
-        Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
 
         // User RFID Registration (Admin Only)
         Route::get('/users/{id}/scan-rfid', [UserController::class, 'showScanPage'])->name('users.scan-rfid');
@@ -327,6 +326,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.index');
         Route::get('/transaksi/create-check-in', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create-check-in');
         Route::post('/transaksi/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
+        Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
         Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])
             ->whereNumber('transaksi')
             ->name('transaksi.show');

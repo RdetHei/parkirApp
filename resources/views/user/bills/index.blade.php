@@ -3,108 +3,131 @@
 @section('title', 'Tagihan Saya')
 
 @section('content')
-    <div class="px-4 py-6 sm:px-6 lg:px-8">
-        <div class="max-w-5xl mx-auto space-y-6">
-            <div class="flex items-center justify-between gap-4">
-                <div>
-                    <p class="text-xs font-semibold tracking-wide text-emerald-600 uppercase">Tagihan parkir</p>
-                    <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">
-                        Tagihan milik {{ $user->name }}
-                    </h1>
-                    <p class="mt-1 text-sm text-gray-500">
-                        Daftar transaksi parkir yang sudah checkout tetapi belum dibayar.
-                    </p>
+<div class="p-8 relative z-10">
+    <div class="max-w-5xl mx-auto space-y-8">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in-up">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="px-3 py-1 bg-rose-500/10 text-rose-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-rose-500/20">
+                        <i class="fa-solid fa-file-invoice-dollar mr-1"></i>
+                        Menunggu Pembayaran
+                    </span>
                 </div>
-                <a href="{{ route('user.dashboard') }}"
-                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    Kembali ke dashboard
-                </a>
+                <h1 class="text-4xl font-bold tracking-tight text-white">Tagihan Parkir Anda</h1>
+                <p class="text-slate-400 text-sm mt-2">Daftar transaksi parkir yang sudah selesai dan menunggu pembayaran.</p>
             </div>
+            <a href="{{ route('user.dashboard') }}" class="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i>
+                Kembali ke Dashboard
+            </a>
+        </div>
 
-            @if(session('success'))
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            <div class="bg-white rounded-2xl border border-gray-200 p-5 flex items-center justify-between gap-4">
-                <div>
-                    <p class="text-xs font-medium text-gray-600">Jumlah tagihan aktif</p>
-                    <p class="mt-1 text-2xl font-bold text-gray-900">
-                        {{ $transaksis->total() }}
-                    </p>
-                </div>
-                <div class="text-right">
-                    <p class="text-xs font-medium text-gray-600">Perkiraan total yang harus dibayar</p>
-                    <p class="mt-1 text-xl font-bold text-emerald-600">
-                        Rp {{ number_format($totalTagihan, 0, ',', '.') }}
-                    </p>
+        @if(session('success'))
+            <div class="animate-fade-in-up" style="animation-delay: 0.1s">
+                <div class="px-4 py-3 bg-emerald-500/10 text-emerald-500 text-sm font-bold rounded-xl border border-emerald-500/20 flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>{{ session('success') }}</span>
                 </div>
             </div>
-
-            <div class="bg-white rounded-2xl border border-gray-200">
-                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-sm font-semibold text-gray-900">Daftar tagihan</h2>
+        @endif
+        @if(session('error'))
+            <div class="animate-fade-in-up" style="animation-delay: 0.1s">
+                <div class="px-4 py-3 bg-rose-500/10 text-rose-500 text-sm font-bold rounded-xl border border-rose-500/20 flex items-center gap-3">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>{{ session('error') }}</span>
                 </div>
-                <div class="p-4">
-                    @if($transaksis->count())
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead class="bg-gray-50 border-b border-gray-100">
-                                <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Plat</th>
-                                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Area</th>
-                                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Waktu keluar</th>
-                                    <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Total</th>
-                                    <th class="px-4 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Aksi</th>
-                                </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                @foreach($transaksis as $trx)
-                                    <tr>
-                                        <td class="px-4 py-2 font-semibold text-gray-900">
-                                            {{ $trx->kendaraan->plat_nomor ?? '-' }}
-                                        </td>
-                                        <td class="px-4 py-2 text-gray-700">
-                                            {{ $trx->area->nama_area ?? '-' }}
-                                        </td>
-                                        <td class="px-4 py-2 text-gray-700">
-                                            {{ optional($trx->waktu_keluar)->format('d M Y, H:i') ?? '-' }}
-                                        </td>
-                                        <td class="px-4 py-2 text-right font-semibold text-gray-900">
-                                            Rp {{ number_format($trx->biaya_total ?? 0, 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-4 py-2 text-right">
-                                            <a href="{{ route('payment.midtrans', $trx->id_parkir) }}"
-                                               class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700">
-                                                Bayar sekarang
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+            </div>
+        @endif
 
-                        <div class="mt-4">
-                            {{ $transaksis->links() }}
-                        </div>
-                    @else
-                        <p class="text-sm text-gray-500">
-                            Belum ada transaksi yang menunggu pembayaran.
-                        </p>
-                    @endif
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up" style="animation-delay: 0.2s">
+            <div class="card-pro group overflow-hidden relative">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all"></div>
+                <div class="flex items-center justify-between mb-4 relative z-10">
+                    <div class="p-2.5 bg-white/5 rounded-xl border border-white/10 text-white">
+                        <i class="fa-solid fa-receipt text-lg"></i>
+                    </div>
+                    <span class="px-2.5 py-1 bg-white/5 text-white text-[9px] font-black uppercase rounded-lg border border-white/10">{{ $transaksis->total() }} Tagihan</span>
                 </div>
+                <p class="text-4xl font-black text-white tracking-tighter relative z-10">{{ $transaksis->total() }}</p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 relative z-10">Jumlah Tagihan Aktif</p>
+            </div>
+            <div class="card-pro group overflow-hidden relative border-emerald-500/20">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all"></div>
+                <div class="flex items-center justify-between mb-4 relative z-10">
+                    <div class="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-500">
+                        <i class="fa-solid fa-wallet text-lg"></i>
+                    </div>
+                </div>
+                <p class="text-4xl font-black text-white tracking-tighter relative z-10">
+                    <span class="text-emerald-500 text-2xl font-medium mr-1">Rp</span>{{ number_format($totalTagihan, 0, ',', '.') }}
+                </p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 relative z-10">Total Perkiraan</p>
             </div>
         </div>
+
+        <!-- Bills Table -->
+        <div class="card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.3s">
+            <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                <h2 class="text-sm font-black text-white uppercase tracking-widest">Daftar Tagihan</h2>
+            </div>
+            
+            @if($transaksis->count())
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-white/5">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Kendaraan</th>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Area</th>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Waktu Keluar</th>
+                            <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Total Tagihan</th>
+                            <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                        @foreach($transaksis as $trx)
+                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 font-bold text-white uppercase">
+                                    {{ $trx->kendaraan->plat_nomor ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-slate-400">
+                                    {{ $trx->area->nama_area ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-slate-400">
+                                    {{ optional($trx->waktu_keluar)->format('d M Y, H:i') ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-right font-bold text-emerald-500">
+                                    Rp {{ number_format($trx->biaya_total ?? 0, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <a href="{{ route('payment.midtrans', $trx->id_parkir) }}"
+                                       class="px-4 py-2 bg-emerald-500 text-slate-950 font-black text-[10px] uppercase tracking-widest rounded-lg transition-all hover:bg-emerald-400 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                                        Bayar
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                @if($transaksis->hasPages())
+                <div class="px-8 py-6 border-t border-white/5 bg-white/[0.02]">
+                    {{ $transaksis->links() }}
+                </div>
+                @endif
+            @else
+                <div class="p-12 text-center">
+                    <div class="w-16 h-16 bg-emerald-500/10 text-emerald-500 flex items-center justify-center rounded-2xl mx-auto mb-4 border border-emerald-500/20">
+                        <i class="fa-solid fa-check-double text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-white">Tidak Ada Tagihan</h3>
+                    <p class="text-sm text-slate-400 mt-1">Semua transaksi Anda sudah terbayar lunas.</p>
+                </div>
+            @endif
+        </div>
     </div>
+</div>
 @endsection
 

@@ -3,94 +3,106 @@
 @section('title', 'Riwayat Parkir')
 
 @section('content')
-    <div class="px-4 py-6 sm:px-6 lg:px-8">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Riwayat Parkir</h1>
-                    <p class="mt-1 text-sm text-gray-500">Seluruh riwayat transaksi parkir Anda.</p>
+<div class="p-8 relative z-10">
+    <div class="max-w-6xl mx-auto space-y-8">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in-up">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="px-3 py-1 bg-sky-500/10 text-sky-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-sky-500/20">
+                        <i class="fa-solid fa-history mr-1"></i>
+                        Riwayat Transaksi
+                    </span>
                 </div>
-                <a href="{{ route('user.dashboard') }}"
-                   class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    Kembali
-                </a>
+                <h1 class="text-4xl font-bold tracking-tight text-white">Riwayat Parkir Anda</h1>
+                <p class="text-slate-400 text-sm mt-2">Seluruh catatan transaksi parkir yang pernah Anda lakukan.</p>
             </div>
+            <a href="{{ route('user.dashboard') }}" class="px-6 py-3 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i>
+                Kembali ke Dashboard
+            </a>
+        </div>
 
-            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        <!-- History Table -->
+        <div class="card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.1s">
+            <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                <h2 class="text-sm font-black text-white uppercase tracking-widest">Daftar Transaksi</h2>
+            </div>
+            
+            @if($transactions->count())
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kendaraan</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Area</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu Masuk</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu Keluar</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Biaya</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                            </tr>
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-white/5">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Kendaraan</th>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Area</th>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Waktu</th>
+                            <th class="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Biaya</th>
+                            <th class="px-6 py-4 text-center text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Status</th>
+                        </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @forelse($transactions as $trx)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div>
-                                            <p class="font-bold text-gray-900">{{ $trx->kendaraan->plat_nomor ?? '-' }}</p>
-                                            <p class="text-[10px] text-gray-500 uppercase">{{ $trx->kendaraan->jenis_kendaraan ?? 'Kendaraan' }}</p>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-600">{{ $trx->area->nama_area ?? '-' }}</td>
-                                    <td class="px-6 py-4">
-                                        <p class="text-gray-900 font-medium">{{ $trx->waktu_masuk->format('H:i') }}</p>
-                                        <p class="text-[10px] text-gray-500">{{ $trx->waktu_masuk->format('d/m/Y') }}</p>
-                                    </td>
-                                    <td class="px-6 py-4">
+                        <tbody class="divide-y divide-white/5">
+                        @forelse($transactions as $trx)
+                            <tr class="hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <p class="font-bold text-white uppercase">{{ $trx->kendaraan->plat_nomor ?? '-' }}</p>
+                                        <p class="text-[10px] text-slate-400 uppercase">{{ $trx->kendaraan->jenis_kendaraan ?? 'Kendaraan' }}</p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-slate-400">{{ $trx->area->nama_area ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <p class="text-slate-300"><span class="font-bold text-sky-500">Masuk:</span> {{ $trx->waktu_masuk->format('d/m/y H:i') }}</p>
                                         @if($trx->waktu_keluar)
-                                            <p class="text-gray-900 font-medium">{{ $trx->waktu_keluar->format('H:i') }}</p>
-                                            <p class="text-[10px] text-gray-500">{{ $trx->waktu_keluar->format('d/m/Y') }}</p>
-                                        @else
-                                            <span class="text-xs text-gray-400 italic">Masih Parkir</span>
+                                            <p class="text-slate-300"><span class="font-bold text-rose-500">Keluar:</span> {{ $trx->waktu_keluar->format('d/m/y H:i') }}</p>
                                         @endif
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="font-bold text-gray-900">Rp {{ number_format($trx->biaya_total, 0, ',', '.') }}</p>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        @if($trx->status === 'masuk')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                                Aktif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <p class="font-bold text-white">Rp {{ number_format($trx->biaya_total, 0, ',', '.') }}</p>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if($trx->status === 'masuk')
+                                        <span class="px-2.5 py-1 bg-sky-500/10 text-sky-500 text-[9px] font-black uppercase rounded-lg border border-sky-500/20 tracking-widest">
+                                            Aktif
+                                        </span>
+                                    @elseif($trx->status === 'keluar')
+                                        @if(($trx->pembayaran->status ?? '') === 'berhasil')
+                                            <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase rounded-lg border border-emerald-500/20 tracking-widest">
+                                                Selesai
                                             </span>
-                                        @elseif($trx->status === 'keluar')
-                                            @if(($trx->pembayaran->status ?? '') === 'berhasil')
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                    Selesai
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
-                                                    Belum Dibayar
-                                                </span>
-                                            @endif
+                                        @else
+                                            <span class="px-2.5 py-1 bg-rose-500/10 text-rose-500 text-[9px] font-black uppercase rounded-lg border border-rose-500/20 tracking-widest">
+                                                Belum Dibayar
+                                            </span>
                                         @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                        Belum ada riwayat transaksi parkir.
-                                    </td>
-                                </tr>
-                            @endforelse
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5">
+                                    <div class="p-12 text-center">
+                                        <div class="w-16 h-16 bg-white/5 text-slate-500 flex items-center justify-center rounded-2xl mx-auto mb-4 border border-white/10">
+                                            <i class="fa-solid fa-receipt text-2xl"></i>
+                                        </div>
+                                        <h3 class="font-bold text-white">Belum Ada Riwayat</h3>
+                                        <p class="text-sm text-slate-400 mt-1">Anda belum memiliki riwayat transaksi parkir.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
                         </tbody>
                     </table>
                 </div>
                 @if($transactions->hasPages())
-                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                        {{ $transactions->links() }}
-                    </div>
+                <div class="px-8 py-6 border-t border-white/5 bg-white/[0.02]">
+                    {{ $transactions->links() }}
+                </div>
                 @endif
-            </div>
+            @endif
         </div>
     </div>
+</div>
 @endsection

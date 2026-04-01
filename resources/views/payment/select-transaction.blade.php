@@ -1,134 +1,118 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto px-4">
+<div class="p-8 max-w-7xl mx-auto" style="background:#020617;min-height:100vh;">
 
-        <!-- Card Container -->
-        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <!-- Card Header -->
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-gray-900">Transaksi Aktif</h2>
-                    <span class="text-sm text-gray-500">{{ $transaksis->count() }} transaksi</span>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID Parkir</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Plat Nomor</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Waktu Masuk</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jenis Kendaraan</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Area Parkir</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @forelse ($transaksis as $transaksi)
-                            <tr class="hover:bg-gray-50 transition-colors" id="row-{{ $transaksi->id_parkir }}" data-transaksi-id="{{ $transaksi->id_parkir }}">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-semibold text-gray-900">#{{ $transaksi->id_parkir }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
-                                            </svg>
-                                        </div>
-                                        <span class="text-sm font-medium text-gray-900">{{ $transaksi->kendaraan->plat_nomor }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($transaksi->waktu_masuk)->format('d M Y') }}</div>
-                                    <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($transaksi->waktu_masuk)->format('H:i') }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($transaksi->tarif->jenis_kendaraan == 'motor')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            Motor
-                                        </span>
-                                    @elseif($transaksi->tarif->jenis_kendaraan == 'mobil')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            Mobil
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                            Lainnya
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        </svg>
-                                        <span class="text-sm text-gray-900">{{ $transaksi->area->nama_area }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <a href="{{ route('payment.create', $transaksi->id_parkir) }}"
-                                       class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                        </svg>
-                                        Transaction
-                                    </a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-12">
-                                    <div class="text-center">
-                                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-gray-900 font-semibold mb-1">Tidak Ada Transaksi Aktif</p>
-                                        <p class="text-sm text-gray-500">Belum ada transaksi parkir yang perlu dibayar</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-
+    {{-- Header --}}
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Transaksi Aktif</h1>
+            <p class="text-slate-500 text-sm mt-0.5">Kendaraan yang sedang parkir dan menunggu pembayaran.</p>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border" style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.07);">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ $transaksis->count() }} aktif</span>
         </div>
     </div>
 
-    <script>
-        // Auto-refresh transaksi list setiap 2 detik untuk mendeteksi pembayaran yang baru selesai
-        function refreshTransactionList() {
-            fetch('{{ route('payment.select-transaction') }}', {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                // Parse HTML response untuk mendapat list transaksi baru
-                const parser = new DOMParser();
-                const newDoc = parser.parseFromString(html, 'text/html');
-                const newRows = newDoc.querySelectorAll('tbody tr[data-transaksi-id]');
-                const currentRows = document.querySelectorAll('tbody tr[data-transaksi-id]');
+    {{--
+        VARIANT 1: Card grid per transaksi
+        Setiap transaksi = 1 card dengan info lengkap + tombol bayar yang mencolok.
+        Cocok untuk operator yang butuh visual cepat per kendaraan.
+    --}}
 
-                // Jika jumlah row berkurang, refresh halaman
-                if (newRows.length < currentRows.length) {
-                    location.reload();
-                }
-            })
-            .catch(error => console.log('Auto-refresh error (non-critical):', error));
-        }
+    @if($transaksis->isEmpty())
+    <div class="flex flex-col items-center justify-center py-32 text-center rounded-2xl border" style="background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.06);">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">
+            <svg class="w-7 h-7 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+        </div>
+        <p class="text-white font-semibold mb-1">Tidak Ada Transaksi Aktif</p>
+        <p class="text-sm text-slate-600">Belum ada transaksi parkir yang perlu dibayar.</p>
+    </div>
 
-        // Poll setiap 2 detik
-        setInterval(refreshTransactionList, 2000);
-    </script>
+    @else
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        @foreach($transaksis as $transaksi)
+        @php
+            $masuk = \Carbon\Carbon::parse($transaksi->waktu_masuk);
+            $durasi = $masuk->diffForHumans(null, true);
+            $jenis = $transaksi->tarif->jenis_kendaraan ?? 'lainnya';
+            $jenisCls = match($jenis) {
+                'motor' => 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+                'mobil' => 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
+                default => 'bg-purple-500/10 border-purple-500/20 text-purple-400',
+            };
+            $jenisLabel = match($jenis) { 'motor' => 'Motor', 'mobil' => 'Mobil', default => 'Lainnya' };
+        @endphp
+
+        <div class="rounded-2xl overflow-hidden border flex flex-col" style="background:#0d1526;border-color:rgba(255,255,255,0.07);" id="row-{{ $transaksi->id_parkir }}" data-transaksi-id="{{ $transaksi->id_parkir }}">
+
+            {{-- Card top --}}
+            <div class="px-5 pt-5 pb-4 border-b flex items-start justify-between" style="border-color:rgba(255,255,255,0.05);">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-base font-bold text-white tracking-tight">{{ $transaksi->kendaraan->plat_nomor }}</p>
+                        <p class="text-[9px] font-mono text-emerald-500/60">#{{ $transaksi->id_parkir }}</p>
+                    </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest {{ $jenisCls }}">{{ $jenisLabel }}</span>
+            </div>
+
+            {{-- Details --}}
+            <div class="px-5 py-4 flex flex-col gap-3 flex-1">
+                <div class="flex items-center justify-between">
+                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Masuk</span>
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-white">{{ $masuk->format('d M Y') }}</p>
+                        <p class="text-[10px] text-slate-500 font-mono">{{ $masuk->format('H:i') }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Durasi</span>
+                    <span class="text-xs font-bold text-amber-400">{{ $durasi }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Area</span>
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span class="text-xs font-bold text-white">{{ $transaksi->area->nama_area }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Action --}}
+            <div class="px-5 pb-5">
+                <a href="{{ route('payment.create', $transaksi->id_parkir) }}"
+                   class="w-full py-2.5 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-900/30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    Proses Pembayaran
+                </a>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+</div>
+
+<script>
+    function refreshTransactionList() {
+        fetch('{{ route('payment.select-transaction') }}', {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, 'text/html');
+            const newRows = newDoc.querySelectorAll('[data-transaksi-id]');
+            const currentRows = document.querySelectorAll('[data-transaksi-id]');
+            if (newRows.length < currentRows.length) location.reload();
+        })
+        .catch(e => console.log('Auto-refresh error (non-critical):', e));
+    }
+    setInterval(refreshTransactionList, 2000);
+</script>
 @endsection
