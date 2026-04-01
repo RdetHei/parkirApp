@@ -41,6 +41,21 @@ class User extends Authenticatable
         'photo_cloudinary_path',
     ];
 
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        static::saving(function ($user) {
+            // Keep 'saldo' and 'balance' in sync
+            if ($user->isDirty('saldo') && !$user->isDirty('balance')) {
+                $user->balance = $user->saldo;
+            } elseif ($user->isDirty('balance') && !$user->isDirty('saldo')) {
+                $user->saldo = $user->balance;
+            }
+        });
+    }
+
     public function saldoHistories()
     {
         return $this->hasMany(SaldoHistory::class, 'user_id');

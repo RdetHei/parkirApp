@@ -3,76 +3,97 @@
 @section('title', 'Top Up Saldo - NestonPay')
 
 @section('content')
-<div class="p-8 relative z-10">
-    <div class="max-w-xl mx-auto">
+<div class="p-8 relative z-10 animate-fade-in">
+    <!-- Background Glows -->
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+    <div class="max-w-xl mx-auto relative z-10">
         <!-- Header -->
-        <div class="flex items-center gap-4 mb-8 animate-fade-in-up">
-            <a href="{{ route('user.saldo.index') }}" class="w-11 h-11 bg-white/[0.03] hover:bg-white/[0.08] text-white rounded-xl flex items-center justify-center transition-all border border-white/10">
-                <i class="fa-solid fa-arrow-left"></i>
+        <div class="flex items-center gap-6 mb-12">
+            <a href="{{ route('user.saldo.index') }}" class="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-slate-400 hover:text-white hover:border-emerald-500/50 transition-all shadow-xl group">
+                <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
             </a>
             <div>
-                <h1 class="text-2xl font-bold text-white tracking-tight">Top Up Saldo</h1>
-                <p class="text-sm text-slate-400">Isi ulang saldo NestonPay Anda untuk kemudahan pembayaran.</p>
+                <h1 class="text-3xl font-black text-white tracking-tight uppercase">Top Up Saldo</h1>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">NestonPay Wallet System</p>
             </div>
         </div>
 
-        <div class="card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.1s">
-            <div class="p-8">
-                <div class="space-y-8">
+        <!-- Main Card -->
+        <div class="card-pro group overflow-hidden relative border-emerald-500/10">
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+            
+            <div class="p-8 sm:p-12 relative z-10">
+                <form id="topupForm" method="POST" action="{{ route('user.saldo.topup.store') }}" class="space-y-10">
+                    @csrf
+                    
+                    <!-- Amount Input -->
                     <div>
-                        <label for="amount" class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">1. Masukkan Nominal Top Up</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                                <span class="text-slate-500 font-bold text-xl">Rp</span>
+                        <label for="amount" class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6 ml-1">Nominal Top Up</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+                                <span class="text-emerald-500 font-black text-2xl tracking-tighter">Rp</span>
                             </div>
                             <input type="number" name="amount" id="amount" required min="10000" step="1000"
-                                   class="block w-full pl-16 pr-6 py-5 bg-slate-800/50 border border-white/10 rounded-2xl text-3xl font-extrabold text-white focus:ring-emerald-500 focus:border-emerald-500 transition-all placeholder:text-slate-700"
+                                   class="block w-full pl-20 pr-8 py-8 bg-slate-950/50 border border-white/5 rounded-[2rem] text-5xl font-black text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-slate-800 tracking-tighter"
                                    placeholder="0">
                         </div>
-                        <p class="mt-4 text-xs text-slate-500 font-medium">Minimal top up sebesar <span class="text-white">Rp 10.000</span>.</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">2. Pilih Nominal Cepat</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <button type="button" onclick="setAmount(20000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
-                                Rp 20.000
-                            </button>
-                            <button type="button" onclick="setAmount(50000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
-                                Rp 50.000
-                            </button>
-                            <button type="button" onclick="setAmount(100000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
-                                Rp 100.000
-                            </button>
-                            <button type="button" onclick="setAmount(200000)" class="py-4 px-4 bg-white/[0.03] hover:bg-emerald-500/10 hover:text-emerald-500 rounded-2xl text-sm font-bold text-slate-300 transition-all border border-white/10">
-                                Rp 200.000
-                            </button>
+                        <div class="flex items-center gap-2 mt-6 ml-2">
+                            <div class="w-1 h-1 rounded-full bg-emerald-500"></div>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Minimal top up sebesar <span class="text-white">Rp 10.000</span></p>
                         </div>
                     </div>
 
-                    <div class="pt-2">
-                        <button type="button" id="pay-button" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] uppercase tracking-[0.2em] py-5 rounded-2xl transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-3">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            Lanjutkan ke Pembayaran Aman
+                    <!-- Quick Options -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        @foreach([20000, 50000, 100000, 250000] as $val)
+                            <button type="button" onclick="document.getElementById('amount').value = {{ $val }}" 
+                                    class="py-4 px-2 bg-white/5 hover:bg-emerald-500 hover:text-slate-950 rounded-2xl text-[10px] font-black text-slate-400 transition-all border border-white/5 hover:border-emerald-500 hover:scale-[1.05] active:scale-95 uppercase tracking-widest">
+                                {{ number_format($val/1000, 0) }}K
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="pt-4 space-y-4">
+                        <!-- Midtrans Button -->
+                        <button type="button" id="pay-button" class="group relative w-full bg-emerald-500 text-slate-950 font-black py-6 rounded-[2rem] shadow-2xl shadow-emerald-500/20 transition-all hover:bg-emerald-400 active:scale-[0.98] flex items-center justify-center gap-4 uppercase tracking-widest text-xs overflow-hidden">
+                            <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                            <i class="fa-solid fa-credit-card text-lg"></i>
+                            <span id="pay-button-text">Bayar via Midtrans</span>
+                        </button>
+
+                        <!-- Manual/Simulation Button (For Dev/Demo) -->
+                        <button type="submit" class="w-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-bold py-4 rounded-2xl transition-all border border-white/5 uppercase tracking-widest text-[10px] flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-bolt-lightning text-amber-500"></i>
+                            Simulasi Top Up (Instant)
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
 
-            <div class="p-8 border-t border-white/5 bg-white/[0.02]">
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center shrink-0 border border-emerald-500/20">
-                        <i class="fa-solid fa-info"></i>
+            <!-- Info Footer -->
+            <div class="bg-white/[0.02] p-8 border-t border-white/5">
+                <div class="flex items-start gap-5">
+                    <div class="w-12 h-12 bg-slate-950 border border-white/5 rounded-2xl flex items-center justify-center text-emerald-500 shrink-0 shadow-xl">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-white mb-1">Informasi Pembayaran</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed font-medium">Pembayaran diproses secara aman melalui Midtrans. Saldo akan otomatis bertambah setelah status pembayaran menjadi <span class="font-bold text-emerald-500">Settlement</span>.</p>
+                        <h4 class="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-2">Secure Transaction</h4>
+                        <p class="text-[10px] text-slate-500 leading-relaxed font-bold uppercase tracking-widest">Pembayaran diproses melalui <span class="text-slate-300">Midtrans Secure Gateway</span>. Saldo akan otomatis tersedia setelah pembayaran diverifikasi.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes shimmer {
+        100% { transform: translateX(100%); }
+    }
+</style>
 @endsection
 
 @push('scripts')
@@ -80,22 +101,26 @@
 <script>
     const payButton = document.getElementById('pay-button');
     const amountInput = document.getElementById('amount');
-
-    function setAmount(value) {
-        amountInput.value = value;
-    }
+    const payButtonText = document.getElementById('pay-button-text');
 
     payButton.addEventListener('click', function (e) {
         e.preventDefault();
 
         const amount = amountInput.value;
         if (!amount || amount < 10000) {
-            alert('Minimal top up Rp 10.000');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nominal Kurang',
+                text: 'Minimal top up Rp 10.000',
+                background: '#0f172a',
+                color: '#fff',
+                confirmButtonColor: '#10b981'
+            });
             return;
         }
 
         payButton.disabled = true;
-        payButton.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memproses...';
+        payButtonText.textContent = 'Memproses...';
 
         fetch('{{ route("user.saldo.topup.token") }}', {
             method: 'POST',
@@ -118,26 +143,26 @@
                         window.location.href = '{{ route("user.saldo.index") }}?pending=1&order_id=' + oid;
                     },
                     onError: function(result) {
-                        alert('Pembayaran gagal!');
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Pembayaran gagal!', background: '#0f172a', color: '#fff' });
                         payButton.disabled = false;
-                        payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
+                        payButtonText.textContent = 'Bayar via Midtrans';
                     },
                     onClose: function() {
                         payButton.disabled = false;
-                        payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
+                        payButtonText.textContent = 'Bayar via Midtrans';
                     }
                 });
             } else {
-                alert(data.error || 'Terjadi kesalahan');
+                Swal.fire({ icon: 'error', title: 'Kesalahan', text: data.error || 'Terjadi kesalahan', background: '#0f172a', color: '#fff' });
                 payButton.disabled = false;
-                payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
+                payButtonText.textContent = 'Bayar via Midtrans';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Terjadi kesalahan koneksi');
+            Swal.fire({ icon: 'error', title: 'Koneksi Gagal', text: 'Gagal menghubungi server', background: '#0f172a', color: '#fff' });
             payButton.disabled = false;
-            payButton.innerHTML = 'Lanjutkan ke Pembayaran Aman';
+            payButtonText.textContent = 'Bayar via Midtrans';
         });
     });
 </script>

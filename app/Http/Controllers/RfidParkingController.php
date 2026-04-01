@@ -150,12 +150,9 @@ class RfidParkingController extends Controller
             }
 
             DB::transaction(function () use ($user, $activeTransaksi, $totalAmount, $durationHours) {
-                // Update User Balance (using balance field if exists, else saldo)
-                if (isset($user->balance)) {
-                    $user->decrement('balance', $totalAmount);
-                } else {
-                    $user->decrement('saldo', $totalAmount);
-                }
+                // Update User Balance (Sync both columns)
+                $user->decrement('balance', $totalAmount);
+                $user->decrement('saldo', $totalAmount);
 
                 // Update Transaksi record
                 $activeTransaksi->update([

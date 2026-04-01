@@ -3,72 +3,131 @@
 @section('title', 'RFID Access')
 
 @section('content')
-    <div class="p-4 sm:p-6 lg:p-8">
-        <div class="max-w-3xl mx-auto">
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
-                <div class="text-center">
-                    <div class="text-3xl font-extrabold tracking-tight text-white">
-                        TAP KARTU UNTUK AKSES
-                    </div>
-                    <div class="text-sm text-slate-300 mt-2">
-                        Scan kartu untuk membuka fitur yang dilindungi middleware <code class="text-slate-200">rfid.access</code>.
+<div class="p-8 relative z-10 animate-fade-in">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
+                        Secure Access Mode
+                    </span>
+                    <div id="loading_state" class="hidden">
+                        <span class="flex items-center gap-2 px-3 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-blue-500/20">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i>
+                            Processing
+                        </span>
                     </div>
                 </div>
+                <h1 class="text-4xl font-black tracking-tight text-white uppercase">GATE <span class="text-emerald-500">ACCESS</span></h1>
+                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Scan kartu untuk membuka fitur yang dilindungi.</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="px-6 py-4 bg-slate-950 border border-white/5 rounded-2xl flex items-center gap-4 shadow-xl">
+                    <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Awaiting Card...</span>
+                </div>
+            </div>
+        </div>
 
-                <div class="mt-6 flex items-start justify-between gap-4">
-                    <div class="flex-1">
-                        <input
-                            id="rfid_uid_input"
-                            type="text"
-                            autocomplete="off"
-                            inputmode="numeric"
-                            autofocus
-                            tabindex="0"
-                            class="sr-only"
-                            aria-label="RFID UID"
-                        />
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Scan Card -->
+            <div class="lg:col-span-2 card-pro group overflow-hidden relative border-emerald-500/10">
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+                
+                <input
+                    id="rfid_uid_input"
+                    type="text"
+                    autocomplete="off"
+                    inputmode="numeric"
+                    autofocus
+                    tabindex="0"
+                    class="sr-only"
+                    aria-label="RFID UID"
+                />
 
-                        <div class="mt-4 rounded-xl border border-white/10 bg-slate-950/20 p-4">
-                            <div class="flex items-center gap-3">
-                                <img id="user-photo" src="" alt="foto user"
-                                     class="w-14 h-14 rounded-xl bg-gray-200 object-cover hidden"/>
-                                <div>
-                                    <div class="text-sm font-bold text-white" id="user-name">-</div>
-                                    <div class="text-xs text-slate-300" id="user-role">-</div>
-                                    <div class="text-xs text-slate-300" id="user-saldo">-</div>
+                <div class="relative z-10 p-2">
+                    <!-- User Identity Section -->
+                    <div class="p-8 sm:p-10 rounded-[2.5rem] bg-slate-950/50 border border-white/5 mb-8">
+                        <div class="flex flex-col sm:flex-row items-center gap-8">
+                            <div class="relative group">
+                                <div class="absolute -inset-4 bg-emerald-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="w-32 h-32 rounded-[2.5rem] bg-slate-900 border-2 border-white/5 overflow-hidden shadow-2xl relative z-10 flex items-center justify-center">
+                                    <img id="user-photo" src="" alt="foto user" class="w-full h-full object-cover hidden"/>
+                                    <i id="user-photo-placeholder" class="fa-solid fa-shield-halved text-4xl text-slate-800"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="flex-1 text-center sm:text-left">
+                                <div class="mb-4">
+                                    <h2 id="user-name" class="text-3xl font-black text-white tracking-tight">-</h2>
+                                    <div class="flex items-center justify-center sm:justify-start gap-3 mt-1">
+                                        <span id="user-role" class="px-2 py-0.5 bg-white/5 text-slate-500 text-[9px] font-black uppercase rounded-lg border border-white/10 tracking-widest">-</span>
+                                        <span id="user-id-display" class="text-[9px] font-bold text-slate-700 uppercase tracking-widest">ID: ---</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="inline-flex items-center gap-3 px-6 py-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+                                    <i class="fa-solid fa-wallet text-emerald-500"></i>
+                                    <span id="user-saldo" class="text-lg font-black text-emerald-400 tracking-tighter">Rp 0</span>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="mt-4 flex items-center gap-3">
-                            <a href="{{ url('/rfid/access-demo') }}"
-                               class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold">
-                                Buka Demo (butuh scan)
-                            </a>
-
-                            <form method="POST" action="{{ route('rfid.access.clear') }}">
-                                @csrf
-                                <button type="submit"
-                                        class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold">
-                                    Clear Access
-                                </button>
-                            </form>
-                        </div>
-
-                        <div class="mt-4 text-sm font-semibold" id="loading_state" style="display:none;color:#93c5fd;">
-                            Memproses...
-                        </div>
                     </div>
 
-                    <div class="w-72">
-                        <div class="text-xs text-slate-300">Log</div>
-                        <pre id="log" class="mt-2 text-xs text-slate-200 whitespace-pre-wrap min-h-[160px]"></pre>
-                        <div class="mt-2 text-xs font-semibold" id="error_box" style="color:#f87171;"></div>
+                    <!-- Actions -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4">
+                        <a href="{{ url('/rfid/access-demo') }}"
+                           class="group relative flex items-center justify-center gap-3 py-5 px-8 bg-emerald-500 text-slate-950 font-black rounded-3xl shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 transition-all active:scale-[0.98] uppercase tracking-widest text-xs overflow-hidden">
+                            <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                            <i class="fa-solid fa-rocket text-lg"></i>
+                            Launch Demo
+                        </a>
+
+                        <form method="POST" action="{{ route('rfid.access.clear') }}" class="w-full">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full flex items-center justify-center gap-3 py-5 px-8 bg-white/5 border border-white/5 rounded-3xl text-slate-400 font-black hover:bg-white/10 hover:text-white transition-all active:scale-[0.98] uppercase tracking-widest text-xs">
+                                <i class="fa-solid fa-trash-can"></i>
+                                Clear Session
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Log Panel -->
+            <div class="space-y-6">
+                <div class="card-pro !p-0 overflow-hidden border-white/5 h-full flex flex-col min-h-[400px]">
+                    <div class="px-6 py-4 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                        <h2 class="text-[10px] font-black text-white uppercase tracking-widest">Security Log</h2>
+                        <i class="fa-solid fa-user-shield text-[10px] text-slate-600"></i>
+                    </div>
+                    <div class="p-6 flex-1 font-mono text-[10px] overflow-y-auto max-h-[500px] scrollbar-hide">
+                        <div id="log" class="space-y-2 text-slate-400">
+                            <!-- log items -->
+                        </div>
+                        <div id="error_box" class="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold hidden">
+                            <!-- error msg -->
+                        </div>
+                    </div>
+                    <div class="p-4 bg-slate-950 border-t border-white/5">
+                        <button onclick="document.getElementById('log').innerHTML = ''" class="w-full py-2 text-[9px] font-black text-slate-600 uppercase tracking-widest hover:text-white transition-colors">
+                            Wipe Logs
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<style>
+    @keyframes shimmer {
+        100% { transform: translateX(100%); }
+    }
+</style>
 @endsection
 
 @push('scripts')
@@ -79,9 +138,11 @@
 
         const $input = document.getElementById('rfid_uid_input');
         const $photo = document.getElementById('user-photo');
+        const $photoPlaceholder = document.getElementById('user-photo-placeholder');
         const $name = document.getElementById('user-name');
         const $role = document.getElementById('user-role');
         const $saldo = document.getElementById('user-saldo');
+        const $idDisplay = document.getElementById('user-id-display');
 
         const scanUrl = @json(route('api.rfid.access.scan'));
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -89,17 +150,32 @@
         let inFlight = false;
         let debounceTimer = null;
 
-        const log = (msg) => {
-            $log.textContent = ($log.textContent ? $log.textContent + "\n" : "") + msg;
+        const log = (msg, type = 'info') => {
+            const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
+            const item = document.createElement('div');
+            item.className = 'flex gap-3 leading-relaxed';
+            
+            let colorClass = 'text-slate-500';
+            if (type === 'success') colorClass = 'text-emerald-500';
+            if (type === 'error') colorClass = 'text-rose-500';
+            if (type === 'uid') colorClass = 'text-blue-400';
+
+            item.innerHTML = `
+                <span class="text-slate-700 shrink-0">[${time}]</span>
+                <span class="${colorClass}">${msg}</span>
+            `;
+            $log.appendChild(item);
+            $log.parentElement.scrollTop = $log.parentElement.scrollHeight;
         };
 
         const focusInput = () => {
-            $errorBox.textContent = '';
+            $errorBox.classList.add('hidden');
             $input.focus();
         };
 
         const setLoading = (on) => {
-            $loading.style.display = on ? 'block' : 'none';
+            if (on) $loading.classList.remove('hidden');
+            else $loading.classList.add('hidden');
         };
 
         async function sendScan(uid) {
@@ -109,8 +185,8 @@
 
             inFlight = true;
             setLoading(true);
-            $errorBox.textContent = '';
-            log('UID terbaca: ' + trimmed);
+            $errorBox.classList.add('hidden');
+            log(trimmed, 'uid');
 
             const currentUid = trimmed;
             $input.value = '';
@@ -130,28 +206,41 @@
                 if (!res.ok || !data.ok) {
                     const msg = data.error || data.message || 'Scan akses gagal.';
                     $errorBox.textContent = msg;
-                    log('Gagal: ' + msg);
+                    $errorBox.classList.remove('hidden');
+                    log(msg, 'error');
+                    
+                    // Reset UI
+                    $name.textContent = '-';
+                    $role.textContent = '-';
+                    $saldo.textContent = 'Rp 0';
+                    $idDisplay.textContent = 'ID: ---';
+                    $photo.classList.add('hidden');
+                    $photoPlaceholder.classList.remove('hidden');
                     return;
                 }
 
                 const u = data.user || {};
                 $name.textContent = u.name || '-';
-                $role.textContent = 'Role: ' + (u.role || '-');
-                $saldo.textContent = 'Saldo: ' + (Number(u.saldo || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }));
+                $role.textContent = u.role || '-';
+                $saldo.textContent = (Number(u.saldo || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }));
+                $idDisplay.textContent = 'ID: ' + (u.user_id ?? '---');
 
                 if (u.photo) {
                     $photo.src = u.photo;
                     $photo.classList.remove('hidden');
+                    $photoPlaceholder.classList.add('hidden');
                 } else {
                     $photo.src = '';
                     $photo.classList.add('hidden');
+                    $photoPlaceholder.classList.remove('hidden');
                 }
 
-                log(data.message || 'OK');
+                log(data.message || 'Akses diberikan.', 'success');
             } catch (e) {
                 const msg = e?.message || 'Error jaringan.';
                 $errorBox.textContent = msg;
-                log('Error: ' + msg);
+                $errorBox.classList.remove('hidden');
+                log(msg, 'error');
             } finally {
                 inFlight = false;
                 setLoading(false);
@@ -199,8 +288,7 @@
         window.addEventListener('load', () => {
             setLoading(false);
             focusInput();
-            log('Siap scan RFID untuk akses.');
+            log('Sistem Keamanan Aktif.');
         });
     </script>
 @endpush
-

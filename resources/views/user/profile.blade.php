@@ -1,153 +1,176 @@
 @extends('layouts.app')
 
-@section('title', 'Profil Saya')
+@section('title', 'Profil Saya - NESTON')
 
 @section('content')
-<div class="min-h-screen bg-[#020617] px-4 py-10 sm:px-6 lg:px-8">
-    <div class="max-w-4xl mx-auto">
+<div class="p-8 relative z-10 animate-fade-in">
+    <!-- Background Glows (Consistent with Auth & Dashboard) -->
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
+    <div class="max-w-5xl mx-auto relative z-10">
         {{-- Header --}}
-        <div class="mb-10">
-            <h1 class="text-2xl font-bold text-white tracking-tight">Pengaturan Profil</h1>
-            <p class="mt-1 text-sm text-slate-400">Kelola informasi akun dan keamanan Anda.</p>
+        <div class="mb-12">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="px-3 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-500/20">
+                    Account Settings
+                </span>
+            </div>
+            <h1 class="text-4xl font-black tracking-tight text-white uppercase">Pengaturan <span class="text-emerald-500">Profil</span></h1>
+            <p class="mt-2 text-sm text-slate-400 font-medium tracking-wide">Kelola informasi identitas, foto, dan keamanan akun Anda.</p>
         </div>
 
         @if(session('success'))
-        <div class="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-sm text-emerald-400">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <div class="mb-8 flex items-center gap-4 px-6 py-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-xs font-black uppercase tracking-widest text-emerald-400 animate-fade-in">
+            <i class="fa-solid fa-circle-check text-base"></i>
             {{ session('success') }}
         </div>
         @endif
 
-        {{--
-            VARIANT 1: Left sidebar info + right form card
-            Sidebar: avatar placeholder + account meta
-            Form: dua section (identitas & password) dalam satu card
-        --}}
-        <div class="flex flex-col lg:flex-row gap-6">
-
+        <div class="flex flex-col lg:flex-row gap-8">
             {{-- ── LEFT: Account sidebar ── --}}
-            <div class="lg:w-64 shrink-0 flex flex-col gap-4">
-
+            <div class="lg:w-80 shrink-0 flex flex-col gap-6">
                 {{-- Avatar card --}}
-                <div class="bg-[#020617] border border-white/[0.07] rounded-2xl p-6 flex flex-col items-center gap-4">
-                    <x-user-avatar :user="$user" size="lg" round="2xl"
-                        class="!bg-gradient-to-br !from-emerald-500/20 !to-teal-500/20 !text-emerald-400 !border-white/10 select-none shadow-lg shadow-black/20" />
-                    <div class="text-center">
-                        <p class="text-sm font-bold text-white">{{ $user->name }}</p>
-                        <p class="text-xs text-slate-500 mt-0.5 break-all">{{ $user->email }}</p>
+                <div class="card-pro group overflow-hidden relative border-white/5 backdrop-blur-xl bg-slate-900/40 flex flex-col items-center p-8">
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:scale-110 transition-transform"></div>
+                    
+                    <div class="relative mb-6">
+                        <div class="absolute -inset-4 bg-emerald-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <x-user-avatar :user="$user" size="lg" round="3xl"
+                            class="!w-24 !h-24 !bg-slate-950 !text-emerald-500 !border-2 !border-white/10 select-none shadow-2xl relative z-10 !text-3xl font-black" />
                     </div>
+
+                    <div class="text-center relative z-10">
+                        <p class="text-xl font-black text-white tracking-tight">{{ $user->name }}</p>
+                        <p class="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-widest">{{ $user->email }}</p>
+                    </div>
+
                     @if($user->role ?? null)
-                    <span class="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
+                    <div class="mt-6 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] relative z-10">
                         {{ $user->role }}
-                    </span>
+                    </div>
                     @endif
                 </div>
 
-                {{-- Meta info --}}
-                <div class="bg-[#020617] border border-white/[0.07] rounded-2xl p-5 flex flex-col gap-4">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Saldo NestonPay</p>
-                    <div class="flex flex-col gap-3">
+                {{-- Wallet card --}}
+                <div class="card-pro group overflow-hidden relative border-emerald-500/10 backdrop-blur-xl bg-slate-900/40 p-8">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">NestonPay Wallet</p>
+                    <div class="flex flex-col gap-6">
                         <div>
-                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Saldo Saat Ini</p>
-                            <p class="text-lg font-bold text-emerald-400">Rp {{ number_format($user->balance ?? $user->saldo ?? 0, 0, ',', '.') }}</p>
+                            <p class="text-[9px] text-slate-600 uppercase tracking-widest font-black mb-2">Saldo Aktif</p>
+                            <p class="text-3xl font-black text-emerald-500 tracking-tighter">Rp {{ number_format($user->balance ?? $user->saldo ?? 0, 0, ',', '.') }}</p>
                         </div>
-                        <a href="{{ route('user.saldo.index') }}" class="w-full py-2 px-4 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl text-[10px] font-bold text-emerald-400 uppercase tracking-widest text-center transition-all">
+                        <a href="{{ route('user.saldo.index') }}" class="w-full py-4 px-4 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-slate-950 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center transition-all active:scale-[0.98]">
                             Kelola Saldo
                         </a>
                     </div>
                 </div>
 
-                <div class="bg-[#020617] border border-white/[0.07] rounded-2xl p-5 flex flex-col gap-4">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Informasi Akun</p>
-                    <div class="flex flex-col gap-3">
-                        <div>
-                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Bergabung</p>
-                            <p class="text-xs text-slate-300">{{ $user->created_at->format('d M Y') }}</p>
+                {{-- Account info --}}
+                <div class="card-pro group overflow-hidden relative border-white/5 backdrop-blur-xl bg-slate-900/40 p-8">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6 text-center">Data Akun</p>
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <p class="text-[9px] text-slate-600 uppercase font-black tracking-widest">Bergabung</p>
+                            <p class="text-[10px] text-slate-300 font-bold uppercase">{{ $user->created_at->format('d M Y') }}</p>
                         </div>
-                        <div>
-                            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-0.5">Terakhir Diperbarui</p>
-                            <p class="text-xs text-slate-300">{{ $user->updated_at->diffForHumans() }}</p>
+                        <div class="flex items-center justify-between">
+                            <p class="text-[9px] text-slate-600 uppercase font-black tracking-widest">Update</p>
+                            <p class="text-[10px] text-slate-300 font-bold uppercase">{{ $user->updated_at->diffForHumans() }}</p>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {{-- ── RIGHT: Form ── --}}
             <div class="flex-1 min-w-0">
-                <form method="POST" action="{{ route('user.profile.update') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('user.profile.update') }}" enctype="multipart/form-data" class="space-y-8">
                     @csrf
                     @method('PUT')
 
-                    <div class="flex flex-col gap-4">
-
-                        {{-- Section: Informasi Pribadi --}}
-                        <div class="bg-[#020617] border border-white/[0.07] rounded-2xl overflow-hidden">
-                            <div class="px-6 py-4 border-b border-white/[0.05] flex items-center gap-3">
-                                <span class="w-1 h-5 bg-emerald-500 rounded-full"></span>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Informasi Pribadi</p>
-                            </div>
-                            <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <div class="sm:col-span-2">
-                                    <label for="photo" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Foto profil</label>
-                                    <p class="text-[11px] text-slate-500 mb-2">JPG, PNG, GIF, atau WebP — disimpan di Cloudinary (maks. 4&nbsp;MB).</p>
-                                    <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/gif,image/webp"
-                                           class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-500/15 file:text-emerald-400 hover:file:bg-emerald-500/25 cursor-pointer @error('photo') border border-red-500/50 rounded-xl @enderror">
-                                    @error('photo') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                    {{-- Section: Informasi Pribadi --}}
+                    <div class="card-pro !p-0 overflow-hidden border-white/5 backdrop-blur-xl bg-slate-900/40">
+                        <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-4">
+                            <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
+                            <h2 class="text-[11px] font-black text-white uppercase tracking-[0.2em]">Informasi Pribadi</h2>
+                        </div>
+                        <div class="p-8 sm:p-10 space-y-8">
+                            <div>
+                                <label for="photo" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Foto Profil</label>
+                                <div class="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-[2rem] bg-slate-950/50 border border-white/5 group hover:border-emerald-500/30 transition-all">
+                                    <div class="shrink-0">
+                                        <x-user-avatar :user="$user" size="md" round="2xl" class="!bg-slate-900 !border-white/10" />
+                                    </div>
+                                    <div class="flex-1 text-center sm:text-left">
+                                        <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/gif,image/webp"
+                                               class="block w-full text-[10px] text-slate-500 file:mr-6 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[9px] file:font-black file:uppercase file:tracking-widest file:bg-emerald-500/10 file:text-emerald-500 hover:file:bg-emerald-500/20 cursor-pointer">
+                                        <p class="mt-3 text-[9px] text-slate-600 font-bold uppercase tracking-widest">JPG, PNG, GIF, atau WebP (Maks. 4MB)</p>
+                                    </div>
                                 </div>
-                                <div class="sm:col-span-2">
-                                    <label for="name" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nama Lengkap</label>
+                                @error('photo') <p class="mt-3 text-[11px] text-rose-500 font-bold ml-1 uppercase tracking-widest">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                <div class="space-y-3">
+                                    <label for="name" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nama Lengkap</label>
                                     <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
-                                           class="block w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all @error('name') border-red-500/50 @enderror">
-                                    @error('name') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                                           class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-5 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-medium">
+                                    @error('name') <p class="mt-2 text-[11px] text-rose-500 font-bold ml-1 uppercase tracking-widest">{{ $message }}</p> @enderror
                                 </div>
 
-                                <div class="sm:col-span-2">
-                                    <label for="email" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Alamat Email</label>
+                                <div class="space-y-3">
+                                    <label for="email" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Alamat Email</label>
                                     <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
-                                           class="block w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all @error('email') border-red-500/50 @enderror">
-                                    @error('email') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                                           class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-5 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-medium">
+                                    @error('email') <p class="mt-2 text-[11px] text-rose-500 font-bold ml-1 uppercase tracking-widest">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {{-- Section: Kata Sandi --}}
-                        <div class="bg-[#020617] border border-white/[0.07] rounded-2xl overflow-hidden">
-                            <div class="px-6 py-4 border-b border-white/[0.05] flex items-center gap-3">
-                                <span class="w-1 h-5 bg-slate-600 rounded-full"></span>
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Ubah Kata Sandi</p>
-                                <span class="text-[10px] text-slate-600 font-medium">— opsional</span>
-                            </div>
-                            <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <div>
-                                    <label for="password" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Kata Sandi Baru</label>
+                    {{-- Section: Keamanan --}}
+                    <div class="card-pro !p-0 overflow-hidden border-white/5 backdrop-blur-xl bg-slate-900/40">
+                        <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-4">
+                            <div class="w-2 h-6 bg-blue-500 rounded-full"></div>
+                            <h2 class="text-[11px] font-black text-white uppercase tracking-[0.2em]">Keamanan Akun</h2>
+                        </div>
+                        <div class="p-8 sm:p-10">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                <div class="space-y-3">
+                                    <label for="password" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sandi Baru</label>
                                     <input type="password" name="password" id="password"
-                                           placeholder="Kosongkan jika tidak ingin mengubah"
-                                           class="block w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all @error('password') border-red-500/50 @enderror">
-                                    @error('password') <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p> @enderror
+                                           placeholder="Kosongkan jika tidak berubah"
+                                           class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-5 py-4 text-sm text-white placeholder:text-slate-700 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 focus:outline-none transition-all font-medium">
+                                    @error('password') <p class="mt-2 text-[11px] text-rose-500 font-bold ml-1 uppercase tracking-widest">{{ $message }}</p> @enderror
                                 </div>
-                                <div>
-                                    <label for="password_confirmation" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Konfirmasi Sandi</label>
+                                <div class="space-y-3">
+                                    <label for="password_confirmation" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Konfirmasi Sandi</label>
                                     <input type="password" name="password_confirmation" id="password_confirmation"
-                                           class="block w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all">
+                                           placeholder="Ulangi sandi baru"
+                                           class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-5 py-4 text-sm text-white placeholder:text-slate-700 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 focus:outline-none transition-all font-medium">
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {{-- Action --}}
-                        <div class="flex justify-end">
-                            <button type="submit"
-                                    class="px-8 py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/40">
-                                Simpan Perubahan
-                            </button>
-                        </div>
-
+                    {{-- Submit --}}
+                    <div class="flex justify-end pt-4">
+                        <button type="submit"
+                                class="group relative px-10 py-5 bg-emerald-500 text-slate-950 text-xs font-black uppercase tracking-widest rounded-[2rem] hover:bg-emerald-400 transition-all shadow-2xl shadow-emerald-500/20 active:scale-[0.98] overflow-hidden flex items-center gap-3">
+                            <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                            <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+                            Simpan Perubahan
+                        </button>
                     </div>
                 </form>
             </div>
-
         </div>
     </div>
 </div>
+
+<style>
+    @keyframes shimmer {
+        100% { transform: translateX(100%); }
+    }
+</style>
 @endsection

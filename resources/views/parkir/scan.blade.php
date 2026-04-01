@@ -3,120 +3,134 @@
 @section('title', 'Parking Scan RFID')
 
 @section('content')
-<div class="flex items-center justify-center min-h-[80vh] px-4" style="background:#020617;">
-
-    {{--
-        VARIANT 2: Split layout — kiri scanner state, kanan result panel
-        Keduanya selalu visible, hasil muncul di kanan.
-        Memberi kesan "terminal" / dashboard kiosk yang profesional.
-    --}}
-    <div class="w-full max-w-3xl grid grid-cols-2 gap-5">
-
-        {{-- ── LEFT: Scanner panel ── --}}
-        <div class="rounded-2xl flex flex-col items-center justify-center py-12 px-8 text-center"
-             style="background:#0d1526;border:1px solid rgba(255,255,255,0.07);">
-
-            {{-- Animated ring icon --}}
-            <div class="relative w-20 h-20 mb-8">
-                <div class="absolute inset-0 rounded-full border border-blue-500/20 animate-ping"></div>
-                <div class="absolute inset-2 rounded-full border border-blue-500/30 animate-ping" style="animation-delay:0.3s"></div>
-                <div class="w-20 h-20 rounded-full flex items-center justify-center relative z-10"
-                     style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);">
-                    <svg class="w-9 h-9 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-3.682A14.29 14.29 0 005.34 20M12 11c1.744 2.772 2.753 6.054 2.753 9.571m3.44-3.682c.535 1.1.883 2.267 1.023 3.49M12 11V3m0 0L9 6m3-3l3 3"/>
-                    </svg>
+<div class="p-8 relative z-10 animate-fade-in">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="px-3 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-blue-500/20">
+                        Terminal Operation
+                    </span>
+                    <div id="processing-indicator" class="hidden">
+                        <span class="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i>
+                            Processing Scan
+                        </span>
+                    </div>
                 </div>
+                <h1 class="text-4xl font-black tracking-tight text-white uppercase">PARKING <span class="text-emerald-500">TERMINAL</span></h1>
+                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Sistem otomatis masuk & keluar menggunakan teknologi RFID/NFC.</p>
             </div>
-
-            <h1 class="text-xl font-bold text-white tracking-tight mb-2">Tap Kartu RFID</h1>
-            <p class="text-slate-500 text-xs leading-relaxed mb-8">Dekatkan kartu Anda pada scanner untuk masuk atau keluar dari area parkir</p>
-
-            {{-- Scan bar --}}
-            <div class="w-full relative h-px overflow-hidden rounded-full mb-2" style="background:rgba(255,255,255,0.05);">
-                <div class="absolute top-0 h-full rounded-full bg-blue-500"
-                     style="width:40%;animation:scanBar 2s infinite linear;"></div>
-            </div>
-            <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Scanner aktif</p>
-
-            {{-- Last scan time --}}
-            <div class="mt-8 pt-6 border-t w-full text-left" style="border-color:rgba(255,255,255,0.05);">
-                <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1">Scan Terakhir</p>
-                <p id="last-scan-time" class="text-xs text-slate-500">—</p>
+            
+            <div class="flex items-center gap-4">
+                <div class="px-6 py-4 bg-slate-950 border border-white/5 rounded-2xl flex items-center gap-4 shadow-xl">
+                    <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">System Online</span>
+                </div>
             </div>
         </div>
 
-        {{-- ── RIGHT: Result panel ── --}}
-        <div class="rounded-2xl flex flex-col overflow-hidden"
-             style="background:#0d1526;border:1px solid rgba(255,255,255,0.07);">
-
-            {{-- Color accent top bar --}}
-            <div id="result-topbar" class="h-1 w-full transition-all duration-500" style="background:rgba(255,255,255,0.05);"></div>
-
-            {{-- Empty / waiting state --}}
-            <div id="result-empty" class="flex-1 flex flex-col items-center justify-center py-12 px-8 text-center">
-                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                     style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">
-                    <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Left: Scanner State -->
+            <div class="lg:col-span-2 card-pro group overflow-hidden relative border-blue-500/10 flex flex-col items-center justify-center p-12 text-center">
+                <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+                
+                {{-- Animated Ring --}}
+                <div class="relative w-32 h-32 mb-10">
+                    <div class="absolute inset-0 rounded-full border-2 border-blue-500/20 animate-ping"></div>
+                    <div class="absolute inset-4 rounded-full border-2 border-blue-500/30 animate-ping" style="animation-delay:0.3s"></div>
+                    <div class="w-32 h-32 rounded-[2.5rem] flex items-center justify-center relative z-10 bg-slate-900 border border-white/10 shadow-2xl">
+                        <i class="fa-solid fa-tower-broadcast text-4xl text-blue-400"></i>
+                    </div>
                 </div>
-                <p class="text-sm text-slate-600">Menunggu scan kartu...</p>
+
+                <h2 class="text-2xl font-black text-white tracking-tight mb-3">TAP YOUR CARD</h2>
+                <p class="text-slate-500 text-xs leading-relaxed max-w-[200px] mx-auto font-medium">Dekatkan kartu RFID/NFC Anda pada area scanner terminal.</p>
+
+                <div class="w-full mt-10 space-y-4">
+                    <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 w-1/3 rounded-full animate-[scanBar_2s_infinite_linear]"></div>
+                    </div>
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Scanner Active</span>
+                        <span id="last-scan-time" class="text-[9px] font-black text-slate-700 uppercase tracking-widest">Ready</span>
+                    </div>
+                </div>
             </div>
 
-            {{-- Result filled state (hidden) --}}
-            <div id="result-filled" class="hidden flex-1 flex flex-col opacity-0 transition-all duration-500 scale-95">
-                <div class="flex-1 p-6 flex flex-col">
+            <!-- Right: Result Panel -->
+            <div class="lg:col-span-3 card-pro !p-0 overflow-hidden relative border-emerald-500/10 min-h-[500px] flex flex-col">
+                <div id="result-topbar" class="h-1.5 w-full bg-white/5 transition-all duration-500"></div>
+                
+                {{-- Empty State --}}
+                <div id="result-empty" class="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                    <div class="w-20 h-20 rounded-[2rem] bg-slate-950 border border-white/5 flex items-center justify-center mb-6 text-slate-800">
+                        <i class="fa-solid fa-id-card text-3xl"></i>
+                    </div>
+                    <h3 class="text-xs font-black text-slate-600 uppercase tracking-[0.3em]">Menunggu Data...</h3>
+                </div>
 
-                    {{-- User info --}}
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="relative shrink-0">
-                            <img id="user-photo" src="" alt=""
-                                 class="w-14 h-14 rounded-xl object-cover"
-                                 style="border:1px solid rgba(255,255,255,0.1);">
-                            <div id="status-badge"
-                                 class="absolute -bottom-1.5 -right-1.5 px-2 py-px rounded-full text-[9px] font-bold uppercase tracking-widest">
-                                IN
+                {{-- Result Content --}}
+                <div id="result-filled" class="hidden flex-1 flex flex-col p-8 sm:p-10 opacity-0 scale-95 transition-all duration-500">
+                    <!-- User Header -->
+                    <div class="flex items-center gap-8 mb-10">
+                        <div class="relative shrink-0 group">
+                            <div id="photo-glow" class="absolute -inset-3 bg-emerald-500/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <img id="user-photo" src="" alt="" class="w-24 h-24 rounded-3xl object-cover relative z-10 border-2 border-white/10 shadow-2xl">
+                            <div id="status-badge" class="absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10">
+                                --
                             </div>
                         </div>
                         <div class="min-w-0">
-                            <h2 id="user-name" class="text-base font-bold text-white leading-tight">—</h2>
-                            <p id="user-status" class="text-xs text-slate-400 mt-0.5"></p>
+                            <h2 id="user-name" class="text-3xl font-black text-white tracking-tight truncate mb-1">—</h2>
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                <p id="user-status" class="text-[10px] font-black text-slate-500 uppercase tracking-widest"></p>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- Info cards --}}
-                    <div class="grid grid-cols-2 gap-3 mb-5">
-                        <div class="rounded-xl p-3.5" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Saldo</p>
-                            <p id="user-balance" class="text-base font-bold text-white">Rp 0</p>
+                    <!-- Info Grid -->
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="card-pro !p-6 bg-slate-950/50 border-white/5">
+                            <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-3">Saldo NestonPay</p>
+                            <p id="user-balance" class="text-2xl font-black text-white tracking-tighter">Rp 0</p>
                         </div>
-                        <div class="rounded-xl p-3.5" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Biaya</p>
-                            <p id="parking-fee" class="text-base font-bold text-white">—</p>
+                        <div class="card-pro !p-6 bg-slate-950/50 border-white/5">
+                            <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-3">Biaya Layanan</p>
+                            <p id="parking-fee" class="text-2xl font-black text-white tracking-tighter">—</p>
                         </div>
                     </div>
 
-                    {{-- Vehicle Info (New) --}}
-                    <div id="vehicle-info-container" class="rounded-xl p-3.5 mb-5 hidden" style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.1);">
-                        <p class="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Kendaraan Terdeteksi</p>
-                        <p id="vehicle-name" class="text-sm font-bold text-white">—</p>
+                    <!-- Vehicle Info -->
+                    <div id="vehicle-info-container" class="hidden card-pro !p-6 bg-blue-500/5 border-blue-500/10 mb-8 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 bottom-0 w-1.5 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-blue-500/10 rounded-2xl text-blue-400">
+                                <i class="fa-solid fa-car-side text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Kendaraan Terdeteksi</p>
+                                <p id="vehicle-name" class="text-lg font-black text-white tracking-tight">—</p>
+                            </div>
+                        </div>
                     </div>
 
-                    {{-- Message --}}
-                    <div id="message-container"
-                         class="w-full rounded-xl px-4 py-3 text-sm font-semibold text-center"></div>
-                </div>
-
-                {{-- Countdown bar --}}
-                <div class="px-6 pb-5">
-                    <div class="relative h-px rounded-full overflow-hidden" style="background:rgba(255,255,255,0.05);">
-                        <div id="countdown-bar" class="absolute top-0 left-0 h-full bg-slate-600 rounded-full"
-                             style="width:100%;transition:width 5s linear;"></div>
+                    <!-- Action Message -->
+                    <div id="message-container" class="mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all">
+                        --
                     </div>
-                    <p class="text-[10px] text-slate-600 uppercase tracking-widest mt-2">Direset otomatis dalam 5 detik</p>
+
+                    <!-- Reset Progress -->
+                    <div class="mt-8">
+                        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div id="countdown-bar" class="h-full bg-slate-700 w-full transition-all duration-[5000ms] linear"></div>
+                        </div>
+                        <p class="text-[9px] font-black text-slate-700 uppercase tracking-widest mt-3 text-center">Auto-reset dalam 5 detik</p>
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -148,6 +162,7 @@
     const messageContainer = document.getElementById('message-container');
     const countdownBar     = document.getElementById('countdown-bar');
     const lastScanTime     = document.getElementById('last-scan-time');
+    const indicator        = document.getElementById('processing-indicator');
 
     document.addEventListener('click', () => rfidInput.focus());
     rfidInput.focus();
@@ -178,8 +193,9 @@
     async function processScan(uid) {
         isProcessing = true;
         rfidInput.disabled = true;
+        indicator.classList.remove('hidden');
 
-        lastScanTime.innerText = new Date().toLocaleTimeString('id-ID');
+        lastScanTime.innerText = 'TAP: ' + new Date().toLocaleTimeString('id-ID');
 
         try {
             const response = await fetch("{{ route('api.parkir.rfid-scan') }}", {
@@ -199,8 +215,9 @@
             showResult(data, response.ok);
 
         } catch (error) {
-            showResult({ success: false, message: error.message || 'Koneksi error atau sistem bermasalah' }, false);
+            showResult({ success: false, message: error.message || 'Koneksi error' }, false);
         } finally {
+            indicator.classList.add('hidden');
             clearTimeout(resetTimer);
             resetTimer = setTimeout(() => {
                 hideResult();
@@ -212,12 +229,21 @@
     }
 
     function showResult(data, isOk) {
+        resultEmpty.classList.add('hidden');
+        resultFilled.classList.remove('hidden');
+        
+        // Animation
+        setTimeout(() => {
+            resultFilled.classList.remove('opacity-0', 'scale-95');
+            countdownBar.style.width = '0%';
+        }, 50);
+
         if (data.user) {
             userName.innerText    = data.user.name;
-            userPhoto.src         = data.user.photo;
+            userPhoto.src         = data.user.photo || '{{ asset('images/default-user.png') }}';
             userStatus.innerText  = data.user.status;
-            userBalance.innerText = 'Rp ' + (data.user?.balance || 0).toLocaleString('id-ID');
-            parkingFee.innerText  = data.amount ? 'Rp ' + data.amount.toLocaleString('id-ID') : '—';
+            userBalance.innerText = (data.user?.balance || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+            parkingFee.innerText  = data.amount ? data.amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }) : '—';
 
             if (data.user?.vehicle) {
                 vehicleName.innerText = data.user.vehicle;
@@ -228,51 +254,37 @@
 
             if (data.user?.type === 'IN') {
                 statusBadge.innerText = 'IN';
-                statusBadge.style.background = '#10b981'; // emerald-500
-                statusBadge.style.color = '#fff';
-                resultTopbar.style.background = '#10b981';
+                statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-emerald-500 text-slate-950';
+                resultTopbar.className = 'h-1.5 w-full bg-emerald-500 transition-all duration-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]';
+                messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
             } else if (data.user?.type === 'OUT') {
                 statusBadge.innerText = 'OUT';
-                statusBadge.style.background = '#3b82f6'; // blue-500
-                statusBadge.style.color = '#fff';
-                resultTopbar.style.background = '#3b82f6';
+                statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-blue-500 text-white';
+                resultTopbar.className = 'h-1.5 w-full bg-blue-500 transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]';
+                messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20';
             } else {
                 statusBadge.innerText = 'ERR';
-                statusBadge.style.background = '#ef4444'; // red-500
-                statusBadge.style.color = '#fff';
-                resultTopbar.style.background = '#ef4444';
+                statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-rose-500 text-white';
+                resultTopbar.className = 'h-1.5 w-full bg-rose-500 transition-all duration-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]';
+                messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
             }
         } else {
-            resultTopbar.style.background = '#ef4444';
+            resultTopbar.className = 'h-1.5 w-full bg-rose-500 transition-all duration-500';
+            messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
+            userName.innerText = 'Unknown';
+            userStatus.innerText = 'Error';
         }
 
         messageContainer.innerText = data.message;
-        messageContainer.className = 'w-full rounded-xl px-4 py-3 text-sm font-semibold text-center '
-            + (isOk ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                    : 'bg-red-500/10 border border-red-500/20 text-red-400');
-
-        resultEmpty.classList.add('hidden');
-        resultFilled.classList.remove('hidden');
-        setTimeout(() => {
-            resultFilled.classList.remove('opacity-0', 'scale-95');
-            resultFilled.classList.add('opacity-100', 'scale-100');
-        }, 10);
-
-        // Countdown bar
-        countdownBar.style.width = '100%';
-        setTimeout(() => { countdownBar.style.width = '0%'; }, 50);
     }
 
     function hideResult() {
-        resultFilled.classList.remove('opacity-100', 'scale-100');
         resultFilled.classList.add('opacity-0', 'scale-95');
         setTimeout(() => {
             resultFilled.classList.add('hidden');
             resultEmpty.classList.remove('hidden');
-            resultTopbar.style.background = 'rgba(255,255,255,0.05)';
-            countdownBar.style.transition = 'none';
+            resultTopbar.className = 'h-1.5 w-full bg-white/5 transition-all duration-500';
             countdownBar.style.width = '100%';
-            setTimeout(() => { countdownBar.style.transition = 'width 5s linear'; }, 50);
         }, 500);
     }
 </script>
