@@ -165,7 +165,11 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        $user->delete();
-        return redirect()->route('users.index')->with('success', 'User deleted.');
+        
+        // Gunakan forceDelete() untuk menghapus secara permanen dari database
+        // karena model User menggunakan trait SoftDeletes
+        $user->forceDelete();
+        
+        return redirect()->route('users.index')->with('success', 'User berhasil dihapus secara permanen.');
     }
 }

@@ -42,7 +42,7 @@ class NewPasswordController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return redirect()->route('login.create')->with('status', 'Password berhasil diubah. Silakan masuk.');
+            return redirect()->route('login')->with('status', 'Password berhasil diubah. Silakan masuk.');
         }
 
         $msg = match ($status) {

@@ -119,23 +119,27 @@ class SaldoController extends Controller
 
                 $amount = (float) $transaksi->biaya_total;
 
-                // Lock saldo user supaya aman terhadap double-click / parallel request.
-                $userLocked = User::query()->where('id', $user->id)->lockForUpdate()->firstOrFail();
+                // Lock saldo user pemilik parkir (BUKAN petugas yang memproses)
+                if (!$transaksi->id_user) {
+                    throw new \Exception('Transaksi ini tidak terikat dengan akun user (Guest). Tidak dapat menggunakan NestonPay.');
+                }
+                
+                $userTarget = User::query()->where('id', $transaksi->id_user)->lockForUpdate()->firstOrFail();
 
-                if ((float) $userLocked->saldo < $amount) {
-                    throw new \Exception('Saldo NestonPay tidak mencukupi. Silakan Top Up terlebih dahulu.');
+                if ((float) $userTarget->saldo < $amount) {
+                    throw new \Exception('Saldo NestonPay user tidak mencukupi. Silakan informasikan user untuk Top Up.');
                 }
 
-                // 1) Potong Saldo User
-                $userLocked->saldo = (float) $userLocked->saldo - $amount;
-                if (array_key_exists('balance', $userLocked->getAttributes())) {
-                    $userLocked->balance = (float) ($userLocked->balance ?? 0) - $amount;
+                // 1) Potong Saldo User Target
+                $userTarget->saldo = (float) $userTarget->saldo - $amount;
+                if (array_key_exists('balance', $userTarget->getAttributes())) {
+                    $userTarget->balance = (float) ($userTarget->balance ?? 0) - $amount;
                 }
-                $userLocked->save();
+                $userTarget->save();
 
-                // 2) Catat Riwayat Saldo
+                // 2) Catat Riwayat Saldo untuk User Target
                 $saldoHistory = SaldoHistory::create([
-                    'user_id' => $userLocked->id,
+                    'user_id' => $userTarget->id,
                     'amount' => -$amount,
                     'type' => 'payment',
                     'description' => 'Pembayaran Parkir - ' . ($transaksi->kendaraan->plat_nomor ?? 'Kendaraan'),
@@ -148,7 +152,7 @@ class SaldoController extends Controller
                     'nominal' => $amount,
                     'metode' => 'nestonpay',
                     'status' => 'berhasil',
-                    'id_user' => $userLocked->id, // Pembayaran diproses sendiri oleh user via saldo
+                    'id_user' => $user->id, // Petugas/Admin yang memproses (jika ada)
                     'waktu_pembayaran' => now(),
                 ]);
 

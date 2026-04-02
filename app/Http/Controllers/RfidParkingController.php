@@ -40,6 +40,76 @@ class RfidParkingController extends Controller
 
         // Ambil kendaraan default user (yang pertama didaftarkan)
         $kendaraan = Kendaraan::where('id_user', $user->id)->first();
+        
+        // --- FITUR BARU: AUTO-PAYMENT TAGIHAN TERTUNDA ---
+        // Cek apakah user memiliki tagihan yang belum dibayar (status 'keluar' dan status_pembayaran != 'berhasil')
+        $unpaidTransaksi = Transaksi::where('id_user', $user->id)
+            ->where('status', 'keluar')
+            ->where(function($q) {
+                $q->whereNull('status_pembayaran')
+                  ->orWhere('status_pembayaran', '!=', 'berhasil');
+            })
+            ->first();
+
+        if ($unpaidTransaksi && $unpaidTransaksi->biaya_total > 0) {
+            $totalTagihan = (float) $unpaidTransaksi->biaya_total;
+            $currentSaldo = (float) ($user->balance ?? $user->saldo ?? 0);
+
+            if ($currentSaldo >= $totalTagihan) {
+                DB::transaction(function () use ($user, $unpaidTransaksi, $totalTagihan) {
+                    // Potong Saldo
+                    $user->decrement('balance', $totalTagihan);
+                    $user->decrement('saldo', $totalTagihan);
+
+                    // Update Transaksi
+                    $unpaidTransaksi->update([
+                        'status' => 'keluar',
+                        'status_pembayaran' => 'berhasil'
+                    ]);
+
+                    // Catat riwayat saldo
+                    \App\Models\SaldoHistory::create([
+                        'user_id' => $user->id,
+                        'amount' => -$totalTagihan,
+                        'type' => 'payment',
+                        'description' => 'Pelunasan Otomatis RFID - ' . ($unpaidTransaksi->kendaraan->plat_nomor ?? 'Parkir'),
+                        'reference_id' => (string) $unpaidTransaksi->id_parkir,
+                    ]);
+
+                    // Legacy Transaction log
+                    Transaction::create([
+                        'user_id' => $user->id,
+                        'type' => 'PAYMENT',
+                        'amount' => $totalTagihan,
+                        'created_at' => now(),
+                    ]);
+                });
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tagihan Rp ' . number_format($totalTagihan, 0, ',', '.') . ' berhasil dilunasi otomatis via Saldo NestonPay!',
+                    'user' => [
+                        'name' => $user->name,
+                        'photo' => $user->profile_photo_url,
+                        'balance' => $currentSaldo - $totalTagihan,
+                        'status' => 'Tagihan Dilunasi'
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda memiliki tagihan Rp ' . number_format($totalTagihan, 0, ',', '.') . ' yang belum dibayar. Saldo tidak mencukupi untuk pelunasan otomatis.',
+                    'user' => [
+                        'name' => $user->name,
+                        'photo' => $user->profile_photo_url,
+                        'balance' => $currentSaldo,
+                        'status' => 'Tagihan Tertunda'
+                    ]
+                ], 402);
+            }
+        }
+        // --- END AUTO-PAYMENT ---
+
         if (!$kendaraan) {
             return response()->json([
                 'success' => false,
@@ -159,8 +229,8 @@ class RfidParkingController extends Controller
                     'waktu_keluar' => now(),
                     'durasi_jam' => $durationHours,
                     'biaya_total' => $totalAmount,
-                    'status' => 'selesai',
-                    'status_pembayaran' => 'lunas'
+                    'status' => 'keluar',
+                    'status_pembayaran' => 'berhasil'
                 ]);
 
                 // Create legacy OUT transaction for history

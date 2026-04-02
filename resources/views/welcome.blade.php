@@ -147,8 +147,8 @@
                         <i class="fa-solid fa-id-card"></i>
                         Card Login
                     </button>
-                    <a href="{{ route('login.create') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Sign in</a>
-                    <a href="{{ route('register.create') }}" class="btn-pro-primary !py-2 !px-5 !text-[11px] uppercase tracking-wider">
+                    <a href="{{ route('login') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Sign in</a>
+                    <a href="{{ route('register') }}" class="btn-pro-primary !py-2 !px-5 !text-[11px] uppercase tracking-wider">
                         Get Started
                     </a>
                 </div>
@@ -171,7 +171,7 @@
                     Automate vehicle tracking, payment processing, and space management with our AI-powered ecosystem. Secure, scalable, and built for modern infrastructure.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('register.create') }}" class="btn-pro-primary !px-8 !py-4 text-sm uppercase tracking-widest">
+                    <a href="{{ route('register') }}" class="btn-pro-primary !px-8 !py-4 text-sm uppercase tracking-widest">
                         Start for Free
                     </a>
                     <a href="#fitur" class="btn-pro-outline !px-8 !py-4 text-sm uppercase tracking-widest">
@@ -595,7 +595,7 @@
                         <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
                             <i class="fa-brands fa-github text-xs"></i>
                         </a>
-                         <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                         <a href="https://www.youtube.com/@NESTON-2026" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
                             <i class="fab fa-youtube text-xs"></i>
                         </a>
                          <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">

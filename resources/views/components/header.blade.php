@@ -28,8 +28,8 @@
                 <button type="submit" class="bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-400 px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all">Log Out</button>
             </form>
         @else
-            <a href="{{ route('login.create') }}" class="text-[11px] font-bold text-emerald-100/60 hover:text-white transition-all uppercase tracking-widest">Log in</a>
-            <a href="{{ route('register.create') }}" class="bg-amber-400 text-[#022c22] hover:bg-amber-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)] transition-all duration-300 px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest">Mulai</a>
+            <a href="{{ route('login') }}" class="text-[11px] font-bold text-emerald-100/60 hover:text-white transition-all uppercase tracking-widest">Log in</a>
+            <a href="{{ route('register') }}" class="bg-amber-400 text-[#022c22] hover:bg-amber-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)] transition-all duration-300 px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest">Mulai</a>
         @endauth
     </div>
   </nav>
@@ -65,8 +65,8 @@
                         <button type="submit" class="w-full bg-emerald-900/40 text-emerald-400 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-left">Log Out</button>
                     </form>
                 @else
-                    <a href="{{ route('login.create') }}" class="block text-xs font-bold text-emerald-100/60 hover:text-white uppercase tracking-widest">Log in</a>
-                    <a href="{{ route('register.create') }}" class="block w-full bg-amber-400 text-[#022c22] px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-center">Mulai</a>
+                    <a href="{{ route('login') }}" class="block text-xs font-bold text-emerald-100/60 hover:text-white uppercase tracking-widest">Log in</a>
+                    <a href="{{ route('register') }}" class="block w-full bg-amber-400 text-[#022c22] px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-center">Mulai</a>
                 @endauth
               </div>
             </div>

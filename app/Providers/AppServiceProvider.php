@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\Transaksi;
 use App\Observers\TransaksiObserver;
 
+
 class AppServiceProvider extends ServiceProvider
 {
     /**

@@ -233,7 +233,7 @@
             <div class="mt-10 pt-8 border-t border-white/5 text-center">
                 <p class="text-xs text-slate-500 font-medium">
                     Sudah punya akun?
-                    <a href="{{ route('login.create') }}" class="text-emerald-500 font-bold hover:text-emerald-400 transition-colors">
+                    <a href="{{ route('login') }}" class="text-emerald-500 font-bold hover:text-emerald-400 transition-colors">
                         Masuk Sekarang
                     </a>
                 </p>

@@ -93,20 +93,56 @@
             </div>
         </div>
 
-        <!-- Revenue Share -->
+        <!-- Active Bookings -->
         <div class="card-pro group overflow-hidden relative animate-fade-in-up" style="animation-delay: 0.4s">
             <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
             <div class="relative z-10">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20 group-hover:scale-110 transition-transform">
-                        <i class="fa-solid fa-wallet text-lg text-blue-500"></i>
+                        <i class="fa-solid fa-bookmark text-lg text-blue-500"></i>
+                    </div>
+                    @if($bookingAktif > 0)
+                        <span class="flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                    @endif
+                </div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Active Bookings</p>
+                <div class="flex items-baseline gap-2">
+                    <h3 class="text-3xl font-black text-white tracking-tighter">{{ $bookingAktif }}</h3>
+                </div>
+                <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                    <span class="text-[10px] text-slate-500 font-bold uppercase">Pending arrival</span>
+                    <a href="{{ route('transaksi.parkir.index') }}" class="text-[10px] font-black text-blue-500 uppercase tracking-widest hover:text-blue-400 transition-colors">Manage <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Today (Moved to a separate row or integrated elsewhere if needed, but let's keep it clean) -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+        <div class="lg:col-span-4 card-pro group overflow-hidden relative animate-fade-in-up" style="animation-delay: 0.5s">
+            <div class="absolute right-0 top-0 w-64 h-full bg-emerald-500/5 blur-3xl"></div>
+            <div class="p-8 flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                <div class="flex items-center gap-6">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                        <i class="fa-solid fa-sack-dollar text-3xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Revenue Today</p>
+                        <h3 class="text-4xl font-black text-white tracking-tighter">Rp {{ number_format($pendapatanHariIni, 0, ',', '.') }}</h3>
                     </div>
                 </div>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Revenue Today</p>
-                <h3 class="text-2xl font-black text-white tracking-tighter">Rp {{ number_format($pendapatanHariIni, 0, ',', '.') }}</h3>
-                <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase">Earnings</span>
-                    <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Updated</span>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden md:block">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">System Health</p>
+                        <p class="text-xs font-black text-emerald-500 uppercase tracking-widest">Operational & Secure</p>
+                    </div>
+                    <div class="w-px h-12 bg-white/5 mx-4 hidden md:block"></div>
+                    <a href="{{ route('payment.index') }}" class="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-widest rounded-2xl border border-white/10 transition-all active:scale-95">
+                        View Detailed Reports
+                    </a>
                 </div>
             </div>
         </div>
@@ -201,13 +237,26 @@
                                     </div>
                                 </td>
                                 <td class="px-8 py-6">
-                                    <p class="text-xs font-black text-white">{{ $trx->waktu_masuk ? $trx->waktu_masuk->format('H:i') : '-' }}</p>
-                                    <p class="text-[10px] text-slate-500 font-bold uppercase">{{ $trx->waktu_masuk ? $trx->waktu_masuk->translatedFormat('d M Y') : '-' }}</p>
+                                    @php 
+                                        $displayTime = $trx->status === 'bookmarked' ? $trx->bookmarked_at : $trx->waktu_masuk;
+                                    @endphp
+                                    <p class="text-xs font-black text-white">{{ $displayTime ? $displayTime->format('H:i') : '-' }}</p>
+                                    <p class="text-[10px] text-slate-500 font-bold uppercase">{{ $displayTime ? $displayTime->translatedFormat('d M Y') : '-' }}</p>
                                 </td>
                                 <td class="px-8 py-6 text-right">
-                                    <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest border {{ $trx->status === 'masuk' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-white/10' }}">
-                                        {{ strtoupper($trx->status) }}
-                                    </span>
+                                    @if($trx->status === 'bookmarked')
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest border bg-blue-500/10 text-blue-400 border-blue-500/20">
+                                            BOOKING
+                                        </span>
+                                    @elseif($trx->status === 'masuk')
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                                            IN-PARK
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest border bg-slate-800 text-slate-400 border-white/10">
+                                            EXITED
+                                        </span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

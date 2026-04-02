@@ -14,7 +14,7 @@
 </head>
 <body class="min-h-screen bg-[#020617] text-slate-100 flex items-center justify-center p-6">
     <div class="w-full max-w-md glass-card rounded-3xl p-10 shadow-2xl">
-        <a href="{{ route('login.create') }}" class="text-emerald-500 text-xs font-bold uppercase tracking-widest hover:text-emerald-400 mb-8 inline-flex items-center gap-2">
+        <a href="{{ route('login') }}" class="text-emerald-500 text-xs font-bold uppercase tracking-widest hover:text-emerald-400 mb-8 inline-flex items-center gap-2">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke login
         </a>
         <h1 class="text-xl font-bold text-white mt-4 mb-2">Reset password</h1>

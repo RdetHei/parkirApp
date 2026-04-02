@@ -14,8 +14,13 @@ class PetugasDashboardController extends Controller
     {
         try {
             \Illuminate\Support\Facades\Log::info('PetugasDashboardController@index hit');
-            // Transaksi aktif (belum keluar)
+            // Transaksi aktif (sudah masuk)
             $transaksiAktif = Transaksi::where('status', 'masuk')->count();
+
+            // Booking aktif (belum masuk)
+            $bookingAktif = Transaksi::where('status', 'bookmarked')
+                ->where('bookmarked_at', '>', Carbon::now()->subMinutes(10))
+                ->count();
 
             // Transaksi hari ini (masuk hari ini)
             $transaksiHariIni = Transaksi::whereDate('waktu_masuk', Carbon::today())->count();
@@ -30,9 +35,9 @@ class PetugasDashboardController extends Controller
             $totalKapasitas = $areaParkir->sum('kapasitas');
             $totalTerisi = $areaParkir->sum('terisi');
 
-            // Aktivitas terbaru (5 transaksi terakhir: masuk atau keluar)
+            // Aktivitas terbaru (5 transaksi terakhir: masuk, keluar, atau booking)
             $aktivitasTerbaru = Transaksi::with(['kendaraan', 'area'])
-                ->whereIn('status', ['masuk', 'keluar'])
+                ->whereIn('status', ['masuk', 'keluar', 'bookmarked'])
                 ->orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get();
@@ -42,6 +47,7 @@ class PetugasDashboardController extends Controller
             return view('petugas.dashboard', compact(
                 'title',
                 'transaksiAktif',
+                'bookingAktif',
                 'transaksiHariIni',
                 'pendapatanHariIni',
                 'totalKapasitas',

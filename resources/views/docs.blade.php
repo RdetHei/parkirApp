@@ -55,8 +55,8 @@
                         <i class="fa-solid fa-id-card"></i>
                         Card Login
                     </button>
-                    <a href="{{ route('login.create') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Sign in</a>
-                    <a href="{{ route('register.create') }}" class="btn-pro-primary !py-2 !px-5 !text-[11px] uppercase tracking-wider">
+                    <a href="{{ route('login') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Sign in</a>
+                    <a href="{{ route('register') }}" class="btn-pro-primary !py-2 !px-5 !text-[11px] uppercase tracking-wider">
                         Get Started
                     </a>
                 </div>

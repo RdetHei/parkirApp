@@ -199,7 +199,7 @@
             <div class="mt-10 pt-8 border-t border-white/5 text-center">
                 <p class="text-xs text-slate-500 font-medium">
                     Belum punya akun?
-                    <a href="{{ route('register.create') }}" class="text-emerald-500 font-bold hover:text-emerald-400 transition-colors">
+                    <a href="{{ route('register') }}" class="text-emerald-500 font-bold hover:text-emerald-400 transition-colors">
                         Daftar Sekarang
                     </a>
                 </p>

@@ -75,9 +75,9 @@ Route::get('/payment/midtrans/{id_parkir}/error', [\App\Http\Controllers\Payment
     ->name('payment.midtrans.error');
 
 // Auth Routes
-Route::get('/login', [LoginController::class, 'create'])->name('login.create');
+Route::get('/login', [LoginController::class, 'create'])->name('login');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware('throttle:5,1');
-Route::get('/register', [RegisterController::class, 'create'])->name('register.create');
+Route::get('/register', [RegisterController::class, 'create'])->name('register');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store')->middleware('throttle:5,1');
 
 Route::middleware('guest')->group(function () {

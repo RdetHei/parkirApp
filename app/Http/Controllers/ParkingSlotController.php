@@ -340,13 +340,31 @@ class ParkingSlotController extends Controller
             return redirect()->back()->with('error', 'Maaf, area ini sudah penuh.');
         }
 
+        $idTarif = $request->input('id_tarif');
+
+        // Jika id_tarif tidak dikirim (Otomatis), cari berdasarkan jenis kendaraan
+        if (!$idTarif && $request->input('id_kendaraan')) {
+            $kendaraan = \App\Models\Kendaraan::find($request->input('id_kendaraan'));
+            if ($kendaraan) {
+                $tarif = \App\Models\Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->first();
+                if ($tarif) {
+                    $idTarif = $tarif->id_tarif;
+                }
+            }
+        }
+
+        // Fallback jika masih null (untuk menghindari SQL error)
+        if (!$idTarif) {
+            $idTarif = \App\Models\Tarif::first()?->id_tarif;
+        }
+
         // Create booking (using Transaksi with status bookmarked for simplicity with current UI)
         $transaksi = Transaksi::create([
             'id_user' => $user->id,
             'id_area' => $area->id_area,
             'parking_map_slot_id' => $slot->id,
             'id_kendaraan' => $request->input('id_kendaraan'),
-            'id_tarif' => $request->input('id_tarif'),
+            'id_tarif' => $idTarif,
             'status' => 'bookmarked',
             'bookmarked_at' => $now,
         ]);
