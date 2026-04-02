@@ -127,6 +127,23 @@
                     </div>
                 </div>
 
+                <div class="space-y-2">
+                    <label for="phone" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+                        WhatsApp / HP <span class="text-slate-700">(opsional, untuk notifikasi parkir)</span>
+                    </label>
+                    <input
+                        id="phone"
+                        type="text"
+                        name="phone"
+                        value="{{ old('phone') }}"
+                        placeholder="628xxxxx atau 08xxxxx"
+                        class="w-full px-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm input-glow"
+                    >
+                    @error('phone')
+                        <p class="mt-2 text-[11px] text-red-400 font-medium ml-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <!-- NFC -->
                     <div class="space-y-2">

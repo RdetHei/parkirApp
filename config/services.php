@@ -45,4 +45,11 @@ return [
         'key' => env('PLATE_RECOGNIZER_KEY', ''),
     ],
 
+    'whatsapp' => [
+        'enabled' => filter_var(env('WHATSAPP_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        'driver' => env('WHATSAPP_DRIVER', 'fonnte'), // fonnte | ultramsg
+        'url' => env('WHATSAPP_GATEWAY_URL', ''),
+        'token' => env('WHATSAPP_API_TOKEN', ''),
+    ],
+
 ];

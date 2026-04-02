@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
@@ -48,7 +48,7 @@
     <!-- Grid Overlay -->
     <div class="fixed inset-0 auth-grid pointer-events-none z-0"></div>
     <div class="fixed inset-0 bg-batik opacity-[0.035] pointer-events-none z-0"></div>
-    
+
     <!-- Background Glows -->
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
@@ -73,11 +73,11 @@
             </div>
 
             <!-- Alerts -->
-            @if(session('info') || session('error') || session('success'))
+            @if(session('info') || session('error') || session('success') || session('status'))
                 <div class="mb-8 p-4 rounded-2xl text-xs font-semibold {{ session('error') ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' }}">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid {{ session('error') ? 'fa-circle-exclamation' : 'fa-circle-check' }}"></i>
-                        <span>{{ session('info') ?? session('error') ?? session('success') }}</span>
+                        <span>{{ session('info') ?? session('error') ?? session('success') ?? session('status') }}</span>
                     </div>
                 </div>
             @endif
@@ -216,11 +216,11 @@
         @keyframes shimmer {
             100% { transform: translateX(100%); }
         }
-        
+
         #remember:checked + div i {
             opacity: 1;
         }
-        
+
         #remember:checked + div {
             background: rgba(16, 185, 129, 0.1);
             border-color: rgba(16, 185, 129, 0.5);

@@ -92,13 +92,18 @@
                             </td>
                             <td class="px-8 py-5">
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-bold text-white">{{ $transaksi->waktu_masuk->format('H:i') }} <span class="text-slate-600 text-[10px] ml-1">{{ $transaksi->waktu_masuk->format('d/m/y') }}</span></span>
-                                    @php
-                                        $durasi = now()->diffInMinutes($transaksi->waktu_masuk);
-                                        $jam = intdiv($durasi, 60);
-                                        $menit = $durasi % 60;
-                                    @endphp
-                                    <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mt-1">Duration: {{ $jam }}h {{ $menit }}m</span>
+                                    @if($transaksi->status === 'bookmarked')
+                                        <span class="text-xs font-bold text-amber-500 italic">Reserved (Pending Arrival)</span>
+                                        <span class="text-[9px] text-slate-500 font-medium">Booked: {{ $transaksi->bookmarked_at->format('H:i') }} ({{ $transaksi->bookmarked_at->diffForHumans() }})</span>
+                                    @else
+                                        <span class="text-xs font-bold text-white">{{ $transaksi->waktu_masuk->format('H:i') }} <span class="text-slate-600 text-[10px] ml-1">{{ $transaksi->waktu_masuk->format('d/m/y') }}</span></span>
+                                        @php
+                                            $durasi = now()->diffInMinutes($transaksi->waktu_masuk);
+                                            $jam = intdiv($durasi, 60);
+                                            $menit = $durasi % 60;
+                                        @endphp
+                                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-1">Duration: {{ $jam }}h {{ $menit }}m</span>
+                                    @endif
                                 </div>
                             </td>
                             <td class="px-8 py-5">
@@ -108,20 +113,39 @@
                                 </div>
                             </td>
                             <td class="px-8 py-5 text-right space-x-2">
-                                <form action="{{ route('transaksi.checkOut', $transaksi->id_parkir) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('PUT')
-                                    <button type="submit"
-                                            class="px-4 py-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 font-bold rounded-lg border border-amber-500/20 transition-all text-[10px] uppercase tracking-widest"
-                                            onclick="return confirm('Process check-out for this vehicle?')">
-                                        Check-Out
-                                    </button>
-                                </form>
-                                @if(auth()->user()->role === 'admin')
-                                <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
-                                   class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white font-bold rounded-lg border border-indigo-500/20 transition-all text-[10px] uppercase tracking-widest inline-block">
-                                    Receipt
-                                </a>
+                                @if($transaksi->status === 'bookmarked')
+                                    <form action="{{ route('transaksi.accept-reservation', $transaksi->id_parkir) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                class="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-slate-950 font-bold rounded-lg border border-emerald-500/20 transition-all text-[10px] uppercase tracking-widest"
+                                                onclick="return confirm('User has arrived? Confirm entry for this vehicle?')">
+                                            Confirm Arrival
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('transaksi.reject-reservation', $transaksi->id_parkir) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white font-bold rounded-lg border border-rose-500/20 transition-all text-[10px] uppercase tracking-widest"
+                                                onclick="return confirm('Cancel/Reject this reservation?')">
+                                            Reject
+                                        </button>
+                                    </form>
+                                @else
+                                    <form action="{{ route('transaksi.checkOut', $transaksi->id_parkir) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit"
+                                                class="px-4 py-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 font-bold rounded-lg border border-amber-500/20 transition-all text-[10px] uppercase tracking-widest"
+                                                onclick="return confirm('Process check-out for this vehicle?')">
+                                            Check-Out
+                                        </button>
+                                    </form>
+                                    @if(auth()->user()->role === 'admin')
+                                    <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
+                                       class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white font-bold rounded-lg border border-indigo-500/20 transition-all text-[10px] uppercase tracking-widest inline-block">
+                                        Receipt
+                                    </a>
+                                    @endif
                                 @endif
                             </td>
                         </tr>

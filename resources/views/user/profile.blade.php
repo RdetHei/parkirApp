@@ -33,7 +33,7 @@
                 {{-- Avatar card --}}
                 <div class="card-pro group overflow-hidden relative border-white/5 backdrop-blur-xl bg-slate-900/40 flex flex-col items-center p-8">
                     <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl group-hover:scale-110 transition-transform"></div>
-                    
+
                     <div class="relative mb-6">
                         <div class="absolute -inset-4 bg-emerald-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <x-user-avatar :user="$user" size="lg" round="3xl"
@@ -123,6 +123,14 @@
                                     <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
                                            class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-5 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-medium">
                                     @error('email') <p class="mt-2 text-[11px] text-rose-500 font-bold ml-1 uppercase tracking-widest">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div class="space-y-3 sm:col-span-2">
+                                    <label for="phone" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">WhatsApp / HP <span class="text-slate-600 normal-case font-medium">(notifikasi parkir)</span></label>
+                                    <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}"
+                                           placeholder="628xxxxx"
+                                           class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-5 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-medium">
+                                    @error('phone') <p class="mt-2 text-[11px] text-rose-500 font-bold ml-1 uppercase tracking-widest">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         </div>

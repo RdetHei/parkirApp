@@ -226,7 +226,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
                             <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-6">
-                                <i class="fa-solid fa-shield-check text-xl"></i>
+                                <i class="fa-solid fa-shield-halved text-xl"></i>
                             </div>
                             <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-xs">Keamanan Terjamin</h3>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Verifikasi identitas kendaraan dan pencatatan log aktivitas yang komprehensif secara real-time.</p>

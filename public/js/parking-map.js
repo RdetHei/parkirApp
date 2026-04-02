@@ -217,27 +217,41 @@ if (!container) {
                             if (tarifId) {
                                 body.append('id_tarif', String(tarifId));
                             }
-                            await fetch(url, {
+                            const response = await fetch(url, {
                                 method: 'POST',
                                 headers: {
                                     'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Accept': 'application/json'
                                 },
                                 body: body.toString()
                             });
+                            
+                            const data = await response.json();
+                            if (!response.ok) {
+                                alert(data.message || 'Gagal melakukan booking.');
+                            } else {
+                                // Optional: success feedback
+                            }
                         } else if (slot.status === 'reserved-by-me' && slot.transaksi_id && unbookUrlTemplate) {
                             const url = unbookUrlTemplate.replace('TRANS_ID_PLACEHOLDER', encodeURIComponent(slot.transaksi_id));
                             const body = new URLSearchParams();
                             body.append('_token', csrfToken);
                             body.append('_method', 'DELETE');
-                            await fetch(url, {
+                            const response = await fetch(url, {
                                 method: 'POST',
                                 headers: {
                                     'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Accept': 'application/json'
                                 },
                                 body: body.toString()
                             });
+                            
+                            const data = await response.json();
+                            if (!response.ok) {
+                                alert(data.message || 'Gagal membatalkan booking.');
+                            }
                         }
                     } catch (err) {
                         console.error('Booking/unbooking slot error', err);

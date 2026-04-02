@@ -40,6 +40,7 @@ class RegisterController extends Controller
                 'max:255',
                 Rule::unique((new User)->getTable()),
             ],
+            'phone' => ['nullable', 'string', 'max:32'],
             'nfc_uid' => ['nullable', 'string', 'max:128', Rule::unique((new User)->getTable(), 'nfc_uid')],
             'password' => ['required', 'string', 'confirmed', 'min:8'],
         ]);
@@ -47,13 +48,16 @@ class RegisterController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->filled('phone') ? $request->phone : null,
             'nfc_uid' => $request->nfc_uid ?: null,
             'password' => Hash::make($request->password),
             'role' => 'user',
         ]);
 
         Auth::login($user);
+        $user->sendEmailVerificationNotification();
 
-        return redirect()->intended(route('user.dashboard'));
+        return redirect()->route('verification.notice')
+            ->with('status', 'Cek email Anda untuk menautkan verifikasi.');
     }
 }

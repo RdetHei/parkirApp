@@ -19,6 +19,7 @@ class Transaksi extends Model
         'durasi_jam',
         'biaya_total',
         'status',
+        'bookmarked_at',
         'catatan',
         'id_user',
         'id_area',
@@ -31,6 +32,7 @@ class Transaksi extends Model
     protected $casts = [
         'waktu_masuk' => 'datetime',
         'waktu_keluar' => 'datetime',
+        'bookmarked_at' => 'datetime',
         'biaya_total' => 'decimal:2',
         'durasi_jam' => 'integer',
     ];
@@ -64,6 +66,20 @@ class Transaksi extends Model
     public function pembayaran()
     {
         return $this->belongsTo(Pembayaran::class, 'id_pembayaran', 'id_pembayaran');
+    }
+
+    /**
+     * User yang menerima notifikasi parkir: pemilik kendaraan jika ada, jika tidak fallback ke id_user transaksi.
+     */
+    public function notifyTargetUser(): ?User
+    {
+        $this->loadMissing(['kendaraan.user', 'user']);
+
+        if ($this->kendaraan?->id_user) {
+            return $this->kendaraan->user;
+        }
+
+        return $this->user;
     }
 
     // Accessors & Mutators

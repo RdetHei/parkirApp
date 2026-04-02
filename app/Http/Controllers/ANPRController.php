@@ -110,19 +110,11 @@ class ANPRController extends Controller
                     ['plate' => $plateNumber, 'confidence' => $confidence]
                 );
             } else {
-                // EXIT LOGIC
+                // EXIT LOGIC (satu kali update: cegah event ganda + konsisten dengan petugas)
                 $statusAction = 'exit';
-                $activeTransaksi->update([
-                    'waktu_keluar' => now(),
-                    'status' => 'keluar',
-                ]);
-
-                $activeTransaksi->durasi_jam = $activeTransaksi->durasi_jam; // Trigger accessor
-                $activeTransaksi->biaya_total = $activeTransaksi->biaya_total; // Trigger accessor
-                $activeTransaksi->save();
-
+                $this->applyCheckoutTotals($activeTransaksi, Carbon::now());
                 $activeTransaksi->area->decrement('terisi');
-                $transaksi = $activeTransaksi;
+                $transaksi = $activeTransaksi->fresh();
 
                 $this->logActivity(
                     "ANPR Detection (Exit): Kendaraan {$plateNumber} keluar",
@@ -311,21 +303,10 @@ class ANPRController extends Controller
                     ['plate' => $plateNumber, 'confidence' => $confidence]
                 );
             } else {
-                // EXIT LOGIC
                 $statusAction = 'exit';
-                $activeTransaksi->update([
-                    'waktu_keluar' => now(),
-                    'status' => 'keluar',
-                ]);
-
-                // Calculate duration and total cost (using accessors logic if needed, but saving it)
-                $activeTransaksi->durasi_jam = $activeTransaksi->durasi_jam; // Trigger accessor
-                $activeTransaksi->biaya_total = $activeTransaksi->biaya_total; // Trigger accessor
-                $activeTransaksi->save();
-
-                // Update area occupancy
+                $this->applyCheckoutTotals($activeTransaksi, Carbon::now());
                 $activeTransaksi->area->decrement('terisi');
-                $transaksi = $activeTransaksi;
+                $transaksi = $activeTransaksi->fresh();
 
                 $this->logActivity(
                     "ANPR Scan (Exit): Kendaraan {$plateNumber} keluar",
@@ -366,5 +347,28 @@ class ANPRController extends Controller
             Log::error('ANPR Scan Exception: ' . $e->getMessage());
             return response()->json(['error' => 'Server Error: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Satu kali update checkout (align dengan TransaksiController::checkOut).
+     */
+    protected function applyCheckoutTotals(Transaksi $transaksi, Carbon $waktuKeluar): void
+    {
+        $transaksi->loadMissing('tarif');
+        $tarif = $transaksi->tarif;
+        if (! $tarif) {
+            throw new \RuntimeException('Tarif tidak ditemukan untuk transaksi ANPR.');
+        }
+
+        $durasi_detik = $waktuKeluar->diffInSeconds($transaksi->waktu_masuk);
+        $durasi_jam = $durasi_detik < 300 ? 1 : (int) ceil($durasi_detik / 3600);
+        $biaya_total = $durasi_jam * $tarif->tarif_perjam;
+
+        $transaksi->update([
+            'waktu_keluar' => $waktuKeluar,
+            'durasi_jam' => $durasi_jam,
+            'biaya_total' => $biaya_total,
+            'status' => 'keluar',
+        ]);
     }
 }

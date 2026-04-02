@@ -163,9 +163,9 @@
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
                     <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Enterprise Parking Solution</span>
                 </div>
-                <h1 class="text-5xl lg:text-7xl font-extrabold tracking-tight text-white mb-8 leading-[1.1]">
-                    Manage your parking <br/>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">with intelligence.</span>
+                <h1 class="text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-8 leading-[1.1]">
+                    MANAGE YOUR PARKING<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600"><span class="text-white">WITH</span> INTELLIGENCE.</span>
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed mb-12 max-w-2xl mx-auto font-medium">
                     Automate vehicle tracking, payment processing, and space management with our AI-powered ecosystem. Secure, scalable, and built for modern infrastructure.
@@ -183,16 +183,16 @@
             <div class="mt-24 relative max-w-5xl mx-auto">
                 <div class="aspect-[16/9] rounded-2xl bg-slate-900 border border-white/5 shadow-2xl overflow-hidden relative group">
                     <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-indigo-500/5"></div>
-                    
+
                     <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2 z-10">
                         <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
                         <div class="w-3 h-3 rounded-full bg-amber-500/50"></div>
                         <div class="w-3 h-3 rounded-full bg-emerald-500/50"></div>
                         <div class="ml-4 text-xs text-slate-500 font-mono">sipark-dashboard.io/monitoring</div>
                     </div>
-            
+
                     <div class="p-8 pt-16 grid grid-cols-3 gap-6 h-full overflow-hidden absolute inset-0">
-                        
+
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium flex justify-between items-center">
                                 <span>Slot Tersedia</span>
@@ -203,7 +203,7 @@
                                 <span class="text-slate-500 text-sm font-medium">/ 500 total</span>
                             </div>
                         </div>
-            
+
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium">Kendaraan Masuk</div>
                             <div class="flex items-baseline gap-2">
@@ -211,14 +211,14 @@
                                 <span class="text-emerald-400 text-sm font-medium">↑ 12%</span>
                             </div>
                         </div>
-            
+
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium">Pendapatan (Harian)</div>
                             <div class="flex items-baseline gap-2">
                                 <span class="text-3xl font-bold text-white">Rp 2.4M</span>
                             </div>
                         </div>
-            
+
                         <div class="col-span-2 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
                             <div class="flex justify-between items-center mb-4">
                                 <div class="text-slate-200 font-medium">Live Area Monitoring - Lantai 1</div>
@@ -238,7 +238,7 @@
                                 <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
                                 <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
                                 <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
-                                
+
                                 <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
                                 <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
                                 <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
@@ -249,7 +249,7 @@
                                 <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
                             </div>
                         </div>
-            
+
                         <div class="rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
                             <div class="text-slate-200 font-medium mb-4">Aktivitas Terakhir (ANPR)</div>
                             <div class="space-y-3">
@@ -276,10 +276,10 @@
                                 </div>
                             </div>
                         </div>
-            
+
                     </div>
                 </div>
-                
+
                 <div class="absolute -top-12 -right-12 w-64 h-64 bg-emerald-500/20 rounded-full blur-[100px] -z-10"></div>
                 <div class="absolute -bottom-12 -left-12 w-64 h-64 bg-indigo-500/20 rounded-full blur-[100px] -z-10"></div>
             </div>
@@ -377,7 +377,7 @@
                 <!-- Step 1 -->
                 <div class="text-center group">
                     <div class="w-20 h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
-                        <i class="fa-solid fa-camera-viewfinder text-2xl text-emerald-500"></i>
+                        <i class="fa-solid fa-camera text-2xl text-emerald-500"></i>
                     </div>
                     <h4 class="text-white font-bold mb-2">1. Deteksi</h4>
                     <p class="text-slate-500 text-xs leading-relaxed">Kamera ANPR mendeteksi plat nomor kendaraan secara otomatis saat masuk.</p>
@@ -444,9 +444,9 @@
 
                 <div class="card-pro card-pro-hover group">
                     <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all duration-300">
-                        <i class="fa-solid fa-shield-check text-sm"></i>
+                        <i class="fa-solid fa-id-card text-sm"></i>
                     </div>
-                    <h4 class="text-lg font-bold text-white mb-3">NFC Authentication</h4>
+                    <h4 class="text-lg font-bold text-white mb-3">RFID Authentication</h4>
                     <p class="text-slate-400 text-sm leading-relaxed font-medium">
                         Contactless check-in/out for registered users using encrypted NFC technology.
                     </p>
@@ -594,6 +594,12 @@
                         </a>
                         <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
                             <i class="fa-brands fa-github text-xs"></i>
+                        </a>
+                         <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                            <i class="fab fa-youtube text-xs"></i>
+                        </a>
+                         <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                            <i class="fab fa-discord text-xs"></i>
                         </a>
                     </div>
                 </div>

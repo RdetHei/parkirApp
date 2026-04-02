@@ -23,6 +23,12 @@
                             <i class="fab fa-instagram text-xs"></i>
                         </a>
                         <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
+                            <i class="fab fa-youtube text-xs"></i>
+                        </a>
+                         <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
+                            <i class="fab fa-linkedin-in text-xs"></i>
+                         </a>
+                         <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
                             <i class="fab fa-twitter text-xs"></i>
                         </a>
                     </div>

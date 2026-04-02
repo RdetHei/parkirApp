@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'rfid.access' => \App\Http\Middleware\RfidAccessMiddleware::class,
             'no-cache' => \App\Http\Middleware\NoCacheMiddleware::class,
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

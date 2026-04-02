@@ -42,7 +42,7 @@ class ParkingSlotController extends Controller
             $areaIds = [$area->id_area];
             $activeBySlot = $this->getActiveTransactionsBySlot($slotIds);
             $activeReservationsBySlot = $this->getActiveReservationsBySlot($slotIds);
-            
+
             $tenMinutesAgo = Carbon::now()->subMinutes(10);
             $summary['unassigned'] = Transaksi::whereIn('id_area', $areaIds)
                 ->whereNull('parking_map_slot_id')
@@ -265,11 +265,136 @@ class ParkingSlotController extends Controller
 
     public function bookmark(Request $request, AreaParkir $area)
     {
-        return response()->json(['message' => 'Not implemented'], 501);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $now = Carbon::now();
+        $tenMinutesAgo = $now->copy()->subMinutes(10);
+
+        // Check if user already has an active booking in this area or any area
+        $existing = Transaksi::where('id_user', $user->id)
+            ->where('status', 'bookmarked')
+            ->where('bookmarked_at', '>', $tenMinutesAgo)
+            ->first();
+
+        if ($existing) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Anda sudah memiliki booking aktif yang berlaku selama 10 menit.'], 400);
+            }
+            return redirect()->back()->with('error', 'Anda sudah memiliki booking aktif yang berlaku selama 10 menit.');
+        }
+
+        $existingReservation = ParkingSlotReservation::where('id_user', $user->id)
+            ->active()
+            ->first();
+
+        if ($existingReservation) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Anda sudah memiliki reservasi aktif.'], 400);
+            }
+            return redirect()->back()->with('error', 'Anda sudah memiliki reservasi aktif.');
+        }
+
+        // Pick a slot if parking_map_slot_id is provided, or pick the first empty one in the area
+        $slotId = $request->input('parking_map_slot_id') ?? $request->input('slot_id');
+        $slot = null;
+
+        if ($slotId) {
+            $slot = ParkingMapSlot::find($slotId);
+            if (!$slot || $slot->area_parkir_id !== $area->id_area) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Slot tidak ditemukan di area ini.'], 404);
+                }
+                return redirect()->back()->with('error', 'Slot tidak ditemukan di area ini.');
+            }
+        } else {
+            // Find first empty slot
+            $occupiedSlotIds = Transaksi::where('id_area', $area->id_area)
+                ->where(function ($q) use ($tenMinutesAgo) {
+                    $q->where(function ($q2) {
+                        $q2->whereNull('waktu_keluar')->where('status', 'masuk');
+                    })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                        $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                    });
+                })
+                ->pluck('parking_map_slot_id')
+                ->filter()
+                ->all();
+
+            $reservedSlotIds = ParkingSlotReservation::active()
+                ->where('id_area', $area->id_area)
+                ->pluck('parking_map_slot_id')
+                ->filter()
+                ->all();
+
+            $blockedIds = array_unique(array_merge($occupiedSlotIds, $reservedSlotIds));
+
+            $slot = ParkingMapSlot::where('area_parkir_id', $area->id_area)
+                ->whereNotIn('id', $blockedIds)
+                ->first();
+        }
+
+        if (!$slot) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Maaf, area ini sudah penuh.'], 400);
+            }
+            return redirect()->back()->with('error', 'Maaf, area ini sudah penuh.');
+        }
+
+        // Create booking (using Transaksi with status bookmarked for simplicity with current UI)
+        $transaksi = Transaksi::create([
+            'id_user' => $user->id,
+            'id_area' => $area->id_area,
+            'parking_map_slot_id' => $slot->id,
+            'id_kendaraan' => $request->input('id_kendaraan'),
+            'id_tarif' => $request->input('id_tarif'),
+            'status' => 'bookmarked',
+            'bookmarked_at' => $now,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Booking berhasil!',
+                'transaksi' => $transaksi
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Booking berhasil!');
     }
 
-    public function unbookmark(Request $request, Transaksi $transaksi)
+    public function unbookmark(Request $request, $id)
     {
-        return response()->json(['message' => 'Not implemented'], 501);
+        $user = Auth::user();
+
+        // Try finding as Transaksi first
+        $transaksi = Transaksi::where('id_parkir', $id)
+            ->where('id_user', $user->id)
+            ->where('status', 'bookmarked')
+            ->first();
+
+        if ($transaksi) {
+            $transaksi->delete();
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Booking dibatalkan.']);
+            }
+            return redirect()->back()->with('success', 'Booking dibatalkan.');
+        }
+
+        // Try finding as Reservation
+        $reservation = ParkingSlotReservation::where('id', $id)
+            ->where('id_user', $user->id)
+            ->first();
+
+        if ($reservation) {
+            $reservation->delete();
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Reservasi dibatalkan.']);
+            }
+            return redirect()->back()->with('success', 'Reservasi dibatalkan.');
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Data booking tidak ditemukan.'], 404);
+        }
+        return redirect()->back()->with('error', 'Data booking tidak ditemukan.');
     }
 }

@@ -20,7 +20,7 @@
                 <h1 class="text-4xl font-black tracking-tight text-white uppercase">Riwayat <span class="text-emerald-500">Parkir</span></h1>
                 <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Daftar lengkap seluruh sesi parkir Anda di ekosistem NESTON.</p>
             </div>
-            
+
             <a href="{{ route('user.dashboard') }}"
                class="group px-6 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center gap-3 active:scale-95">
                 <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
@@ -64,10 +64,14 @@
                                     </div>
                                 </td>
                                 <td class="px-8 py-6">
-                                    <div class="space-y-0.5">
-                                        <p class="text-sm font-black text-white tracking-tighter">{{ $trx->waktu_masuk->format('H:i') }}</p>
-                                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{{ $trx->waktu_masuk->format('d/m/Y') }}</p>
-                                    </div>
+                                    @if($trx->waktu_masuk)
+                                        <div class="space-y-0.5">
+                                            <p class="text-sm font-black text-white tracking-tighter">{{ $trx->waktu_masuk->format('H:i') }}</p>
+                                            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{{ $trx->waktu_masuk->format('d/m/Y') }}</p>
+                                        </div>
+                                    @else
+                                        <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">— Belum Masuk —</span>
+                                    @endif
                                 </td>
                                 <td class="px-8 py-6">
                                     @if($trx->waktu_keluar)
@@ -96,6 +100,10 @@
                                         <span class="inline-flex items-center px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20">
                                             Parkir
                                         </span>
+                                    @elseif($trx->status === 'bookmarked')
+                                        <span class="inline-flex items-center px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                            Booked
+                                        </span>
                                     @elseif($trx->status === 'selesai' || $trx->status === 'keluar')
                                         @if(($trx->status_pembayaran ?? '') === 'lunas' || ($trx->pembayaran->status ?? '') === 'berhasil')
                                             <span class="inline-flex items-center px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -122,7 +130,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             @if($transactions->hasPages())
                 <div class="px-8 py-6 bg-white/[0.01] border-t border-white/5">
                     {{ $transactions->links() }}

@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ParkirController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OwnerDashboardController;
 use App\Http\Controllers\PetugasDashboardController;
@@ -75,13 +79,32 @@ Route::get('/login', [LoginController::class, 'create'])->name('login.create');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store')->middleware('throttle:5,1');
 Route::get('/register', [RegisterController::class, 'create'])->name('register.create');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store')->middleware('throttle:5,1');
-// Lupa password: belum implement; redirect ke login dengan pesan
-Route::get('/forgot-password', function () {
-    return redirect()->route('login.create')->with('info', 'Lupa password? Hubungi administrator untuk reset password.');
-})->name('password.request');
 
-// Protected Routes - Require Authentication
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email')->middleware('throttle:5,1');
+    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.store')->middleware('throttle:5,1');
+});
+
+Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
+    ->middleware(['auth', 'signed', 'throttle:6,1'])
+    ->name('verification.verify');
+
 Route::middleware(['auth', 'no-cache'])->group(function () {
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
+
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+});
+
+// Protected: wajib email terverifikasi
+Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
     // API & halaman Peta Parkir: admin, petugas, dan user (user hanya untuk lihat & booking slot)
     Route::middleware(['role:admin,petugas,user'])->group(function () {
         // Halaman peta parkir (Leaflet + image overlay)
@@ -112,8 +135,6 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard')
         ->middleware('role:admin');
-    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
-
     // Owner Dashboard
     Route::get('/owner/dashboard', [OwnerDashboardController::class, 'index'])->name('owner.dashboard')->middleware('role:owner');
 
@@ -191,6 +212,7 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:tb_user,email,' . $user->id,
+            'phone' => 'nullable|string|max:32',
             'password' => 'nullable|string|min:8|confirmed',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
@@ -219,12 +241,21 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
     Route::delete('/user/vehicles/{vehicle}', [\App\Http\Controllers\UserVehicleController::class, 'destroy'])->name('user.vehicles.destroy');
 
     // User: Booking slot (area-based bookmark)
-    Route::get('/user/bookings', function (\Illuminate\Http\Request $request) {
+    Route::get('/user/bookings/areas/{area?}', function (\Illuminate\Http\Request $request, $areaId = null) {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
         $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
-        $map = \App\Models\AreaParkir::getDefaultMap();
+
+        // If areaId is provided, find that specific area, else use default
+        $map = null;
+        if ($areaId) {
+            $map = \App\Models\AreaParkir::find($areaId);
+        }
+        if (!$map) {
+            $map = \App\Models\AreaParkir::getDefaultMap();
+        }
+
         $kendaraans = \App\Models\Kendaraan::where('id_user', $user->id)->orderBy('plat_nomor')->get();
         $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
 
@@ -281,8 +312,8 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs'));
     })->name('user.bookings');
 
-    Route::post('/user/bookings/areas/{area}', [ParkingSlotController::class, 'bookmark'])->name('user.bookings.book');
-    Route::delete('/user/bookings/areas/{transaksi}', [ParkingSlotController::class, 'unbookmark'])->name('user.bookings.unbook');
+    Route::post('/user/bookings/areas/{area}', [\App\Http\Controllers\ParkingSlotController::class, 'bookmark'])->name('user.bookings.book');
+    Route::delete('/user/bookings/areas/{id}', [\App\Http\Controllers\ParkingSlotController::class, 'unbookmark'])->name('user.bookings.unbook');
 
     // User: Tagihan sendiri (transaksi keluar tapi belum dibayar)
     Route::get('/user/bills', [\App\Http\Controllers\PaymentController::class, 'userBills'])
@@ -330,6 +361,10 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
         Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])
             ->whereNumber('transaksi')
             ->name('transaksi.show');
+
+        // Reservasi: Accept & Reject oleh Petugas/Admin
+        Route::post('/transaksi/{transaksi}/accept-reservation', [\App\Http\Controllers\TransaksiController::class, 'acceptReservation'])->name('transaksi.accept-reservation');
+        Route::post('/transaksi/{transaksi}/reject-reservation', [\App\Http\Controllers\TransaksiController::class, 'rejectReservation'])->name('transaksi.reject-reservation');
 
         // RFID Parking Operation (Admin & Petugas)
         Route::get('/parkir/scan', [RfidParkingController::class, 'index'])->name('parkir.scan');

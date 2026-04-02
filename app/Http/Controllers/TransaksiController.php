@@ -153,7 +153,7 @@ class TransaksiController extends Controller
                 ]);
 
                 $area->increment('terisi');
-                
+
                 $this->logActivity(
                     "Kendaraan {$request->plat_nomor} masuk ke area {$area->nama_area}",
                     'transaksi',
@@ -244,15 +244,29 @@ class TransaksiController extends Controller
     public function index()
     {
         if (
-            request()->routeIs('transaksi.parkir.index') ||
-            (request()->route('status') === 'masuk') ||
-            (request()->query('status') === 'masuk')
+            request()->query('status') === 'masuk' ||
+            request()->routeIs('transaksi.index') && request()->query('status') !== 'keluar'
         ) {
-            $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
-                ->where('status', 'masuk')
-                ->whereNull('waktu_keluar')
+            $tenMinutesAgo = Carbon::now()->subMinutes(10);
+
+            // Cleanup expired bookmarks automatically
+            Transaksi::where('status', 'bookmarked')
+                ->where('bookmarked_at', '<', $tenMinutesAgo)
+                ->delete();
+
+            $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
+                ->where(function ($q) use ($tenMinutesAgo) {
+                    $q->where(function ($q2) {
+                        $q2->where('status', 'masuk')->whereNull('waktu_keluar');
+                    })->orWhere(function ($q2) use ($tenMinutesAgo) {
+                        $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+                    });
+                })
+                ->orderByRaw("CASE WHEN status = 'bookmarked' THEN 0 ELSE 1 END")
                 ->orderBy('waktu_masuk', 'desc')
-                ->paginate(15);
+                ->orderBy('bookmarked_at', 'desc')
+                ->paginate(30);
+
             return view('parkir.index', ['transaksis' => $items]);
         }
 
@@ -416,6 +430,58 @@ class TransaksiController extends Controller
         );
         $transaksi->delete();
         return redirect()->route('transaksi.index')->with('success','Transaksi berhasil dihapus');
+    }
+
+    /**
+     * Petugas menyetujui reservasi user (user sudah datang).
+     */
+    public function acceptReservation($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+
+        if ($transaksi->status !== 'bookmarked') {
+            return redirect()->back()->with('error', 'Transaksi ini bukan merupakan reservasi.');
+        }
+
+        // Cek apakah sudah lewat 10 menit
+        if ($transaksi->bookmarked_at->diffInMinutes(now()) > 10) {
+            return redirect()->back()->with('error', 'Reservasi ini sudah kadaluwarsa (lebih dari 10 menit).');
+        }
+
+        $transaksi->update([
+            'status' => 'masuk',
+            'waktu_masuk' => now(),
+        ]);
+
+        $this->logActivity(
+            "Menyetujui reservasi parkir (ID: {$transaksi->id_transaksi})",
+            'transaksi',
+            $transaksi
+        );
+
+        return redirect()->back()->with('success', 'Reservasi berhasil dikonfirmasi. Kendaraan resmi masuk.');
+    }
+
+    /**
+     * Petugas menolak/membatalkan reservasi user.
+     */
+    public function rejectReservation($id)
+    {
+        $transaksi = Transaksi::findOrFail($id);
+
+        if ($transaksi->status !== 'bookmarked') {
+            return redirect()->back()->with('error', 'Transaksi ini bukan merupakan reservasi.');
+        }
+
+        $transaksi->delete();
+
+        $this->logActivity(
+            "Menolak/Membatalkan reservasi parkir (ID: {$transaksi->id_transaksi})",
+            'transaksi',
+            $transaksi
+        );
+
+        return redirect()->back()->with('success', 'Reservasi telah dibatalkan.');
     }
 
     /**
