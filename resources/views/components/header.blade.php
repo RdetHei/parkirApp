@@ -3,7 +3,7 @@
     <div class="flex lg:flex-1">
       <a href="/" class="flex items-center gap-3">
         <span class="sr-only">NESTON</span>
-        <img src="{{ asset('images/neston-batik.svg') }}" alt="NESTON" class="h-9 w-auto" />
+        <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-9 w-auto" />
         <span class="text-xl font-bold tracking-tight text-white uppercase">NESTON</span>
       </a>
     </div>
@@ -40,7 +40,7 @@
           <div class="flex items-center justify-between">
               <a href="/" class="flex items-center gap-3">
                 <span class="sr-only">NESTON</span>
-                <img src="{{ asset('images/neston-batik.svg') }}" alt="NESTON" class="h-8 w-auto" />
+                <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto" />
                 <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
               </a>
             <button type="button" command="close" commandfor="mobile-menu" class="-m-2.5 rounded-md p-2.5 text-emerald-500">

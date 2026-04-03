@@ -1,20 +1,20 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="p-8 relative z-10">
+<div class="p-4 sm:p-6 lg:p-8 relative z-10">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-fade-in-up">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 lg:mb-12 animate-fade-in-up">
         <div>
             <div class="flex items-center gap-3 mb-3">
                 <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
                     Executive Analytics
                 </span>
             </div>
-            <h1 class="text-4xl font-bold tracking-tight text-white">Financial <span class="text-emerald-500">Insights</span></h1>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Financial <span class="text-emerald-500">Insights</span></h1>
             <p class="text-slate-400 text-sm mt-2">Strategic overview of business performance and revenue metrics.</p>
         </div>
-        <div class="flex items-center gap-4">
-            <button class="group relative px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center gap-2">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <button class="flex-1 sm:flex-none group relative px-4 sm:px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-file-export text-sm"></i>
                 Export Report
             </button>

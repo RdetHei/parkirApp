@@ -57,8 +57,8 @@
         <!-- Logo -->
         <div class="text-center mb-10">
             <a href="/" class="inline-flex flex-col items-center group">
-                <div class="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.3)] group-hover:scale-110 transition-transform duration-300 mb-4">
-                    <img src="{{ asset('images/neston-batik.svg') }}" alt="N" class="w-8 h-8">
+                <div class="w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 mb-4">
+                    <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="w-14 h-14">
                 </div>
                 <span class="text-3xl font-black tracking-[0.2em] text-white uppercase">NESTON</span>
                 <span class="text-[10px] font-bold text-emerald-500/60 uppercase tracking-[0.4em] mt-1">Intelligent Parking</span>

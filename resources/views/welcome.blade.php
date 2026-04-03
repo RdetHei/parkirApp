@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NESTON - Modern Parking Ecosystem</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston-batik.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -132,9 +132,7 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <a href="#" class="flex items-center space-x-3 group z-10">
-                    <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                        <img src="{{ asset('images/neston-batik.svg') }}" alt="N" class="w-5 h-5">
-                    </div>
+                    <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="w-8 h-8 shrink-0">
                     <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
                 </a>
 
@@ -169,7 +167,7 @@
         </div>
 
         <!-- Mobile Menu Overlay -->
-        <div x-show="mobileMenuOpen" 
+        <div x-show="mobileMenuOpen"
              x-cloak
              @click.away="mobileMenuOpen = false"
              x-transition:enter="transition ease-out duration-200"
@@ -205,7 +203,7 @@
                 </div>
                 <h1 class="text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-8 leading-[1.1]">
                     MANAGE YOUR PARKING<br/>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600"><span class="text-white">WITH</span> INTELLIGENCE.</span>
+                    <span class="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-emerald-600"><span class="text-white">WITH</span> INTELLIGENCE.</span>
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed mb-12 max-w-2xl mx-auto font-medium">
                     Automate vehicle tracking, payment processing, and space management with our AI-powered ecosystem. Secure, scalable, and built for modern infrastructure.
@@ -222,7 +220,7 @@
 
             <div class="mt-16 lg:mt-24 relative max-w-5xl mx-auto">
                 <div class="aspect-auto lg:aspect-[16/9] min-h-[500px] lg:min-h-0 rounded-2xl bg-slate-900 border border-white/5 shadow-2xl overflow-hidden relative group">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-indigo-500/5"></div>
+                    <div class="absolute inset-0 bg-linear-to-tr from-emerald-500/10 via-transparent to-indigo-500/5"></div>
 
                     <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2 z-10">
                         <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
@@ -502,7 +500,7 @@
                 <div class="order-2 lg:order-1">
                     <div class="space-y-4">
                         <div class="p-6 rounded-2xl bg-slate-900 border border-white/10 flex gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
                                 <span class="text-emerald-500 font-bold text-sm">01</span>
                             </div>
                             <div>
@@ -511,7 +509,7 @@
                             </div>
                         </div>
                         <div class="p-6 rounded-2xl bg-slate-900 border border-white/10 flex gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
                                 <span class="text-emerald-500 font-bold text-sm">02</span>
                             </div>
                             <div>
@@ -520,7 +518,7 @@
                             </div>
                         </div>
                         <div class="p-6 rounded-2xl bg-slate-900 border border-white/10 flex gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
                                 <span class="text-emerald-500 font-bold text-sm">03</span>
                             </div>
                             <div>
@@ -548,7 +546,7 @@
     <!-- Contact Section -->
     <section id="contact" class="py-32">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-[2rem] p-12 lg:p-20 relative overflow-hidden">
+            <div class="bg-linear-to-br from-emerald-500 to-emerald-700 rounded-[2rem] p-12 lg:p-20 relative overflow-hidden">
                 <!-- Background decoration -->
                 <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
 
@@ -617,9 +615,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
                 <div class="col-span-2">
                     <a href="#" class="flex items-center space-x-3 mb-6 group">
-                        <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                            <img src="{{ asset('images/neston-batik.svg') }}" alt="N" class="w-5 h-5">
-                        </div>
+                        <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto shrink-0">
                         <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
                     </a>
                     <p class="text-slate-500 text-sm leading-relaxed max-w-xs mb-8 font-medium">

@@ -95,7 +95,7 @@
             <!-- Header Section -->
             <div class="p-8 text-center border-b border-dashed border-zinc-200">
                 <div class="inline-flex items-center justify-center w-14 h-14 bg-zinc-900 rounded-2xl mb-4">
-                    <img src="{{ asset('images/neston-batik.svg') }}" alt="NESTON" class="w-8 h-8">
+                    <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto">
                 </div>
                 <h1 class="text-2xl font-[900] tracking-tighter uppercase leading-none">NESTON</h1>
                 <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.3em] mt-2">Smart Parking AI</p>

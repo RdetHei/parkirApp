@@ -1,24 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="p-8 relative z-10">
+<div class="p-4 sm:p-6 lg:p-8 relative z-10">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-fade-in-up">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 lg:mb-12 animate-fade-in-up">
         <div>
             <div class="flex items-center gap-3 mb-3">
                 <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
                     Operational Terminal
                 </span>
             </div>
-            <h1 class="text-4xl font-bold tracking-tight text-white">Officer <span class="text-emerald-500">Console</span></h1>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Officer <span class="text-emerald-500">Console</span></h1>
             <p class="text-slate-400 text-sm mt-2">Managing parking operations and live vehicle tracking.</p>
         </div>
-        <div class="flex items-center gap-4">
-            <a href="{{ route('anpr.index') }}" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <a href="{{ route('anpr.index') }}" class="flex-1 sm:flex-none group relative px-4 sm:px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2">
                 <i class="fa-solid fa-camera-viewfinder text-sm"></i>
                 AI Scanner
             </a>
-            <a href="{{ route('parkir.scan') }}" class="group relative px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center gap-2">
+            <a href="{{ route('parkir.scan') }}" class="flex-1 sm:flex-none group relative px-4 sm:px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-id-card text-sm"></i>
                 RFID Terminal
             </a>

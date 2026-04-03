@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="p-8 relative z-10">
+<div class="p-4 sm:p-6 lg:p-8 relative z-10">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-fade-in-up">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 lg:mb-12 animate-fade-in-up">
         <div>
             <div class="flex items-center gap-3 mb-3">
                 <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
                     Enterprise Console
                 </span>
             </div>
-            <h1 class="text-4xl font-bold tracking-tight text-white">System <span class="text-emerald-500">Overview</span></h1>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">System <span class="text-emerald-500">Overview</span></h1>
             <p class="text-slate-400 text-sm mt-2">Monitoring operational performance and real-time analytics.</p>
         </div>
         <div class="flex items-center gap-4">

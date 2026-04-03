@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation - NESTON Parking Ecosystem</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston-batik.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston.svg') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -37,9 +37,7 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <a href="/" class="flex items-center space-x-3 group z-10">
-                    <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                        <img src="{{ asset('images/neston-batik.svg') }}" alt="N" class="w-5 h-5">
-                    </div>
+                    <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto shrink-0">
                     <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
                 </a>
 
@@ -111,6 +109,7 @@
                 <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Manfaat</button>
                 <button @click="activeTab = 'tech'" :class="activeTab === 'tech' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Teknologi</button>
                 <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Tim</button>
+                <button @click="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Legal & lisensi</button>
             </div>
         </div>
 
@@ -374,6 +373,7 @@
         <button @click="activeTab = 'features'" :class="activeTab === 'features' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-microchip"></i></button>
         <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-chart-line"></i></button>
         <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-users-gear"></i></button>
+        <button @clicl="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950 shadoe-lg shadow-emerald-500/40' : 'text-slate-400' " class="p-3 rounded-xl transition-all"><i class="fa-solid fa-license"></i></button>
     </div>
 
     <!-- Card Login Modal -->

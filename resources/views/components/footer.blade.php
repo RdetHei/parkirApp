@@ -8,7 +8,7 @@
                 <!-- Company Info -->
                 <div class="col-span-1 md:col-span-1">
                     <div class="flex items-center space-x-3 mb-8">
-                        <img src="{{ asset('images/neston-batik.svg') }}" alt="NESTON" class="w-10 h-10">
+                        <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-10 w-auto">
                         <span class="text-2xl font-bold tracking-tighter text-white uppercase">NESTON</span>
                     </div>
                     <p class="text-emerald-100/50 text-sm font-medium leading-relaxed mb-8">

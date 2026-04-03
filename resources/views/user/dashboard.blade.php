@@ -31,28 +31,29 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-10">
             <!-- Wallet Balance (Large Glass Card) -->
-            <div class="lg:col-span-2 card-pro group overflow-hidden relative border-emerald-500/10 backdrop-blur-xl bg-slate-900/40 p-6 sm:p-8">
+            <div class="lg:col-span-2 card-pro group overflow-hidden relative border-emerald-500/10 backdrop-blur-xl bg-slate-900/40 p-5 sm:p-8">
                 <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-                <div class="relative z-10 flex flex-col h-full justify-between min-h-[200px] sm:min-h-[240px]">
-                    <div>
-                        <div class="flex items-center justify-between mb-8 sm:mb-10">
-                            <div class="flex items-center gap-4 sm:gap-5">
-                                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-500/10 rounded-[1.25rem] border border-emerald-500/20 flex items-center justify-center shadow-xl shadow-emerald-500/5">
-                                    <i class="fa-solid fa-wallet text-xl sm:text-2xl text-emerald-500"></i>
-                                </div>
-                                <div>
-                                    <p class="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">NestonPay Wallet</p>
-                                    <p class="text-[8px] sm:text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Status: Active & Secure</p>
-                                </div>
+                <div class="relative z-10 flex flex-col h-full justify-between min-h-[180px] sm:min-h-[240px]">
+                    <div class="flex items-center justify-between mb-4 sm:mb-0">
+                        <div class="flex items-center gap-3 sm:gap-4">
+                            <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 group-hover:rotate-12 transition-transform duration-500">
+                                <i class="fa-solid fa-wallet text-xl sm:text-2xl"></i>
                             </div>
-                            <div class="flex -space-x-3">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl border-2 border-slate-900 bg-emerald-500 flex items-center justify-center text-[10px] sm:text-[11px] font-black text-slate-950 shadow-xl">N</div>
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] sm:text-[11px] font-black text-white shadow-xl">P</div>
+                            <div>
+                                <p class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-[0.2em] mb-0.5 sm:mb-1">Wallet Balance</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
+                                    <span class="text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase tracking-widest">Active & Secure</span>
+                                </div>
                             </div>
                         </div>
-                        <h2 class="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-white flex items-baseline gap-2 sm:gap-4">
-                            <span class="text-emerald-500 text-xl sm:text-3xl font-medium tracking-normal">Rp</span>{{ number_format($user->saldo, 0, ',', '.') }}
+                    </div>
+
+                    <div class="mt-4 sm:mt-0">
+                        <h2 class="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter text-white flex items-baseline gap-2 sm:gap-4 break-all">
+                            <span class="text-emerald-500 text-lg sm:text-3xl font-medium tracking-normal">Rp</span>{{ number_format($user->saldo, 0, ',', '.') }}
                         </h2>
+                        <p class="text-[10px] sm:text-xs text-slate-500 mt-2 sm:mt-4 font-medium max-w-md leading-relaxed">Dana Anda aman di NestonPay. Gunakan untuk pembayaran parkir otomatis di seluruh area Neston.</p>
                     </div>
                     
                     <div class="flex gap-4 mt-8 sm:mt-12">

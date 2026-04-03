@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', $title ?? 'Neston')</title>
+    <title>@yield('title', 'NESTON - Smart Parking System')</title>
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston-batik.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
 
@@ -27,8 +27,6 @@
     <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-emerald-500/5 blur-[120px] pointer-events-none z-0"></div>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
         [x-cloak] { display: none !important; }
 
         :root {
@@ -71,18 +69,12 @@
             <!-- Mobile Sidebar Backdrop -->
             <div x-cloak
                  x-show="sidebarOpen"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
                  @click="sidebarOpen = false"
-                 class="fixed inset-0 z-[60] bg-slate-950/50 lg:hidden"></div>
+                 class="fixed inset-0 z-[60] bg-slate-950/50 backdrop-blur-sm lg:hidden transition-opacity duration-300"></div>
 
             @include('components.sidebar')
 
-            <div class="flex-1 flex flex-col min-w-0 max-w-full">
+            <div class="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
                 @include('components.dheader')
 
                 <main class="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-full">

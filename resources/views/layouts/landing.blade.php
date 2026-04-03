@@ -8,7 +8,7 @@
 
         {{-- Slot kosong untuk judul, dengan judul default 'Parkir App' --}}
         <title>NESTON</title>
-        <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston-batik.svg') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston.svg') }}">
         <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
         <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
 
