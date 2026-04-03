@@ -8,9 +8,12 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/neston.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        [x-cloak] { display: none !important; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -124,7 +127,7 @@
     <div class="fixed inset-0 bg-batik opacity-[0.035] pointer-events-none z-0"></div>
 
     <!-- Header -->
-    <nav class="fixed w-full top-0 z-50 bg-[#020617]/70 backdrop-blur-xl border-b border-white/5">
+    <nav class="fixed w-full top-0 z-50 bg-[#020617]/70 backdrop-blur-xl border-b border-white/5" x-data="{ mobileMenuOpen: false }">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
@@ -135,7 +138,7 @@
                     <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
                 </a>
 
-                <!-- Nav -->
+                <!-- Desktop Nav -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#about" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">About</a>
                     <a href="#workflow" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Workflow</a>
@@ -152,7 +155,44 @@
                         Get Started
                     </a>
                 </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-slate-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            <path x-show="mobileMenuOpen" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             @click.away="mobileMenuOpen = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             class="md:hidden absolute top-16 left-0 w-full bg-[#020617]/95 backdrop-blur-2xl border-b border-white/5 py-6 px-6 space-y-4 shadow-2xl">
+            <a href="#about" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">About</a>
+            <a href="#workflow" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Workflow</a>
+            <a href="#fitur" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Features</a>
+            <a href="{{ route('docs') }}" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Docs</a>
+            <a href="#contact" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Contact</a>
+            <div class="h-px w-full bg-white/5"></div>
+            <button onclick="openCardLogin(); mobileMenuOpen = false" class="flex items-center gap-3 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+                <i class="fa-solid fa-id-card"></i>
+                Card Login
+            </button>
+            <a href="{{ route('login') }}" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Sign in</a>
+            <a href="{{ route('register') }}" class="btn-pro-primary block text-center !py-3 !text-sm uppercase tracking-wider">
+                Get Started
+            </a>
         </div>
     </nav>
 
@@ -180,99 +220,99 @@
                 </div>
             </div>
 
-            <div class="mt-24 relative max-w-5xl mx-auto">
-                <div class="aspect-[16/9] rounded-2xl bg-slate-900 border border-white/5 shadow-2xl overflow-hidden relative group">
+            <div class="mt-16 lg:mt-24 relative max-w-5xl mx-auto">
+                <div class="aspect-auto lg:aspect-[16/9] min-h-[500px] lg:min-h-0 rounded-2xl bg-slate-900 border border-white/5 shadow-2xl overflow-hidden relative group">
                     <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-indigo-500/5"></div>
 
                     <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2 z-10">
                         <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
                         <div class="w-3 h-3 rounded-full bg-amber-500/50"></div>
                         <div class="w-3 h-3 rounded-full bg-emerald-500/50"></div>
-                        <div class="ml-4 text-xs text-slate-500 font-mono">sipark-dashboard.io/monitoring</div>
+                        <div class="ml-4 text-[10px] sm:text-xs text-slate-500 font-mono truncate">sipark-dashboard.io/monitoring</div>
                     </div>
 
-                    <div class="p-8 pt-16 grid grid-cols-3 gap-6 h-full overflow-hidden absolute inset-0">
+                    <div class="p-4 sm:p-8 pt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 h-full overflow-y-auto lg:overflow-hidden lg:absolute lg:inset-0">
 
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium flex justify-between items-center">
                                 <span>Slot Tersedia</span>
-                                <span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded text-xs">Live</span>
+                                <span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded text-[10px]">Live</span>
                             </div>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-bold text-white">142</span>
-                                <span class="text-slate-500 text-sm font-medium">/ 500 total</span>
+                                <span class="text-3xl lg:text-4xl font-bold text-white">142</span>
+                                <span class="text-slate-500 text-xs font-medium">/ 500 total</span>
                             </div>
                         </div>
 
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium">Kendaraan Masuk</div>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-4xl font-bold text-white">358</span>
-                                <span class="text-emerald-400 text-sm font-medium">↑ 12%</span>
+                                <span class="text-3xl lg:text-4xl font-bold text-white">358</span>
+                                <span class="text-emerald-400 text-xs font-medium">↑ 12%</span>
                             </div>
                         </div>
 
-                        <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
+                        <div class="h-28 sm:col-span-2 lg:col-span-1 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium">Pendapatan (Harian)</div>
                             <div class="flex items-baseline gap-2">
                                 <span class="text-3xl font-bold text-white">Rp 2.4M</span>
                             </div>
                         </div>
 
-                        <div class="col-span-2 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
-                            <div class="flex justify-between items-center mb-4">
-                                <div class="text-slate-200 font-medium">Live Area Monitoring - Lantai 1</div>
-                                <div class="flex gap-3 text-xs">
+                        <div class="sm:col-span-2 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full min-h-[200px]">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                                <div class="text-slate-200 text-sm font-medium">Live Area Monitoring - Lantai 1</div>
+                                <div class="flex gap-3 text-[10px]">
                                     <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-400"></div> Kosong</span>
                                     <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-rose-500"></div> Terisi</span>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-8 gap-2 flex-1">
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md relative flex items-center justify-center">
+                            <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 flex-1">
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md relative flex items-center justify-center aspect-square lg:aspect-auto">
                                     <div class="w-2 h-2 bg-rose-500 rounded-full animate-ping"></div>
                                 </div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
 
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
                             </div>
                         </div>
 
-                        <div class="rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
-                            <div class="text-slate-200 font-medium mb-4">Aktivitas Terakhir (ANPR)</div>
+                        <div class="sm:col-span-2 lg:col-span-1 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
+                            <div class="text-slate-200 text-sm font-medium mb-4">Aktivitas Terakhir (ANPR)</div>
                             <div class="space-y-3">
                                 <div class="flex justify-between items-center pb-2 border-b border-white/5">
                                     <div>
-                                        <div class="text-sm font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">B 1234 XYZ</div>
-                                        <div class="text-xs text-emerald-400 mt-1">Masuk - Gate 1</div>
+                                        <div class="text-[10px] font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">B 1234 XYZ</div>
+                                        <div class="text-[9px] text-emerald-400 mt-1">Masuk - Gate 1</div>
                                     </div>
-                                    <div class="text-xs text-slate-500">Baru saja</div>
+                                    <div class="text-[9px] text-slate-500">Baru saja</div>
                                 </div>
                                 <div class="flex justify-between items-center pb-2 border-b border-white/5">
                                     <div>
-                                        <div class="text-sm font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">D 5678 ABC</div>
-                                        <div class="text-xs text-rose-400 mt-1">Keluar - Gate 2</div>
+                                        <div class="text-[10px] font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">D 5678 ABC</div>
+                                        <div class="text-[9px] text-rose-400 mt-1">Keluar - Gate 2</div>
                                     </div>
-                                    <div class="text-xs text-slate-500">2 mnt lalu</div>
+                                    <div class="text-[9px] text-slate-500">2 mnt lalu</div>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <div>
-                                        <div class="text-sm font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">L 9999 OP</div>
-                                        <div class="text-xs text-emerald-400 mt-1">Masuk - Gate 1</div>
+                                        <div class="text-[10px] font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">L 9999 OP</div>
+                                        <div class="text-[9px] text-emerald-400 mt-1">Masuk - Gate 1</div>
                                     </div>
-                                    <div class="text-xs text-slate-500">5 mnt lalu</div>
+                                    <div class="text-[9px] text-slate-500">5 mnt lalu</div>
                                 </div>
                             </div>
                         </div>
@@ -325,19 +365,19 @@
     </section>
 
     <!-- About Section -->
-    <section id="about" class="py-32 relative overflow-hidden">
+    <section id="about" class="py-20 lg:py-32 relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-20 items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                 <div>
-                    <h2 class="text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-4">About Neston</h2>
+                    <h2 class="text-[10px] lg:text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-4">About Neston</h2>
                     <h3 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight mb-8">Ecosystem Parkir Pintar Masa Depan.</h3>
-                    <p class="text-slate-400 text-lg leading-relaxed mb-6">
+                    <p class="text-slate-400 text-base lg:text-lg leading-relaxed mb-6">
                         Neston adalah solusi manajemen parkir terintegrasi yang menggabungkan kecerdasan buatan (AI) dengan sistem pembayaran digital yang mulus. Kami hadir untuk menyelesaikan masalah antrian panjang, kehilangan data kendaraan, dan ketidakefisienan operasional.
                     </p>
-                    <p class="text-slate-400 text-lg leading-relaxed mb-8">
+                    <p class="text-slate-400 text-base lg:text-lg leading-relaxed mb-8">
                         Dengan teknologi ANPR (Automatic Number Plate Recognition) berbasis YOLOv8, sistem kami mampu mendeteksi plat nomor kendaraan secara real-time dengan akurasi yang sangat tinggi, bahkan dalam kondisi pencahayaan minim.
                     </p>
-                    <div class="grid grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                         <div class="p-4 rounded-xl bg-white/5 border border-white/5">
                             <h4 class="text-white font-bold mb-2">Visi Kami</h4>
                             <p class="text-slate-500 text-xs">Mendigitalisasi infrastruktur parkir di seluruh Indonesia dengan AI.</p>
@@ -348,11 +388,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="relative">
-                    <div class="aspect-square rounded-3xl bg-gradient-to-br from-emerald-500/20 to-indigo-500/20 border border-white/10 flex items-center justify-center p-12">
+                <div class="relative order-first lg:order-2">
+                    <div class="aspect-square rounded-3xl bg-gradient-to-br from-emerald-500/20 to-indigo-500/20 border border-white/10 flex items-center justify-center p-8 lg:p-12">
                         <div class="text-center">
-                            <i class="fa-solid fa-microchip text-7xl text-emerald-500 mb-6"></i>
-                            <p class="text-xl font-bold text-white uppercase tracking-widest">Neural Network Core</p>
+                            <i class="fa-solid fa-microchip text-5xl lg:text-7xl text-emerald-500 mb-6"></i>
+                            <p class="text-lg lg:text-xl font-bold text-white uppercase tracking-widest">Neural Network Core</p>
                         </div>
                     </div>
                     <!-- Glow -->
@@ -363,65 +403,65 @@
     </section>
 
     <!-- Workflow Section -->
-    <section id="workflow" class="py-32 bg-slate-950/30">
+    <section id="workflow" class="py-20 lg:py-32 bg-slate-950/30">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-20">
-                <h2 class="text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-4">How it works</h2>
+            <div class="text-center mb-16 lg:mb-20">
+                <h2 class="text-[10px] lg:text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-4">How it works</h2>
                 <h3 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight">Alur Kerja Sistem Neston</h3>
             </div>
 
-            <div class="grid md:grid-cols-4 gap-8 relative">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
                 <!-- Line decoration -->
-                <div class="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500/50 via-indigo-500/50 to-emerald-500/50 -z-10 opacity-20"></div>
+                <div class="hidden lg:block absolute top-12 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500/50 via-indigo-500/50 to-emerald-500/50 -z-10 opacity-20"></div>
 
                 <!-- Step 1 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
-                        <i class="fa-solid fa-camera text-2xl text-emerald-500"></i>
+                    <div class="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
+                        <i class="fa-solid fa-camera text-xl lg:text-2xl text-emerald-500"></i>
                     </div>
                     <h4 class="text-white font-bold mb-2">1. Deteksi</h4>
-                    <p class="text-slate-500 text-xs leading-relaxed">Kamera ANPR mendeteksi plat nomor kendaraan secara otomatis saat masuk.</p>
+                    <p class="text-slate-500 text-xs leading-relaxed max-w-[200px] mx-auto">Kamera ANPR mendeteksi plat nomor kendaraan secara otomatis saat masuk.</p>
                 </div>
 
                 <!-- Step 2 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
-                        <i class="fa-solid fa-map-location-dot text-2xl text-emerald-500"></i>
+                    <div class="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
+                        <i class="fa-solid fa-map-location-dot text-xl lg:text-2xl text-emerald-500"></i>
                     </div>
                     <h4 class="text-white font-bold mb-2">2. Plot Slot</h4>
-                    <p class="text-slate-500 text-xs leading-relaxed">Sistem mengalokasikan slot parkir yang tersedia secara real-time pada peta digital.</p>
+                    <p class="text-slate-500 text-xs leading-relaxed max-w-[200px] mx-auto">Sistem mengalokasikan slot parkir yang tersedia secara real-time pada peta digital.</p>
                 </div>
 
                 <!-- Step 3 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
-                        <i class="fa-solid fa-wallet text-2xl text-emerald-500"></i>
+                    <div class="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
+                        <i class="fa-solid fa-wallet text-xl lg:text-2xl text-emerald-500"></i>
                     </div>
                     <h4 class="text-white font-bold mb-2">3. Pembayaran</h4>
-                    <p class="text-slate-500 text-xs leading-relaxed">Pengguna membayar biaya parkir via Midtrans (QRIS) atau Saldo NestonPay.</p>
+                    <p class="text-slate-500 text-xs leading-relaxed max-w-[200px] mx-auto">Pengguna membayar biaya parkir via Midtrans (QRIS) atau Saldo NestonPay.</p>
                 </div>
 
                 <!-- Step 4 -->
                 <div class="text-center group">
-                    <div class="w-20 h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
-                        <i class="fa-solid fa-door-open text-2xl text-emerald-500"></i>
+                    <div class="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center mx-auto mb-6 group-hover:border-emerald-500 transition-all shadow-xl">
+                        <i class="fa-solid fa-door-open text-xl lg:text-2xl text-emerald-500"></i>
                     </div>
                     <h4 class="text-white font-bold mb-2">4. Selesai</h4>
-                    <p class="text-slate-500 text-xs leading-relaxed">Palang pintu terbuka otomatis setelah validasi pembayaran sukses.</p>
+                    <p class="text-slate-500 text-xs leading-relaxed max-w-[200px] mx-auto">Palang pintu terbuka otomatis setelah validasi pembayaran sukses.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Features -->
-    <section id="fitur" class="py-32">
+    <section id="fitur" class="py-20 lg:py-32">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="mb-20">
-                <h2 class="text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-4">Core Capabilities</h2>
-                <h3 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight">Everything you need to <br/> scale your operations.</h3>
+            <div class="mb-16 lg:mb-20">
+                <h2 class="text-[10px] lg:text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-4">Core Capabilities</h2>
+                <h3 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight">Everything you need to <br class="hidden lg:block"/> scale your operations.</h3>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                 <div class="card-pro card-pro-hover group">
                     <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all duration-300">
                         <i class="fa-solid fa-camera text-sm"></i>
@@ -442,7 +482,7 @@
                     </p>
                 </div>
 
-                <div class="card-pro card-pro-hover group">
+                <div class="card-pro card-pro-hover group md:col-span-2 lg:col-span-1">
                     <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all duration-300">
                         <i class="fa-solid fa-id-card text-sm"></i>
                     </div>
@@ -524,19 +564,19 @@
                                 <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                                     <i class="fa-solid fa-envelope"></i>
                                 </div>
-                                <span class="font-bold">hello@neston.id</span>
+                                <span class="font-bold">neston2026@gmail.com</span>
                             </div>
                             <div class="flex items-center gap-4 text-white">
                                 <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                                     <i class="fa-solid fa-phone"></i>
                                 </div>
-                                <span class="font-bold">+62 812 3456 7890</span>
+                                <span class="font-bold">+62 85793344459</span>
                             </div>
                             <div class="flex items-center gap-4 text-white">
                                 <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                                     <i class="fa-solid fa-location-dot"></i>
                                 </div>
-                                <span class="font-bold">Jakarta, Indonesia</span>
+                                <span class="font-bold">Garut, Indonesia</span>
                             </div>
                         </div>
                     </div>
@@ -586,7 +626,7 @@
                         Solusi ekosistem parkir modern berbasis AI untuk manajemen kendaraan yang lebih cerdas dan efisien.
                     </p>
                     <div class="flex gap-4">
-                        <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                        <a href="https://x.com/neston2026" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
                             <i class="fa-brands fa-twitter text-xs"></i>
                         </a>
                         <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">

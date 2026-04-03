@@ -3,6 +3,16 @@
 @section('title', 'Booking Slot Parkir - NESTON')
 
 @section('content')
+@php
+    $daerahs = $daerahs ?? collect();
+    $selectedDaerah = $selectedDaerah ?? null;
+    $areas = $areas ?? collect();
+    $statusPerArea = $statusPerArea ?? [];
+    $myBookingIds = $myBookingIds ?? [];
+    $kendaraans = $kendaraans ?? collect();
+    $tarifs = $tarifs ?? collect();
+    $selectedAreaId = $selectedAreaId ?? ($map->id_area ?? null);
+@endphp
 <div class="p-8 relative z-10 animate-fade-in" style="background:#020617;min-height:100vh;">
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
@@ -43,10 +53,10 @@
             VARIANT 1: Sidebar kiri sticky (kendaraan + tarif + summary slot)
             Kanan: area cards + map
         --}}
-        <div class="flex gap-6 items-start">
+        <div class="flex flex-col lg:flex-row gap-6 items-start">
 
             {{-- ── SIDEBAR ── --}}
-            <div class="w-64 shrink-0 sticky top-6 flex flex-col gap-4">
+            <div class="w-full lg:w-64 shrink-0 lg:sticky lg:top-6 flex flex-col gap-4">
 
                 {{-- Config card --}}
                 <div class="rounded-2xl border overflow-hidden" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
@@ -54,6 +64,32 @@
                         <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Konfigurasi</p>
                     </div>
                     <div class="p-5 flex flex-col gap-5">
+                        <div>
+                            <label class="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Pilih Daerah</label>
+                            <select id="filter_daerah"
+                                    class="block w-full rounded-xl border px-4 py-3 text-sm text-white focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 focus:outline-none transition-all font-bold"
+                                    style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);">
+                                <option value="" class="bg-slate-900">— Semua Daerah —</option>
+                                @foreach($daerahs as $d)
+                                <option value="{{ $d }}" {{ $selectedDaerah == $d ? 'selected' : '' }} class="bg-slate-900">
+                                    {{ $d }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Pilih Peta Area</label>
+                            <select id="filter_area"
+                                    class="block w-full rounded-xl border px-4 py-3 text-sm text-white focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 focus:outline-none transition-all font-bold"
+                                    style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);">
+                                <option value="" class="bg-slate-900">— Pilih area —</option>
+                                @foreach($areas as $areaItem)
+                                <option value="{{ $areaItem->id_area }}" {{ (string) $selectedAreaId === (string) $areaItem->id_area ? 'selected' : '' }} class="bg-slate-900">
+                                    {{ $areaItem->nama_area }}{{ $areaItem->daerah ? ' · ' . $areaItem->daerah : '' }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div>
                             <label class="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Kendaraan</label>
                             <select id="booking_kendaraan_id"
@@ -151,13 +187,19 @@
                     <div class="rounded-2xl overflow-hidden flex flex-col {{ !$isAvailable && !$isMine ? 'opacity-60' : '' }}"
                          style="background:{{ $bgCls }};border:1px solid {{ $borderCls }};">
 
-                        <div class="px-5 pt-5 pb-4 flex items-start justify-between">
+                        <div class="px-5 pt-5 pb-1 flex items-start justify-between">
                             <h2 class="text-sm font-black text-white uppercase tracking-tight">{{ $area->nama_area }}</h2>
                             <span class="px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border
                                 {{ $isAvailable ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                    ($isMine ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-white/5 text-slate-500 border-white/10') }}">
                                 {{ $isAvailable ? 'Tersedia' : ($isMine ? 'Milik Anda' : 'Terisi') }}
                             </span>
+                        </div>
+                        <div class="px-5 pb-4">
+                            <div class="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-full border border-white/5 w-fit">
+                                <i class="fa-solid fa-location-dot text-[8px] text-emerald-500"></i>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ $area->daerah ?? 'Unknown' }}</span>
+                            </div>
                         </div>
 
                         <div class="px-5 pb-4 flex flex-col gap-1.5 flex-1">
@@ -206,7 +248,7 @@
                 </div>
 
                 {{-- Interactive map --}}
-                @isset($map)
+                @if(isset($map) && $map->map_image_url)
                 <div class="rounded-2xl border overflow-hidden" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
                     <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color:rgba(255,255,255,0.05);">
                         <div>
@@ -220,7 +262,7 @@
                     </div>
                     <div class="p-5">
                         <div id="parking-map" class="w-full rounded-2xl overflow-hidden border" style="height:540px;background:#020617;border-color:rgba(255,255,255,0.06);"
-                             data-image-url="{{ asset('storage/' . $map->map_image) }}"
+                             data-image-url="{{ $map->map_image_url }}"
                              data-width="{{ $map->map_width }}"
                              data-height="{{ $map->map_height }}"
                              data-map-id="{{ $map->id_area }}"
@@ -233,7 +275,12 @@
                 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                 <script src="{{ asset('js/parking-map.js') }}" defer></script>
-                @endisset
+                @else
+                <div class="rounded-2xl border overflow-hidden p-10 text-center" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
+                    <p class="text-sm font-bold text-white mb-2">Peta area belum tersedia</p>
+                    <p class="text-xs text-slate-500">Admin perlu mengunggah gambar blueprint agar peta interaktif bisa ditampilkan.</p>
+                </div>
+                @endif
 
             </div>{{-- /main --}}
         </div>
@@ -247,6 +294,20 @@
 document.addEventListener('DOMContentLoaded', function() {
     const kendaraanSelect = document.getElementById('booking_kendaraan_id');
     const tarifSelect     = document.getElementById('booking_tarif_id');
+    const daerahSelect    = document.getElementById('filter_daerah');
+    const areaSelect      = document.getElementById('filter_area');
+    const bookingsBaseUrl = @json(route('user.bookings'));
+
+    function goToBookings(areaId, daerah) {
+        let url = bookingsBaseUrl.replace(/\/$/, '');
+        if (areaId) {
+            url += '/' + encodeURIComponent(areaId);
+        }
+        if (daerah) {
+            url += '?daerah=' + encodeURIComponent(daerah);
+        }
+        window.location.href = url;
+    }
 
     function autoTarifFromJenis() {
         if (!kendaraanSelect || !tarifSelect) return;
@@ -260,6 +321,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (kendaraanSelect) kendaraanSelect.addEventListener('change', autoTarifFromJenis);
+    if (daerahSelect) {
+        daerahSelect.addEventListener('change', function () {
+            // Saat ganti zona, reset pemilihan area agar backend memilih area yang valid dalam zona itu.
+            goToBookings('', daerahSelect.value);
+        });
+    }
+    if (areaSelect) {
+        areaSelect.addEventListener('change', function () {
+            goToBookings(areaSelect.value, daerahSelect ? daerahSelect.value : '');
+        });
+    }
 
     document.querySelectorAll('form.booking-area-form').forEach(function(form) {
         form.addEventListener('submit', function(e) {

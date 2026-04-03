@@ -31,6 +31,7 @@ class AreaParkirController extends Controller
     {
         $data = $request->validate([
             'nama_area' => 'required|string|max:50|unique:tb_area_parkir,nama_area',
+            'daerah' => 'required|string|max:100',
             'kapasitas' => 'required|integer|min:1',
             'map_code' => 'nullable|string|max:50',
             'map_image' => 'nullable|image|max:2048',
@@ -83,6 +84,7 @@ class AreaParkirController extends Controller
         $area = AreaParkir::findOrFail($id);
         $data = $request->validate([
             'nama_area' => 'required|string|max:50|unique:tb_area_parkir,nama_area,' . $id . ',id_area',
+            'daerah' => 'required|string|max:100',
             'kapasitas' => 'required|integer|min:1',
             'map_code' => 'nullable|string|max:50',
             'map_image' => 'nullable|image|max:2048',

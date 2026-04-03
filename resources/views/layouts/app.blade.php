@@ -65,7 +65,7 @@
         }
     </style>
         {{-- Layout wrapper: sidebar + main content --}}
-        <div class="min-h-screen flex">
+        <div class="min-h-screen flex" x-data="{ sidebarOpen: false }">
             @include('components.sidebar')
 
             <div class="flex-1 flex flex-col min-w-0">

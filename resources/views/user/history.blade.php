@@ -3,26 +3,26 @@
 @section('title', 'Riwayat Parkir - NESTON')
 
 @section('content')
-<div class="p-8 relative z-10 animate-fade-in">
+<div class="p-4 sm:p-8 relative z-10 animate-fade-in">
     <!-- Background Glows -->
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
     <div class="max-w-6xl mx-auto relative z-10">
         <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 lg:mb-12">
             <div>
                 <div class="flex items-center gap-3 mb-3">
                     <span class="px-3 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-500/20">
                         Transaction Logs
                     </span>
                 </div>
-                <h1 class="text-4xl font-black tracking-tight text-white uppercase">Riwayat <span class="text-emerald-500">Parkir</span></h1>
-                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Daftar lengkap seluruh sesi parkir Anda di ekosistem NESTON.</p>
+                <h1 class="text-3xl lg:text-4xl font-black tracking-tight text-white uppercase">Riwayat <span class="text-emerald-500">Parkir</span></h1>
+                <p class="text-slate-400 text-xs lg:text-sm mt-2 font-medium tracking-wide">Daftar lengkap seluruh sesi parkir Anda di ekosistem NESTON.</p>
             </div>
 
             <a href="{{ route('user.dashboard') }}"
-               class="group px-6 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center gap-3 active:scale-95">
+               class="group w-full md:w-auto px-6 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-3 active:scale-95">
                 <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
                 Kembali ke Dashboard
             </a>

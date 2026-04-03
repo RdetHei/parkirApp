@@ -71,8 +71,8 @@
 
             {{-- Card top: image or gradient placeholder --}}
             <div class="h-24 relative overflow-hidden bg-slate-900">
-                @if($area->map_image)
-                    <img src="{{ str_starts_with($area->map_image, 'http') ? $area->map_image : asset('storage/' . $area->map_image) }}"
+                @if($area->map_image_url)
+                    <img src="{{ $area->map_image_url }}"
                          class="w-full h-full object-cover opacity-40">
                 @endif
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/80"></div>
@@ -97,7 +97,13 @@
 
             {{-- Card body --}}
             <div class="p-5">
-                <h3 class="text-sm font-bold text-white tracking-tight mb-0.5">{{ $area->nama_area }}</h3>
+                <div class="flex items-start justify-between gap-2 mb-1">
+                    <h3 class="text-sm font-bold text-white tracking-tight">{{ $area->nama_area }}</h3>
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 rounded-full border border-white/5">
+                        <i class="fa-solid fa-location-dot text-[8px] text-emerald-500"></i>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ $area->daerah ?? 'Unknown' }}</span>
+                    </div>
+                </div>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">AREA-{{ $area->id_area }}</p>
 
                 {{-- Progress bar --}}

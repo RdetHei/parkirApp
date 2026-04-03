@@ -3,58 +3,58 @@
 @section('title', 'Kendaraan Saya - NESTON')
 
 @section('content')
-<div class="p-8 relative z-10 animate-fade-in">
+<div class="p-4 sm:p-8 relative z-10 animate-fade-in">
     <!-- Background Glows -->
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
     <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
     <div class="max-w-5xl mx-auto relative z-10">
         <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 lg:mb-12">
             <div>
                 <div class="flex items-center gap-3 mb-3">
                     <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-500/20">
                         Asset Management
                     </span>
                 </div>
-                <h1 class="text-4xl font-black tracking-tight text-white uppercase">Kendaraan <span class="text-emerald-500">Saya</span></h1>
-                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Kelola daftar kendaraan yang Anda gunakan untuk parkir cerdas.</p>
+                <h1 class="text-3xl lg:text-4xl font-black tracking-tight text-white uppercase">Kendaraan <span class="text-emerald-500">Saya</span></h1>
+                <p class="text-slate-400 text-xs lg:text-sm mt-2 font-medium tracking-wide">Kelola daftar kendaraan yang Anda gunakan untuk parkir cerdas.</p>
             </div>
 
             <a href="{{ route('user.dashboard') }}"
-               class="group px-6 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center gap-3 active:scale-95">
+               class="group w-full md:w-auto px-6 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-3 active:scale-95">
                 <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
                 Kembali ke Dashboard
             </a>
         </div>
 
         @if(session('success') || session('error'))
-            <div class="mb-8 flex items-center gap-4 px-6 py-4 rounded-2xl border {{ session('success') ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-rose-500/20 bg-rose-500/10 text-rose-400' }} text-xs font-black uppercase tracking-widest animate-fade-in">
-                <i class="fa-solid {{ session('success') ? 'fa-circle-check' : 'fa-circle-exclamation' }} text-base"></i>
+            <div class="mb-8 flex items-center gap-4 px-6 py-4 rounded-2xl border {{ session('success') ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-rose-500/20 bg-rose-500/10 text-rose-400' }} text-[10px] lg:text-xs font-black uppercase tracking-widest animate-fade-in">
+                <i class="fa-solid {{ session('success') ? 'fa-circle-check' : 'fa-circle-exclamation' }} text-sm lg:text-base"></i>
                 {{ session('success') ?? session('error') }}
             </div>
         @endif
 
-        <div class="grid grid-cols-1 gap-10">
+        <div class="grid grid-cols-1 gap-8 lg:gap-10">
             <!-- Add Vehicle Form -->
-            <div class="card-pro border-white/5 backdrop-blur-xl bg-slate-900/40">
+            <div class="card-pro border-white/5 backdrop-blur-xl bg-slate-900/40 p-6 lg:p-8">
                 <div class="flex items-center gap-4 mb-8">
                     <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-xl">
                         <i class="fa-solid fa-plus text-sm"></i>
                     </div>
-                    <h2 class="text-[11px] font-black text-white uppercase tracking-[0.2em]">Tambah Kendaraan Baru</h2>
+                    <h2 class="text-[10px] lg:text-[11px] font-black text-white uppercase tracking-[0.2em]">Tambah Kendaraan Baru</h2>
                 </div>
 
-                <form method="POST" action="{{ route('user.vehicles.store') }}" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <form method="POST" action="{{ route('user.vehicles.store') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
                     @csrf
-                    <div class="md:col-span-1">
-                        <label for="plat_nomor" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Plat Nomor</label>
+                    <div>
+                        <label for="plat_nomor" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Plat Nomor</label>
                         <input type="text" name="plat_nomor" id="plat_nomor"
                                class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-black uppercase tracking-widest"
                                placeholder="B 1234 XYZ" required>
                     </div>
-                    <div class="md:col-span-1">
-                        <label for="jenis_kendaraan" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Jenis</label>
+                    <div>
+                        <label for="jenis_kendaraan" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Jenis</label>
                         <select name="jenis_kendaraan" id="jenis_kendaraan"
                                 class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-bold"
                                 required>
@@ -64,13 +64,13 @@
                             <option value="lainnya" class="bg-slate-900">Lainnya</option>
                         </select>
                     </div>
-                    <div class="md:col-span-1">
-                        <label for="warna" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Warna</label>
+                    <div>
+                        <label for="warna" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Warna</label>
                         <input type="text" name="warna" id="warna"
                                class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-medium"
                                placeholder="Hitam">
                     </div>
-                    <div class="md:col-span-1">
+                    <div>
                         <button type="submit"
                                 class="w-full group relative flex items-center justify-center gap-3 py-4 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20 active:scale-[0.98] overflow-hidden">
                             <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>

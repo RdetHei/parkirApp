@@ -50,10 +50,10 @@
                     </div>
 
                     <div id="canvas-container" class="overflow-auto min-h-[700px] p-12 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:20px_20px] flex items-center justify-center">
-                        @if($area->map_image && $area->map_image !== 'parking_maps/default.png')
+                        @if($area->map_image_url)
                             <div id="map-canvas" class="relative mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all cursor-crosshair"
                                  onclick="handleCanvasClick(event)"
-                                 style="width: {{ $area->map_width }}px; height: {{ $area->map_height }}px; background-image: url('{{ asset('storage/' . $area->map_image) }}'); background-size: cover; background-position: center;">
+                                 style="width: {{ $area->map_width }}px; height: {{ $area->map_height }}px; background-image: url('{{ $area->map_image_url }}'); background-size: cover; background-position: center;">
 
                                 <!-- Slots -->
                                 @foreach($area->slots as $slot)

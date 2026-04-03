@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::table('tb_area_parkir', function (Blueprint $table) {
+            $table->string('daerah')->nullable()->after('nama_area');
+        });
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('tb_area_parkir', function (Blueprint $table) {
+            $table->dropColumn('daerah');
+        });
     }
 };

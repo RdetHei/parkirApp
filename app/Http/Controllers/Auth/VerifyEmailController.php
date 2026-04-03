@@ -31,7 +31,7 @@ class VerifyEmailController extends Controller
             'admin' => redirect()->intended(route('dashboard', absolute: false).'?verified=1'),
             'owner' => redirect()->intended(route('owner.dashboard', absolute: false).'?verified=1'),
             'petugas' => redirect()->intended(route('petugas.dashboard', absolute: false).'?verified=1'),
-            default => redirect()->intended(route('user.dashboard', absolute: false).'?verified=1'),
+            default => redirect()->route('login')->with('status', 'Email Anda berhasil diverifikasi. Silakan masuk.'),
         };
     }
 }

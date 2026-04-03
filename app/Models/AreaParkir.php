@@ -10,6 +10,7 @@ class AreaParkir extends Model
     protected $primaryKey = 'id_area';
     protected $fillable = [
         'nama_area',
+        'daerah',
         'kapasitas',
         'terisi',
         'map_code',
@@ -21,6 +22,10 @@ class AreaParkir extends Model
 
     protected $casts = [
         'is_default_map' => 'boolean',
+    ];
+
+    protected $appends = [
+        'map_image_url',
     ];
 
     public function getRouteKeyName()
@@ -46,5 +51,19 @@ class AreaParkir extends Model
     public static function getDefaultMap(): ?self
     {
         return static::where('is_default_map', true)->first() ?? static::first();
+    }
+
+    public function getMapImageUrlAttribute(): ?string
+    {
+        $value = $this->map_image;
+        if (!$value) {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
+
+        return asset('storage/' . ltrim($value, '/'));
     }
 }

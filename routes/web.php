@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ParkirController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\VerifyEmailController;
@@ -245,16 +244,32 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        $areas = \App\Models\AreaParkir::orderBy('nama_area')->get();
+        $selectedDaerah = $request->query('daerah');
+        $daerahs = \App\Models\AreaParkir::query()
+            ->whereNotNull('daerah')
+            ->where('daerah', '!=', '')
+            ->orderBy('daerah')
+            ->distinct()
+            ->pluck('daerah');
 
-        // If areaId is provided, find that specific area, else use default
+        $query = \App\Models\AreaParkir::orderBy('nama_area');
+        if ($selectedDaerah) {
+            $query->where('daerah', $selectedDaerah);
+        }
+        $areas = $query->get();
+
+        // Pilih peta area aktif berdasarkan filter + pilihan user.
         $map = null;
         if ($areaId) {
-            $map = \App\Models\AreaParkir::find($areaId);
+            $map = $areas->firstWhere('id_area', (int) $areaId) ?? \App\Models\AreaParkir::find((int) $areaId);
         }
         if (!$map) {
-            $map = \App\Models\AreaParkir::getDefaultMap();
+            $map = $areas->first() ?? \App\Models\AreaParkir::getDefaultMap();
         }
+        if ($selectedDaerah && $map && !$areas->contains('id_area', $map->id_area)) {
+            $map = $areas->first();
+        }
+        $selectedAreaId = $map?->id_area;
 
         $kendaraans = \App\Models\Kendaraan::where('id_user', $user->id)->orderBy('plat_nomor')->get();
         $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
@@ -309,7 +324,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
             $statusPerArea[$area->id_area] = 'empty';
         }
 
-        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs'));
+        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs', 'daerahs', 'selectedDaerah', 'selectedAreaId'));
     })->name('user.bookings');
 
     Route::post('/user/bookings/areas/{area}', [\App\Http\Controllers\ParkingSlotController::class, 'bookmark'])->name('user.bookings.book');
@@ -408,11 +423,6 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::get('/rfid/access-demo-admin', function () {
             return view('rfid.access-demo', ['title' => 'RFID Access Demo (Admin Card)']);
         })->middleware('rfid.access:admin');
-    });
-
-    // NFC: halaman write (admin saja)
-    Route::middleware(['role:admin'])->group(function () {
-        //
     });
 
     // Pembayaran Midtrans & struk: bisa diakses user (hanya untuk transaksi miliknya) dan petugas

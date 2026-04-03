@@ -27,6 +27,13 @@
                 </div>
 
                 <div>
+                    <label for="daerah" class="block text-sm font-semibold text-gray-700 mb-2">Daerah/Kota <span class="text-red-500">*</span></label>
+                    <input type="text" name="daerah" id="daerah" value="{{ old('daerah', $area->daerah) }}" required placeholder="Contoh: Garut, Bandung, Jakarta"
+                           class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('daerah') border-red-500 @enderror">
+                    @error('daerah')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
                     <label for="kapasitas" class="block text-sm font-semibold text-gray-700 mb-2">Kapasitas <span class="text-red-500">*</span></label>
                     <input type="number" name="kapasitas" id="kapasitas" value="{{ old('kapasitas', $area->kapasitas) }}" required min="1" placeholder="Jumlah slot"
                            class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('kapasitas') border-red-500 @enderror">
@@ -51,9 +58,9 @@
 
                 <div>
                     <label for="map_image" class="block text-sm font-semibold text-gray-700 mb-2">Gambar Peta (Blueprint)</label>
-                    @if($area->map_image)
+                    @if($area->map_image_url)
                         <div class="mb-3 relative group">
-                            <img src="{{ str_starts_with($area->map_image, 'http') ? $area->map_image : asset('storage/' . $area->map_image) }}" class="w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm">
+                            <img src="{{ $area->map_image_url }}" class="w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
                                 <span class="text-white text-[10px] font-bold uppercase tracking-widest">Ganti Gambar</span>
                             </div>

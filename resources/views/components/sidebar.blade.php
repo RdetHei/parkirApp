@@ -1,5 +1,19 @@
+<!-- Sidebar Overlay for Mobile -->
+<div x-show="sidebarOpen"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="sidebarOpen = false"
+     class="fixed inset-0 bg-slate-950/60 z-[60] lg:hidden">
+</div>
+
 <!-- Sidebar -->
-<aside id="app-sidebar" class="sidebar-animate w-64 h-screen sticky top-0 bg-[#020617] border-r border-white/5 shrink-0 hidden lg:flex flex-col z-50 overflow-hidden">
+<aside id="app-sidebar"
+       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+       class="sidebar-animate w-64 h-screen fixed lg:sticky top-0 bg-[#020617] border-r border-white/5 shrink-0 flex flex-col z-[70] overflow-hidden transition-transform duration-300 ease-in-out lg:z-50">
     <div class="sidebar-header h-16 border-b border-white/5 flex items-center justify-between px-6 relative z-10">
         <div class="flex items-center gap-3 min-w-0 sidebar-header-brand">
             <div class="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center shrink-0">
@@ -7,10 +21,20 @@
             </div>
             <span class="text-sm font-bold tracking-tight text-white uppercase sidebar-label">NESTON</span>
         </div>
+
+        <!-- Desktop Toggle -->
         <button id="sidebar-toggle" type="button"
                 class="sidebar-toggle-btn hidden lg:inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white shrink-0 transition-colors">
             <svg class="w-4 h-4 sidebar-toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+
+        <!-- Mobile Close -->
+        <button @click="sidebarOpen = false" type="button"
+                class="lg:hidden inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white shrink-0 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
     </div>

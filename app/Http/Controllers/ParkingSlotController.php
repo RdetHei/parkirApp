@@ -121,7 +121,7 @@ class ParkingSlotController extends Controller
             'map' => $area ? [
                 'id' => $area->id_area,
                 'name' => $area->nama_area,
-                'image' => asset('storage/' . $area->map_image),
+                'image' => $area->map_image_url,
                 'width' => (int) $area->map_width,
                 'height' => (int) $area->map_height,
             ] : null,

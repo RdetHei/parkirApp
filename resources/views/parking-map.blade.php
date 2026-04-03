@@ -28,16 +28,15 @@
         </div>
     </div>
 
-    <div class="flex gap-5 items-start">
+    <div class="flex flex-col lg:flex-row gap-5 items-start">
 
         {{-- ── MAP AREA ── --}}
-        <div class="flex-1 min-w-0 rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
-            @if($area && $area->map_image)
+        <div class="flex-1 w-full min-w-0 rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
+            @if($area && $area->map_image_url)
             <div class="relative">
                 <div id="parking-map"
-                     class="w-full"
-                     style="height:640px;"
-                     data-image-url="{{ asset('storage/' . $area->map_image) }}"
+                     class="w-full h-[400px] sm:h-[500px] lg:h-[640px]"
+                     data-image-url="{{ $area->map_image_url }}"
                      data-width="{{ $area->map_width }}"
                      data-height="{{ $area->map_height }}"
                      data-map-id="{{ $area->id_area }}">
@@ -81,7 +80,7 @@
         </div>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-60 shrink-0 flex flex-col gap-4">
+        <div class="w-full lg:w-60 shrink-0 flex flex-col gap-4">
 
             {{-- Area selector --}}
             <div class="rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
@@ -108,7 +107,7 @@
             <div class="rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
                 <div class="px-4 py-3 border-b flex items-center justify-between" style="border-color:rgba(255,255,255,0.05);">
                     <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Statistik</p>
-                    <button onclick="fetchData()" class="text-slate-600 hover:text-emerald-400 transition-colors" title="Refresh">
+                    <button id="parking-map-refresh-btn" type="button" class="text-slate-600 hover:text-emerald-400 transition-colors" title="Refresh">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     </button>
                 </div>
@@ -291,6 +290,11 @@
                     </div>`, { className:'modern-popup !p-0', offset:[0,-10] });
                 cameraLayer.addLayer(marker);
             });
+        }
+
+        const refreshBtn = document.getElementById('parking-map-refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', fetchData);
         }
 
         setInterval(fetchData, 30000);

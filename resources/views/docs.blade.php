@@ -32,7 +32,7 @@
     <div class="fixed inset-0 hero-glow pointer-events-none z-0"></div>
 
     <!-- Header -->
-    <nav class="fixed w-full top-0 z-50 bg-[#020617]/70 backdrop-blur-xl border-b border-white/5">
+    <nav class="fixed w-full top-0 z-50 bg-[#020617]/70 backdrop-blur-xl border-b border-white/5" x-data="{ mobileMenuOpen: false }">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
@@ -43,7 +43,7 @@
                     <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
                 </a>
 
-                <!-- Nav -->
+                <!-- Desktop Nav -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="/#about" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">About</a>
                     <a href="/#workflow" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Workflow</a>
@@ -60,11 +60,59 @@
                         Get Started
                     </a>
                 </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-slate-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            <path x-show="mobileMenuOpen" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div x-show="mobileMenuOpen" 
+             x-cloak
+             @click.away="mobileMenuOpen = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             class="md:hidden absolute top-16 left-0 w-full bg-[#020617]/95 backdrop-blur-2xl border-b border-white/5 py-6 px-6 space-y-4 shadow-2xl">
+            <a href="/#about" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">About</a>
+            <a href="/#workflow" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Workflow</a>
+            <a href="/#fitur" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Features</a>
+            <a href="{{ route('docs') }}" class="block text-sm font-semibold text-white transition-colors">Docs</a>
+            <a href="/#contact" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Contact</a>
+            <div class="h-px w-full bg-white/5"></div>
+            <button onclick="openCardLogin(); mobileMenuOpen = false" class="flex items-center gap-3 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+                <i class="fa-solid fa-id-card"></i>
+                Card Login
+            </button>
+            <a href="{{ route('login') }}" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Sign in</a>
+            <a href="{{ route('register') }}" class="btn-pro-primary block text-center !py-3 !text-sm uppercase tracking-wider">
+                Get Started
+            </a>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex gap-10 lg:gap-14 pt-32 pb-24">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row gap-10 lg:gap-14 pt-24 lg:pt-32 pb-24">
+
+        <!-- Mobile Chapter Selector -->
+        <div class="lg:hidden sticky top-16 z-30 bg-[#020617]/80 backdrop-blur-md -mx-6 px-6 py-4 border-b border-white/5 overflow-x-auto no-scrollbar">
+            <div class="flex gap-2 min-w-max">
+                <button @click="activeTab = 'intro'" :class="activeTab === 'intro' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Pengenalan</button>
+                <button @click="activeTab = 'features'" :class="activeTab === 'features' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Fitur</button>
+                <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Manfaat</button>
+                <button @click="activeTab = 'tech'" :class="activeTab === 'tech' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Teknologi</button>
+                <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Tim</button>
+            </div>
+        </div>
 
         <!-- Sidebar: ringan, tidak bersaing dengan konten chapter -->
         <aside class="hidden lg:block w-[13.5rem] flex-shrink-0">
@@ -158,16 +206,16 @@
             <div x-show="activeTab === 'intro'" x-cloak class="animate-fade-in">
                 <div class="doc-card mb-8">
                     <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-4 block">Chapter 01</span>
-                    <h1 class="text-5xl font-black tracking-tighter text-white mb-8 leading-tight">SELAMAT DATANG DI <br/><span class="text-emerald-500">NESTON ECOSYSTEM</span></h1>
-                    <p class="text-slate-400 text-lg leading-relaxed font-medium mb-12">
+                    <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 leading-tight">SELAMAT DATANG DI <br/><span class="text-emerald-500">NESTON ECOSYSTEM</span></h1>
+                    <p class="text-slate-400 text-base lg:text-lg leading-relaxed font-medium mb-12">
                         NESTON adalah platform manajemen parkir modern yang mengintegrasikan teknologi IoT dan AI untuk menyederhanakan pengelolaan infrastruktur parkir secara menyeluruh.
                     </p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="p-8 bg-white/[0.03] rounded-3xl border border-white/5">
+                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
                             <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Visi Kami</h3>
                             <p class="text-slate-400 text-sm leading-relaxed">Menjadikan manajemen parkir lebih cerdas, aman, dan transparan melalui digitalisasi total.</p>
                         </div>
-                        <div class="p-8 bg-white/[0.03] rounded-3xl border border-white/5">
+                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
                             <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Target</h3>
                             <p class="text-slate-400 text-sm leading-relaxed">Gedung perkantoran, pusat perbelanjaan, dan fasilitas publik modern.</p>
                         </div>
@@ -180,35 +228,35 @@
                 <div class="space-y-8">
                     <div class="doc-card">
                         <span class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-4 block">Chapter 02</span>
-                        <h1 class="text-5xl font-black tracking-tighter text-white mb-12">ARSITEKTUR <span class="text-blue-500">FITUR</span></h1>
+                        <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12">ARSITEKTUR <span class="text-blue-500">FITUR</span></h1>
 
                         <div class="space-y-6">
-                            <div class="flex flex-col md:flex-row gap-8 p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
-                                <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-camera-retro text-2xl"></i>
+                            <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                <div class="w-14 h-14 lg:w-16 lg:h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-camera-retro text-xl lg:text-2xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-white mb-2 uppercase tracking-wide">ANPR (Automatic Number Plate Recognition)</h3>
+                                    <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">ANPR (Automatic Number Plate Recognition)</h3>
                                     <p class="text-slate-400 text-sm leading-relaxed font-medium">Pengenalan plat nomor otomatis menggunakan Computer Vision, mempercepat proses check-in hingga 70%.</p>
                                 </div>
                             </div>
 
-                            <div class="flex flex-col md:flex-row gap-8 p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
-                                <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-map-location-dot text-2xl"></i>
+                            <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                <div class="w-14 h-14 lg:w-16 lg:h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-map-location-dot text-xl lg:text-2xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-white mb-2 uppercase tracking-wide">Visual Map Architect</h3>
+                                    <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Visual Map Architect</h3>
                                     <p class="text-slate-400 text-sm leading-relaxed font-medium">Editor layout interaktif yang memungkinkan administrator memetakan slot parkir secara visual.</p>
                                 </div>
                             </div>
 
-                            <div class="flex flex-col md:flex-row gap-8 p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
-                                <div class="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-wallet text-2xl"></i>
+                            <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                <div class="w-14 h-14 lg:w-16 lg:h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-wallet text-xl lg:text-2xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-white mb-2 uppercase tracking-wide">Integrated NestonPay</h3>
+                                    <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Integrated NestonPay</h3>
                                     <p class="text-slate-400 text-sm leading-relaxed font-medium">Sistem pembayaran digital terintegrasi dengan gateway Midtrans untuk transaksi non-tunai.</p>
                                 </div>
                             </div>
@@ -221,21 +269,21 @@
             <div x-show="activeTab === 'benefits'" x-cloak class="animate-fade-in">
                 <div class="doc-card">
                     <span class="text-[10px] font-black text-purple-500 uppercase tracking-[0.4em] mb-4 block">Chapter 03</span>
-                    <h1 class="text-5xl font-black tracking-tighter text-white mb-12 leading-tight">VALUE & <span class="text-purple-500">IMPACT</span></h1>
+                    <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12 leading-tight">VALUE & <span class="text-purple-500">IMPACT</span></h1>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
-                            <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-6">
-                                <i class="fa-solid fa-shield-halved text-xl"></i>
+                        <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
+                            <div class="w-10 h-10 lg:w-12 lg:h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-6">
+                                <i class="fa-solid fa-shield-halved text-lg lg:text-xl"></i>
                             </div>
-                            <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-xs">Keamanan Terjamin</h3>
+                            <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Keamanan Terjamin</h3>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Verifikasi identitas kendaraan dan pencatatan log aktivitas yang komprehensif secara real-time.</p>
                         </div>
-                        <div class="p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
-                            <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-6">
-                                <i class="fa-solid fa-bolt text-xl"></i>
+                        <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
+                            <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-6">
+                                <i class="fa-solid fa-bolt text-lg lg:text-xl"></i>
                             </div>
-                            <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-xs">Kecepatan Layanan</h3>
+                            <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Kecepatan Layanan</h3>
                             <p class="text-slate-500 text-sm leading-relaxed font-medium">Otomatisasi sistem mengurangi antrian dan memberikan pengalaman yang lebih baik bagi pengguna.</p>
                         </div>
                     </div>
@@ -246,24 +294,24 @@
             <div x-show="activeTab === 'tech'" x-cloak class="animate-fade-in">
                 <div class="doc-card">
                     <span class="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-4 block">Chapter 04</span>
-                    <h1 class="text-5xl font-black tracking-tighter text-white mb-12">TECHNOLOGY <span class="text-rose-500">STACK</span></h1>
+                    <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12">TECHNOLOGY <span class="text-rose-500">STACK</span></h1>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-                        <div class="p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
-                            <i class="fa-brands fa-laravel text-4xl text-[#FF2D20] mb-4"></i>
-                            <p class="text-xs font-black text-white uppercase tracking-widest">Laravel 10</p>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12">
+                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
+                            <i class="fa-brands fa-laravel text-3xl lg:text-4xl text-[#FF2D20] mb-4"></i>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">Laravel 10</p>
                         </div>
-                        <div class="p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
-                            <i class="fa-brands fa-js text-4xl text-[#F7DF1E] mb-4"></i>
-                            <p class="text-xs font-black text-white uppercase tracking-widest">Alpine.js</p>
+                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
+                            <i class="fa-brands fa-js text-3xl lg:text-4xl text-[#F7DF1E] mb-4"></i>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">Alpine.js</p>
                         </div>
-                        <div class="p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
-                            <i class="fa-solid fa-wind text-4xl text-[#38BDF8] mb-4"></i>
-                            <p class="text-xs font-black text-white uppercase tracking-widest">Tailwind CSS</p>
+                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
+                            <i class="fa-solid fa-wind text-3xl lg:text-4xl text-[#38BDF8] mb-4"></i>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">Tailwind CSS</p>
                         </div>
-                        <div class="p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
-                            <i class="fa-solid fa-database text-4xl text-emerald-500 mb-4"></i>
-                            <p class="text-xs font-black text-white uppercase tracking-widest">MySQL</p>
+                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
+                            <i class="fa-solid fa-database text-3xl lg:text-4xl text-emerald-500 mb-4"></i>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">MySQL</p>
                         </div>
                     </div>
                 </div>
@@ -273,25 +321,25 @@
             <div x-show="activeTab === 'team'" x-cloak class="animate-fade-in">
                 <div class="doc-card">
                     <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-4 block">Our Team</span>
-                    <h1 class="text-5xl font-black tracking-tighter text-white mb-12">ENGINEERING <span class="text-emerald-500">TEAM</span></h1>
+                    <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12">ENGINEERING <span class="text-emerald-500">TEAM</span></h1>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                        <div class="p-10 bg-white/[0.03] rounded-[3rem] border border-white/5 flex items-center gap-8 group">
-                            <div class="w-20 h-20 bg-emerald-500/10 rounded-[2rem] flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-user-tie text-3xl"></i>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
+                        <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] lg:rounded-[3rem] border border-white/5 flex items-center gap-6 lg:gap-8 group">
+                            <div class="w-16 h-16 lg:w-20 lg:h-20 bg-emerald-500/10 rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-user-tie text-2xl lg:text-3xl"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-black text-white mb-1 uppercase tracking-tight">Lead Developer</h3>
-                                <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest">Architect & Backend</p>
+                                <h3 class="text-lg lg:text-xl font-black text-white mb-1 uppercase tracking-tight">Lead Developer</h3>
+                                <p class="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-widest">Architect & Backend</p>
                             </div>
                         </div>
-                        <div class="p-10 bg-white/[0.03] rounded-[3rem] border border-white/5 flex items-center gap-8 group">
-                            <div class="w-20 h-20 bg-blue-500/10 rounded-[2rem] flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-pen-nib text-3xl"></i>
+                        <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] lg:rounded-[3rem] border border-white/5 flex items-center gap-6 lg:gap-8 group">
+                            <div class="w-16 h-16 lg:w-20 lg:h-20 bg-blue-500/10 rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-pen-nib text-2xl lg:text-3xl"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-black text-white mb-1 uppercase tracking-tight">UI Designer</h3>
-                                <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest">Visual & Experience</p>
+                                <h3 class="text-lg lg:text-xl font-black text-white mb-1 uppercase tracking-tight">UI Designer</h3>
+                                <p class="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-widest">Visual & Experience</p>
                             </div>
                         </div>
                     </div>
