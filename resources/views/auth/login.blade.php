@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
@@ -17,12 +17,16 @@
             background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 32px 32px;
         }
+
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
     </style>
 </head>
-<body class="min-h-screen bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white flex items-center justify-center p-6 relative overflow-hidden">
+<body class="min-h-screen bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white flex items-center justify-center p-6 relative overflow-y-auto">
     <!-- Grid Overlay -->
     <div class="fixed inset-0 auth-grid pointer-events-none z-0"></div>
-    
+
     <!-- Background Glow -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
@@ -55,7 +59,7 @@
 
                 <!-- Email -->
                 <div class="space-y-2">
-                    <label for="email" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <label for="email" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
                         Email Address
                     </label>
                     <input
@@ -66,31 +70,31 @@
                         required
                         autofocus
                         placeholder="name@company.com"
-                        class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
+                        class="w-full px-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
                     >
                     @error('email')
-                        <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
+                        <p class="mt-2 text-[11px] text-red-400 font-medium ml-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Password -->
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
-                        <label for="password" class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        <label for="password" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
                             Password
                         </label>
                         <a href="{{ route('password.request') }}" class="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 transition-colors uppercase tracking-widest">
                             Forgot?
                         </a>
                     </div>
-                    <div class="relative">
+                    <div class="relative group">
                         <input
                             id="password"
                             type="password"
                             name="password"
                             required
                             placeholder="••••••••"
-                            class="w-full px-4 py-3.5 bg-slate-950 border border-white/5 rounded-xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
+                            class="w-full px-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm"
                         >
                         <button
                             type="button"
@@ -102,7 +106,7 @@
                         </button>
                     </div>
                     @error('password')
-                        <p class="mt-2 text-[11px] text-red-400 font-medium">{{ $message }}</p>
+                        <p class="mt-2 text-[11px] text-red-400 font-medium ml-1">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -123,9 +127,15 @@
                 <!-- Submit -->
                 <button
                     type="submit"
-                    class="btn-pro-primary w-full !py-4 shadow-xl"
+                    id="submitBtn"
+                    class="group relative w-full flex justify-center py-4 px-4 bg-emerald-500 text-slate-950 text-xs font-bold uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-all duration-300 shadow-xl shadow-emerald-500/20 active:scale-[0.98] overflow-hidden"
                 >
-                    Sign in to Account
+                    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    <span id="buttonText" class="relative z-10">Sign in to Account</span>
+                    <svg id="spinner" class="hidden animate-spin ml-3 h-4 w-4 text-slate-950 relative z-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                 </button>
             </form>
 
@@ -133,7 +143,7 @@
             <div class="mt-10 pt-8 border-t border-white/5 text-center">
                 <p class="text-xs text-slate-500 font-medium">
                     Don't have an account?
-                    <a href="{{ route('register.create') }}" class="text-emerald-500 font-bold hover:text-emerald-400 transition-colors">
+                    <a href="{{ route('register') }}" class="text-emerald-500 font-bold hover:text-emerald-400 transition-colors">
                         Create one now
                     </a>
                 </p>

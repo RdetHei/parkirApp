@@ -257,7 +257,7 @@ class ParkingSlotController extends Controller
     {
         $areaId = $request->query('map_id');
         $area = $areaId ? AreaParkir::find($areaId) : AreaParkir::getDefaultMap();
-        $maps = AreaParkir::whereNotNull('map_image')->orderBy('nama_area')->get();
+        $maps = AreaParkir::whereNotNull('map_image')->where('map_image', '!=', '')->orderBy('nama_area')->get();
         $title = 'Peta Parkir';
 
         return view('parking-map', compact('area', 'maps', 'title'));

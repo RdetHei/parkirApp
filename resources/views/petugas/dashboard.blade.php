@@ -183,7 +183,7 @@
                     <h2 class="text-sm font-black text-white uppercase tracking-widest">Quick Navigation</h2>
                 </div>
                 <div class="p-6 grid grid-cols-2 gap-4">
-                    <a href="{{ route('transaksi.parkir.index') }}" class="p-6 rounded-[2rem] bg-slate-950 border border-white/5 hover:border-emerald-500/50 transition-all group">
+                    <a href="{{ route('parking.map.index') }}" class="p-6 rounded-[2rem] bg-slate-950 border border-white/5 hover:border-emerald-500/50 transition-all group">
                         <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform mb-4">
                             <i class="fa-solid fa-map-location-dot text-lg"></i>
                         </div>

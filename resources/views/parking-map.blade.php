@@ -3,9 +3,9 @@
 @section('title', 'Peta Parkir')
 
 @section('content')
-<div class="min-h-screen" style="background:#020617;">
-<div class="p-6 lg:p-8">
-<div class="max-w-7xl mx-auto">
+<div class="parking-map-page flex w-full min-w-0 flex-1 min-h-0 flex flex-col" style="background:#020617;">
+<div class="w-full min-w-0 flex-1 min-h-0 p-6 lg:p-8">
+<div class="max-w-7xl mx-auto w-full min-w-0">
 
     {{--
         VARIANT 2: Peta lebar kiri + sidebar kanan
@@ -31,11 +31,12 @@
     <div class="flex flex-col lg:flex-row gap-5 items-start">
 
         {{-- ── MAP AREA ── --}}
-        <div class="flex-1 w-full min-w-0 rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
+        <div class="flex-1 w-full min-w-0 rounded-2xl border" style="background:#0d1526;border-color:rgba(255,255,255,0.07); overflow: visible;">
             @if($area && $area->map_image_url)
-            <div class="relative">
+            <div class="relative bg-slate-900/50 rounded-2xl overflow-hidden">
                 <div id="parking-map"
-                     class="w-full h-[400px] sm:h-[500px] lg:h-[640px]"
+                     class="w-full h-[400px] sm:h-[500px] lg:h-[640px] relative z-10"
+                     style="min-height: 400px;"
                      data-image-url="{{ $area->map_image_url }}"
                      data-width="{{ $area->map_width }}"
                      data-height="{{ $area->map_height }}"
@@ -43,7 +44,7 @@
                 </div>
 
                 {{-- Mini legend bottom-left --}}
-                <div class="absolute bottom-4 left-4 flex items-center gap-3 px-3 py-2 rounded-xl z-[1000] pointer-events-none"
+                <div class="absolute bottom-4 left-4 flex items-center gap-3 px-3 py-2 rounded-xl z-20 pointer-events-none"
                      style="background:rgba(2,6,23,0.85);border:1px solid rgba(255,255,255,0.08);">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -164,7 +165,24 @@
 </div>
 </div>
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous"/>
 <style>
+    /* Leaflet default z-index (400+) bisa menutupi header — turunkan di dalam halaman ini */
+    .parking-map-page .leaflet-container,
+    .parking-map-page .leaflet-pane,
+    .parking-map-page .leaflet-map-pane,
+    .parking-map-page .leaflet-tile-pane,
+    .parking-map-page .leaflet-overlay-pane,
+    .parking-map-page .leaflet-shadow-pane,
+    .parking-map-page .leaflet-marker-pane,
+    .parking-map-page .leaflet-tooltip-pane,
+    .parking-map-page .leaflet-popup-pane {
+        z-index: 20 !important;
+    }
+    .parking-map-page .leaflet-control {
+        z-index: 30 !important;
+    }
     .modern-popup .leaflet-popup-content-wrapper {
         border-radius:14px; padding:4px;
         background:#0d1526;
@@ -175,69 +193,107 @@
     .modern-popup .leaflet-popup-tip-container { display:none; }
     .parking-slot-rect { transition: all 0.2s; }
 </style>
-@endsection
+@endpush
 
 @push('scripts')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
 <script>
-    let map, imageOverlay;
-    const mapContainer = document.getElementById('parking-map');
+    (function() {
+        const parkingSlotsUrl = @json(route('api.parking-slots.index'));
+        let map, slotLayer, cameraLayer;
+        const mapContainer = document.getElementById('parking-map');
 
-    if (mapContainer) {
+        if (!mapContainer) return;
+
         const mapId     = mapContainer.dataset.mapId;
         const imageUrl  = mapContainer.dataset.imageUrl;
-        const mapWidth  = parseInt(mapContainer.dataset.width);
-        const mapHeight = parseInt(mapContainer.dataset.height);
-        let slotLayer   = L.layerGroup();
-        let cameraLayer = L.layerGroup();
+        const mapWidth  = parseInt(mapContainer.dataset.width, 10) || 1000;
+        const mapHeight = parseInt(mapContainer.dataset.height, 10) || 800;
 
         function initMap() {
-            if (map) map.remove();
-            map = L.map('parking-map', { crs: L.CRS.Simple, minZoom:-1, maxZoom:2, zoomControl:false });
-            const bounds = [[0,0],[mapHeight,mapWidth]];
-            L.imageOverlay(imageUrl, bounds).addTo(map);
-            map.fitBounds(bounds);
-            L.control.zoom({ position:'topright' }).addTo(map);
-            slotLayer.addTo(map);
-            cameraLayer.addTo(map);
-            fetchData();
+            try {
+                if (typeof L === 'undefined') {
+                    setTimeout(initMap, 500);
+                    return;
+                }
+
+                if (map) map.remove();
+                
+                map = L.map('parking-map', { 
+                    crs: L.CRS.Simple, 
+                    minZoom: -2, 
+                    maxZoom: 3, 
+                    zoomControl: false,
+                    attributionControl: false
+                });
+                
+                const bounds = [[0,0],[mapHeight,mapWidth]];
+                const overlay = L.imageOverlay(imageUrl, bounds);
+                overlay.addTo(map);
+                
+                overlay.on('load', () => {
+                    map.fitBounds(bounds);
+                });
+                
+                L.control.zoom({ position:'topright' }).addTo(map);
+                
+                slotLayer = L.layerGroup().addTo(map);
+                cameraLayer = L.layerGroup().addTo(map);
+                
+                fetchData();
+
+                setTimeout(() => map.invalidateSize(), 500);
+            } catch (err) {
+                console.error('Map Error:', err);
+            }
         }
 
         async function fetchData() {
             try {
-                const r    = await fetch(`{{ route('api.parking-slots.index') }}?map_id=${mapId}`);
+                const r = await fetch(`${parkingSlotsUrl}?map_id=${encodeURIComponent(mapId)}`, {
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+                if (!r.ok) {
+                    console.error('parking-slots HTTP', r.status);
+                    return;
+                }
                 const data = await r.json();
                 updateSummary(data.summary);
                 renderSlots(data.slots);
                 renderCameras(data.cameras);
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error('Fetch Error:', e); }
         }
 
         function updateSummary(s) {
             const c = document.getElementById('parking-map-summary');
             if (!c) return;
-            const rows = [
+            c.innerHTML = [
                 { label:'Total',    val:s.total,    color:'#fff' },
                 { label:'Tersedia', val:s.empty,    color:'#10b981' },
                 { label:'Terisi',   val:s.occupied, color:'#64748b' },
                 { label:'Reserved', val:s.reserved, color:'#f59e0b' },
-            ];
-            c.innerHTML = rows.map(r => `
+            ].map(r => `
                 <div style="display:flex;align-items:center;justify-content:space-between;">
                     <span style="font-size:12px;color:#64748b;">${r.label}</span>
                     <span style="font-size:16px;font-weight:900;color:${r.color};">${r.val}</span>
                 </div>`).join('');
 
-            // Update util bar
             const pct = s.total > 0 ? Math.round(s.occupied / s.total * 100) : 0;
             const bar = document.getElementById('util-bar');
             const txt = document.getElementById('util-pct');
-            if (bar) { bar.style.width = pct + '%'; bar.style.background = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#10b981'; }
-            if (txt)  txt.textContent = pct + '%';
+            if (bar) { 
+                bar.style.width = pct + '%'; 
+                bar.style.background = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#10b981'; 
+            }
+            if (txt) txt.textContent = pct + '%';
         }
 
         function renderSlots(slots) {
+            if (!slotLayer) return;
             slotLayer.clearLayers();
             slots.forEach(slot => {
                 const y = mapHeight - slot.y - slot.height;
@@ -245,6 +301,7 @@
                 let color = '#10b981';
                 if (slot.status === 'occupied') color = '#475569';
                 if (slot.status === 'reserved' || slot.status === 'reserved-by-me') color = '#f59e0b';
+                
                 const rect = L.rectangle(bounds, { color, weight:2, fillColor:color, fillOpacity:0.3, className:'parking-slot-rect' });
                 rect.bindPopup(`
                     <div style="min-width:150px;">
@@ -257,13 +314,12 @@
                             <div><p style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.1em;">Catatan</p><p style="font-size:11px;color:#64748b;margin-top:1px;">${slot.notes || '—'}</p></div>
                         </div>
                     </div>`, { className:'modern-popup', offset:[0,-10] });
-                rect.on('mouseover', function() { this.setStyle({ fillOpacity:0.65 }); });
-                rect.on('mouseout',  function() { this.setStyle({ fillOpacity:0.3 }); });
                 slotLayer.addLayer(rect);
             });
         }
 
         function renderCameras(cameras) {
+            if (!cameraLayer) return;
             cameraLayer.clearLayers();
             cameras.forEach(cam => {
                 const y = mapHeight - cam.y;
@@ -279,13 +335,9 @@
                     <div style="width:220px;overflow:hidden;border-radius:10px;">
                         <div style="padding:8px 12px;background:#0d1526;display:flex;align-items:center;justify-content:space-between;">
                             <span style="font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.1em;">Cam: ${cam.name}</span>
-                            <span style="width:6px;height:6px;background:#ef4444;border-radius:50%;display:block;"></span>
                         </div>
                         <div style="aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;">
-                            ${cam.stream_url
-                                ? `<img src="${cam.stream_url}" style="width:100%;height:100%;object-fit:cover;">`
-                                : `<div style="text-align:center;"><svg width="24" height="24" fill="none" stroke="#334155" viewBox="0 0 24 24" style="margin:0 auto 4px;"><path stroke-width="1.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg><span style="font-size:9px;color:#475569;font-weight:700;text-transform:uppercase;">No Signal</span></div>`
-                            }
+                            ${cam.stream_url ? `<img src="${cam.stream_url}" style="width:100%;height:100%;object-fit:cover;">` : '<span style="color:#475569;font-size:9px;">NO SIGNAL</span>'}
                         </div>
                     </div>`, { className:'modern-popup !p-0', offset:[0,-10] });
                 cameraLayer.addLayer(marker);
@@ -293,18 +345,21 @@
         }
 
         const refreshBtn = document.getElementById('parking-map-refresh-btn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', fetchData);
+        if (refreshBtn) refreshBtn.onclick = fetchData;
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMap);
+        } else {
+            initMap();
         }
 
-        setInterval(fetchData, 30000);
-        window.onload = initMap;
-
-    } else {
-        document.addEventListener('DOMContentLoaded', () => {
-            const c = document.getElementById('parking-map-summary');
-            if (c) c.innerHTML = '<p style="font-size:12px;color:#475569;font-style:italic;padding:1rem;">Pilih area untuk melihat statistik.</p>';
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => { if (map) map.invalidateSize(); }, 150);
         });
-    }
+
+        setInterval(fetchData, 30000);
+    })();
 </script>
 @endpush

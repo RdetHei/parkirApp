@@ -16,12 +16,30 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Scripts & Styles -->
+    <!-- Scripts & Styles: Vite bundles Tailwind v4 + Alpine (same order in production) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     @stack('styles')
 </head>
-<body class="bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden" data-sidebar="expanded">
+<body class="bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden"
+      x-data="{
+         sidebarOpen: false,
+         accountOpen: false,
+         desktopCollapsed: localStorage.getItem('parkirapp.sidebar') === 'collapsed',
+         isMobile: window.innerWidth < 1024
+      }"
+      x-init="
+         $watch('desktopCollapsed', val => {
+             localStorage.setItem('parkirapp.sidebar', val ? 'collapsed' : 'expanded');
+         });
+         window.addEventListener('resize', () => {
+             isMobile = window.innerWidth < 1024;
+             if (!isMobile) sidebarOpen = false;
+         });
+      "
+      :data-sidebar="desktopCollapsed ? 'collapsed' : 'expanded'">
     <!-- Background Accents -->
     <div class="fixed inset-0 pro-grid opacity-20 pointer-events-none z-0"></div>
     <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-emerald-500/5 blur-[120px] pointer-events-none z-0"></div>
@@ -57,57 +75,42 @@
             border-right: 1px solid var(--border-pro) !important;
         }
 
-        header {
-            background-color: rgba(2, 6, 23, 0.8) !important;
+        header.app-top-header {
+            background-color: var(--bg-main) !important;
             border-bottom: 1px solid var(--border-pro) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
 
         [x-cloak] { display: none !important; }
     </style>
         {{-- Layout wrapper: sidebar + main content --}}
-        <div class="min-h-screen flex relative overflow-x-hidden" x-data="{ sidebarOpen: false }">
+        <div class="h-screen flex relative overflow-hidden bg-[#020617]">
             <!-- Mobile Sidebar Backdrop -->
             <div x-cloak
                  x-show="sidebarOpen"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
                  @click="sidebarOpen = false"
-                 class="fixed inset-0 z-[60] bg-slate-950/50 backdrop-blur-sm lg:hidden transition-opacity duration-300"></div>
+                 class="fixed inset-0 z-[65] bg-slate-950/60 lg:hidden transition-opacity duration-300"></div>
 
             @include('components.sidebar')
 
-            <div class="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
+            <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ease-in-out">
                 @include('components.dheader')
 
-                <main class="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-full">
+                <main class="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
                     @yield('content')
                 </main>
             </div>
         </div>
 
         <script>
-            (function () {
-                const body = document.body;
-                const toggleBtn = document.getElementById('sidebar-toggle');
-
-                if (!toggleBtn) return;
-
-                const STORAGE_KEY = 'parkirapp.sidebar';
-
-                const applyState = (state) => {
-                    body.setAttribute('data-sidebar', state);
-                };
-
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved === 'collapsed' || saved === 'expanded') {
-                    applyState(saved);
-                }
-
-                toggleBtn.addEventListener('click', function () {
-                    const current = body.getAttribute('data-sidebar') || 'expanded';
-                    const next = current === 'collapsed' ? 'expanded' : 'collapsed';
-                    applyState(next);
-                    localStorage.setItem(STORAGE_KEY, next);
-                });
-            })();
+            // No need for the Vanilla JS toggle anymore, we use Alpine in sidebar component
         </script>
 
         @stack('scripts')

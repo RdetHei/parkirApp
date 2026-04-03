@@ -72,7 +72,7 @@
         </div>
 
         <!-- Mobile Menu Overlay -->
-        <div x-show="mobileMenuOpen" 
+        <div x-show="mobileMenuOpen"
              x-cloak
              @click.away="mobileMenuOpen = false"
              x-transition:enter="transition ease-out duration-200"
@@ -373,7 +373,7 @@
         <button @click="activeTab = 'features'" :class="activeTab === 'features' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-microchip"></i></button>
         <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-chart-line"></i></button>
         <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-users-gear"></i></button>
-        <button @clicl="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950 shadoe-lg shadow-emerald-500/40' : 'text-slate-400' " class="p-3 rounded-xl transition-all"><i class="fa-solid fa-license"></i></button>
+        <button @click="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950 shadoe-lg shadow-emerald-500/40' : 'text-slate-400' " class="p-3 rounded-xl transition-all"><i class="fa-solid fa-file-contract"></i></button>
     </div>
 
     <!-- Card Login Modal -->

@@ -75,7 +75,7 @@
         $headerTitle = 'Profil Saya';
     }
 @endphp
-<header class="h-16 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-40 transition-all duration-300">
+<header class="app-top-header h-16 shrink-0 bg-[#020617] border-b border-white/10 sticky top-0 z-[55] lg:z-[55] isolate shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
     <div class="h-full w-full flex items-center justify-between px-4 lg:px-8">
         <div class="flex items-center gap-3 lg:gap-4 min-w-0">
             <!-- Mobile Toggle -->

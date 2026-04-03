@@ -12,6 +12,14 @@
     --sidebar-bg: #020617;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
+
+    /* Sidebar: lebar dinamis (sinkron dengan utility di sidebar.blade.php) */
+    --sidebar-width-mobile: min(16rem, 85vw);
+    --sidebar-width-expanded: clamp(14rem, min(20vw, 22rem), 22rem);
+    --sidebar-width-collapsed: 4.5rem;
+    --sidebar-max-expanded: min(22rem, 40vw);
+    --sidebar-z-backdrop: 60;
+    --sidebar-z-drawer: 70;
 }
 
 body {
@@ -156,12 +164,17 @@ table tbody tr:hover {
     animation: fade-in-up 0.5s ease-out forwards;
 }
 
-/* Sidebar - Enterprise Minimalist */
+/* Sidebar - Enterprise Minimalist (lebar dari utility Blade + variabel; z mobile > backdrop) */
 #app-sidebar {
     background-color: var(--sidebar-bg);
     border-right: 1px solid var(--border-pro);
-    z-index: 50;
-    width: 16rem;
+    z-index: var(--sidebar-z-drawer);
+}
+
+@media (min-width: 1024px) {
+    #app-sidebar {
+        z-index: 50;
+    }
 }
 
 .sidebar-item {
@@ -262,10 +275,25 @@ table tbody tr:hover {
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* Sidebar: smooth width & overflow for animation */
+/* Sidebar: smooth width; jangan overflow:hidden vertikal (potong popup akun & backdrop) */
 #app-sidebar.sidebar-animate {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
+}
+
+/* Backdrop mobile: di bawah drawer; gelap + blur tetap dari CSS */
+.mobile-sidebar-backdrop {
+    z-index: var(--sidebar-z-backdrop);
+    background-color: rgba(2, 6, 23, 0.78);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+/* Kolom utama: flex-1 + min-w-0 wajib untuk grid/flex di produksi */
+.app-shell-main {
+    min-width: 0;
+    min-height: 0;
 }
 
 #app-sidebar .sidebar-label,
@@ -293,6 +321,10 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand {
     transition: padding-left 0.28s ease, padding-right 0.28s ease;
 }
 
+#app-sidebar .sidebar-account-wrap {
+    transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 #app-sidebar .sidebar-header {
     transition: justify-content 0.28s ease;
 }
@@ -305,7 +337,9 @@ body[data-sidebar="collapsed"] #app-sidebar .sidebar-header-brand {
 /* Collapsed state - Desktop Only */
 @media (min-width: 1024px) {
     body[data-sidebar="collapsed"] #app-sidebar {
-        width: 4.5rem;
+        width: var(--sidebar-width-collapsed);
+        min-width: var(--sidebar-width-collapsed);
+        max-width: var(--sidebar-width-collapsed);
     }
 
     body[data-sidebar="collapsed"] #app-sidebar .sidebar-label,

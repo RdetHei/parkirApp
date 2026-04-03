@@ -1,7 +1,17 @@
-<!-- Sidebar -->
+<!-- Sidebar: jangan overflow-hidden di aside agar popup akun tidak terpotong -->
 <aside id="app-sidebar"
-       :class="sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'"
-       class="sidebar-animate w-64 max-w-[85vw] h-screen fixed lg:sticky top-0 left-0 bg-[#020617] border-r border-white/5 shrink-0 flex flex-col z-[70] overflow-hidden transition-all duration-300 ease-in-out">
+       x-show="!isMobile || sidebarOpen"
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="-translate-x-full"
+       x-transition:enter-end="translate-x-0"
+       x-transition:leave="transition ease-in duration-300"
+       x-transition:leave-start="translate-x-0"
+       x-transition:leave-end="-translate-x-full"
+       :class="[
+           sidebarOpen ? 'translate-x-0 shadow-2xl' : (isMobile ? '-translate-x-full' : 'translate-x-0'),
+           desktopCollapsed ? 'lg:w-[4.5rem]' : 'lg:w-64'
+       ]"
+       class="sidebar-animate w-64 max-w-[85vw] h-screen fixed lg:sticky top-0 left-0 bg-[#020617] border-r border-white/5 shrink-0 flex flex-col z-[100] overflow-hidden transition-all duration-300 ease-in-out pointer-events-auto">
     <div class="sidebar-header h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 relative z-10">
         <div class="flex items-center gap-3 min-w-0 sidebar-header-brand">
             <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto shrink-0">
@@ -10,6 +20,7 @@
 
         <!-- Desktop Toggle -->
         <button id="sidebar-toggle" type="button"
+                @click="desktopCollapsed = !desktopCollapsed"
                 class="sidebar-toggle-btn hidden lg:inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white shrink-0 transition-colors">
             <svg class="w-4 h-4 sidebar-toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -30,8 +41,9 @@
         $role = $user->role ?? 'user';
     @endphp
 
-    <nav @click="if (window.innerWidth < 1024 && $event.target.closest('a')) sidebarOpen = false"
-         class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto sidebar-nav relative z-10 custom-scrollbar">
+    <nav role="navigation" aria-label="Menu utama"
+         @click="if (!isMobile) return; const link = $event.target.closest('a[href]'); if (!link) return; queueMicrotask(() => { sidebarOpen = false })"
+         class="flex-1 min-h-0 min-w-0 px-4 py-6 space-y-1.5 overflow-y-auto overflow-x-hidden sidebar-nav relative z-10 custom-scrollbar">
         {{-- Dashboard (Shared) --}}
         <a href="{{ $role === 'owner' ? route('owner.dashboard') : ($role === 'petugas' ? route('petugas.dashboard') : ($role === 'admin' ? route('dashboard') : route('user.dashboard'))) }}"
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('dashboard', 'owner.dashboard', 'petugas.dashboard', 'user.dashboard') ? 'active' : '' }}">
@@ -151,12 +163,21 @@
         @endif
     </nav>
 
-    <!-- Bottom Section -->
-    <div class="p-4 border-t border-white/5 shrink-0 relative z-10">
-        <button type="button" id="sidebar-account-toggle" class="w-full flex items-center gap-3 rounded-xl hover:bg-white/5 transition-all duration-200 p-2 group">
-            <div class="w-8 h-8 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xs shrink-0 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all">
-                {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
-            </div>
+    <!-- Bottom Section (popup butuh overflow visible) -->
+    <div class="sidebar-account-wrap p-4 border-t border-white/5 shrink-0 relative z-20 overflow-visible">
+        <button type="button"
+                id="sidebar-account-toggle"
+                @click.stop="accountOpen = !accountOpen"
+                class="w-full flex items-center gap-3 rounded-xl hover:bg-white/5 transition-all duration-200 p-2 group relative z-30">
+            @if(auth()->user()->profile_photo_url)
+                <img src="{{ auth()->user()->profile_photo_url }}" 
+                     alt="{{ auth()->user()->name }}" 
+                     class="w-8 h-8 rounded-lg object-cover border border-emerald-500/20 group-hover:border-emerald-500 transition-all">
+            @else
+                <div class="w-8 h-8 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-500 font-bold text-xs shrink-0 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all">
+                    {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
+                </div>
+            @endif
             <div class="sidebar-profile-details flex-1 min-w-0 text-left">
                 <p class="text-[11px] font-bold text-white truncate">{{ auth()->user()->name ?? 'User' }}</p>
                 <p class="text-[9px] text-slate-500 truncate uppercase tracking-widest font-semibold">{{ auth()->user()->role ?? 'Role' }}</p>
@@ -164,7 +185,17 @@
         </button>
 
         <!-- Account Popup -->
-        <div id="sidebar-account-popup" class="sidebar-account-popup hidden absolute bottom-full left-4 right-4 mb-3 bg-slate-900 border border-white/10 rounded-xl shadow-2xl py-2 z-50 transition-all duration-200 ease-out opacity-0 scale-95">
+        <div x-show="accountOpen"
+             x-cloak
+             @click.away="accountOpen = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+             id="sidebar-account-popup"
+             class="sidebar-account-popup absolute bottom-[calc(100%+0.5rem)] left-4 right-4 bg-slate-900 border border-white/10 rounded-xl shadow-2xl py-2 z-40">
             <a href="{{ route('user.profile') }}" class="flex items-center gap-3 px-4 py-2.5 text-[11px] font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 <span>My Profile</span>
@@ -179,46 +210,3 @@
         </div>
     </div>
 </aside>
-
-<script>
-    (function () {
-        var toggle = document.getElementById('sidebar-account-toggle');
-        var popup = document.getElementById('sidebar-account-popup');
-
-        if (!toggle || !popup) return;
-
-        function open() {
-            popup.classList.remove('hidden');
-            toggle.setAttribute('aria-expanded', 'true');
-            // Force a reflow for animation
-            requestAnimationFrame(function () {
-                popup.style.opacity = '1';
-                popup.style.transform = 'scale(1)';
-            });
-        }
-
-        function close() {
-            popup.style.opacity = '0';
-            popup.style.transform = 'scale(0.95)';
-            toggle.setAttribute('aria-expanded', 'false');
-            setTimeout(function () {
-                popup.classList.add('hidden');
-            }, 200);
-        }
-
-        function isOpen() {
-            return !popup.classList.contains('hidden');
-        }
-
-        toggle.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (isOpen()) close(); else open();
-        });
-
-        document.addEventListener('click', function (e) {
-            if (isOpen() && !popup.contains(e.target) && !toggle.contains(e.target)) {
-                close();
-            }
-        });
-    })();
-</script>
