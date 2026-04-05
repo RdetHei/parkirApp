@@ -11,8 +11,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OwnerDashboardController;
 use App\Http\Controllers\PetugasDashboardController;
 use App\Http\Controllers\ParkingSlotController;
-use App\Http\Controllers\ParkingMapController;
-use App\Http\Controllers\NfcAdminController;
 use App\Http\Controllers\NfcController;
 use App\Http\Controllers\RfidParkingController;
 use App\Http\Controllers\RfidIdentifyController;
@@ -22,6 +20,7 @@ use App\Http\Controllers\UserController;
 use App\Support\UserPhoto;
 use App\Http\Controllers\RfidAdminController;
 use App\Http\Controllers\KendaraanController;
+use App\Http\Controllers\ContactController;
 
 Route::post('/kendaraan/upload', [KendaraanController::class, 'store']);
 
@@ -29,6 +28,8 @@ Route::post('/kendaraan/upload', [KendaraanController::class, 'store']);
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::post('/api/contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::get('/docs', function () {
     return view('docs');

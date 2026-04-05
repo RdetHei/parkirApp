@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'NESTON - Smart Parking System')</title>
+    <title>@yield('title', 'NESTON - Smart Parking System');</title>
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/neston.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('images/neston.ico') }}">
@@ -16,7 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Scripts & Styles: Vite bundles Tailwind v4 + Alpine (same order in production) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         [x-cloak] { display: none !important; }
