@@ -86,38 +86,16 @@
         .car-light.left { left: 6px; }
         .car-light.right { right: 6px; }
 
-        /* Animation Keyframes */
-        @keyframes car1-entry {
-            0% { left: -100px; top: 180px; transform: rotate(90deg); }
-            20% { left: 150px; top: 180px; transform: rotate(90deg); }
-            40% { left: 150px; top: 80px; transform: rotate(0deg); }
-            100% { left: 150px; top: 80px; transform: rotate(0deg); }
-        }
-
-        @keyframes car1-exit {
-            0% { left: 150px; top: 80px; transform: rotate(0deg); }
-            20% { left: 150px; top: 180px; transform: rotate(180deg); }
-            40% { left: 600px; top: 180px; transform: rotate(90deg); }
-            100% { left: 1200px; top: 180px; transform: rotate(90deg); }
-        }
-
-        @keyframes car2-entry {
-            0% { left: -100px; top: 180px; transform: rotate(90deg); }
-            30% { left: 350px; top: 180px; transform: rotate(90deg); }
-            60% { left: 350px; top: 80px; transform: rotate(0deg); }
-            100% { left: 350px; top: 80px; transform: rotate(0deg); }
-        }
-
-        @keyframes car3-exit {
-            0% { left: 550px; top: 80px; transform: rotate(0deg); }
-            30% { left: 550px; top: 180px; transform: rotate(180deg); }
-            60% { left: 800px; top: 180px; transform: rotate(90deg); }
-            100% { left: 1200px; top: 180px; transform: rotate(90deg); }
-        }
-
-        .animate-car-1 { animation: car1-entry 5s forwards, car1-exit 5s 10s forwards; animation-iteration-count: infinite; }
-        .animate-car-2 { animation: car2-entry 7s 2s infinite alternate; }
-        .animate-car-3 { animation: car3-exit 8s infinite; }
+    @keyframes marquee {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    #marquee {
+        animation: marquee 18s linear infinite;
+    }
+    #marquee:hover {
+        animation-play-state: paused;
+    }
     </style>
 </head>
 <body class="bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
@@ -223,14 +201,14 @@
                 <div class="aspect-auto lg:aspect-[16/9] min-h-[500px] lg:min-h-0 rounded-2xl bg-slate-900 border border-white/5 shadow-2xl overflow-hidden relative group">
                     <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-indigo-500/5"></div>
 
-                    <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2 z-10">
+                    <div class="absolute top-0 left-0 right-0 h-7 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2 z-10">
                         <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
                         <div class="w-3 h-3 rounded-full bg-amber-500/50"></div>
                         <div class="w-3 h-3 rounded-full bg-emerald-500/50"></div>
-                        <div class="ml-4 text-[10px] sm:text-xs text-slate-500 font-mono truncate">sipark-dashboard.io/monitoring</div>
+                        <div class="ml-4 text-[10px] sm:text-xs text-slate-500 font-mono truncate">NESTON PARK DATA</div>
                     </div>
 
-                    <div class="p-4 sm:p-8 pt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 h-full overflow-y-auto lg:overflow-hidden lg:absolute lg:inset-0">
+                    <div class="p-4 sm:p-12 pt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 h-full overflow-y-auto lg:overflow-hidden lg:absolute lg:inset-0">
 
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium flex justify-between items-center">
@@ -349,19 +327,31 @@
         </div>
     </section>
 
-    <!-- Trusted By -->
-    <section class="py-12 border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <p class="text-center text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-10">Trusted by Forward-Thinking Infrastructure</p>
-            <div class="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-                <span class="text-xl font-black text-white tracking-tighter italic">MALL-CENTRAL</span>
-                <span class="text-xl font-black text-white tracking-tighter italic">AIRPORT-PRO</span>
-                <span class="text-xl font-black text-white tracking-tighter italic">HOSPITAL-CORE</span>
-                <span class="text-xl font-black text-white tracking-tighter italic">GOV-SECTOR</span>
-                <span class="text-xl font-black text-white tracking-tighter italic">OFFICE-HUB</span>
+<!-- Trusted By -->
+<section class="py-12 border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <p class="text-center text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-10">
+            Trusted by Forward-Thinking Infrastructure
+        </p>
+
+        <div class="overflow-hidden relative" style="mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);">
+            <div id="marquee" class="flex items-center gap-16 w-max">
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">MALL-CENTRAL</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">AIRPORT-PRO</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">HOSPITAL-CORE</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">GOV-SECTOR</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">OFFICE-HUB</span>
+                {{-- Duplikat untuk seamless loop --}}
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">MALL-CENTRAL</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">AIRPORT-PRO</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">HOSPITAL-CORE</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">GOV-SECTOR</span>
+                <span class="text-xl font-black text-white tracking-tighter italic opacity-30 whitespace-nowrap">OFFICE-HUB</span>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
 
     <!-- About Section -->
     <section id="about" class="py-20 lg:py-32 relative overflow-hidden">

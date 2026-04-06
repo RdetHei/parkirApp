@@ -85,7 +85,7 @@ body {
 body {
     background-color: #020617 !important;
     color: #f8fafc !important;
-    background-image: 
+    background-image:
         url('/images/batik-pattern.svg'),
         radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
         radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
