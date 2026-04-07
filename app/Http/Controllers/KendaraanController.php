@@ -9,10 +9,28 @@ use App\Support\PlatNomorNormalizer;
 
 class KendaraanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = Kendaraan::orderBy('id_kendaraan','desc')->paginate(15);
-        return view('kendaraan.index', compact('items'));
+        $query = Kendaraan::query()->with('user');
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('plat_nomor', 'like', "%{$search}%")
+                  ->orWhere('pemilik', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($sub) use ($search) {
+                      $sub->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis_kendaraan', $request->jenis);
+        }
+
+        $kendaraans = $query->orderBy('id_kendaraan', 'desc')->paginate(15)->withQueryString();
+        $title = 'Data Kendaraan';
+        return view('kendaraan.index', compact('kendaraans', 'title'));
     }
 
     public function create()

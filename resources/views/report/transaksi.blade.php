@@ -34,6 +34,11 @@
     <div class="bg-slate-900/80 border border-white/[0.07] rounded-2xl p-5 mb-5">
         <form action="{{ route('report.transaksi') }}" method="GET">
             <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-col gap-1.5 min-w-[200px]">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Cari Plat</label>
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Plat nomor..."
+                           class="px-3 py-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition-all placeholder:text-slate-700">
+                </div>
                 <div class="flex flex-col gap-1.5 min-w-[140px]">
                     <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tanggal Dari</label>
                     <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
@@ -69,7 +74,7 @@
                         class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shrink-0">
                     Terapkan Filter
                 </button>
-                @if(request()->hasAny(['tanggal_dari','tanggal_sampai','status','id_area']))
+                @if(request()->hasAny(['q','tanggal_dari','tanggal_sampai','status','id_area']))
                 <a href="{{ route('report.transaksi') }}"
                    class="px-4 py-2.5 bg-white/[0.05] border border-white/[0.08] text-slate-400 hover:text-white text-sm font-medium rounded-xl transition-colors shrink-0">
                     Reset

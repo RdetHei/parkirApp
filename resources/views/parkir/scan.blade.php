@@ -22,7 +22,7 @@
                 <h1 class="text-4xl font-black tracking-tight text-white uppercase">PARKING <span class="text-emerald-500">TERMINAL</span></h1>
                 <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Sistem otomatis masuk & keluar menggunakan teknologi RFID/NFC.</p>
             </div>
-            
+
             <div class="flex items-center gap-4">
                 <div class="px-6 py-4 bg-slate-950 border border-white/5 rounded-2xl flex items-center gap-4 shadow-xl">
                     <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
@@ -35,13 +35,13 @@
             <!-- Left: Scanner State -->
             <div class="lg:col-span-2 card-pro group overflow-hidden relative border-blue-500/10 flex flex-col items-center justify-center p-12 text-center">
                 <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-                
+
                 {{-- Animated Ring --}}
                 <div class="relative w-32 h-32 mb-10">
                     <div class="absolute inset-0 rounded-full border-2 border-blue-500/20 animate-ping"></div>
                     <div class="absolute inset-4 rounded-full border-2 border-blue-500/30 animate-ping" style="animation-delay:0.3s"></div>
                     <div class="w-32 h-32 rounded-[2.5rem] flex items-center justify-center relative z-10 bg-slate-900 border border-white/10 shadow-2xl">
-                        <i class="fa-solid fa-tower-broadcast text-4xl text-blue-400"></i>
+                        <i class="fa-solid fa-tower text-4xl text-blue-400"></i>
                     </div>
                 </div>
 
@@ -62,7 +62,7 @@
             <!-- Right: Result Panel -->
             <div class="lg:col-span-3 card-pro !p-0 overflow-hidden relative border-emerald-500/10 min-h-[500px] flex flex-col">
                 <div id="result-topbar" class="h-1.5 w-full bg-white/5 transition-all duration-500"></div>
-                
+
                 {{-- Empty State --}}
                 <div id="result-empty" class="flex-1 flex flex-col items-center justify-center p-12 text-center">
                     <div class="w-20 h-20 rounded-[2rem] bg-slate-950 border border-white/5 flex items-center justify-center mb-6 text-slate-800">
@@ -231,7 +231,7 @@
     function showResult(data, isOk) {
         resultEmpty.classList.add('hidden');
         resultFilled.classList.remove('hidden');
-        
+
         // Animation
         setTimeout(() => {
             resultFilled.classList.remove('opacity-0', 'scale-95');

@@ -241,11 +241,11 @@ class TransaksiController extends Controller
 
     // == CRUD UNTUK ADMIN ==
 
-    public function index()
+    public function index(Request $request)
     {
         if (
-            request()->query('status') === 'masuk' ||
-            request()->routeIs('transaksi.index') && request()->query('status') !== 'keluar'
+            $request->query('status') === 'masuk' ||
+            request()->routeIs('transaksi.index') && $request->query('status') !== 'keluar'
         ) {
             $tenMinutesAgo = Carbon::now()->subMinutes(10);
 
@@ -254,46 +254,63 @@ class TransaksiController extends Controller
                 ->where('bookmarked_at', '<', $tenMinutesAgo)
                 ->delete();
 
-            $items = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
+            $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
                 ->where(function ($q) use ($tenMinutesAgo) {
                     $q->where(function ($q2) {
                         $q2->where('status', 'masuk')->whereNull('waktu_keluar');
                     })->orWhere(function ($q2) use ($tenMinutesAgo) {
                         $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
                     });
-                })
-                ->orderByRaw("CASE WHEN status = 'bookmarked' THEN 0 ELSE 1 END")
+                });
+
+            if ($request->filled('q')) {
+                $search = $request->q;
+                $query->whereHas('kendaraan', function($sub) use ($search) {
+                    $sub->where('plat_nomor', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->filled('area')) {
+                $query->where('id_area', $request->area);
+            }
+
+            $items = $query->orderByRaw("CASE WHEN status = 'bookmarked' THEN 0 ELSE 1 END")
                 ->orderBy('waktu_masuk', 'desc')
                 ->orderBy('bookmarked_at', 'desc')
-                ->paginate(30);
+                ->paginate(30)
+                ->withQueryString();
 
-            return view('parkir.index', ['transaksis' => $items]);
+            $areas = AreaParkir::orderBy('nama_area')->get();
+
+            return view('parkir.index', ['transaksis' => $items, 'areas' => $areas]);
         }
 
         $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->where('status', 'keluar')
             ->where('status_pembayaran', 'berhasil');
 
-        if (request()->filled('q')) {
-            $q = request('q');
+        if ($request->filled('q')) {
+            $q = $request->q;
             $query->whereHas('kendaraan', function($sub) use ($q) {
                 $sub->where('plat_nomor', 'like', '%' . $q . '%');
             });
         }
 
-        if (request()->filled('tanggal_dari')) {
-            $query->whereDate('waktu_keluar', '>=', request('tanggal_dari'));
-        }
-        if (request()->filled('tanggal_sampai')) {
-            $query->whereDate('waktu_keluar', '<=', request('tanggal_sampai'));
+        if ($request->filled('id_area')) {
+            $query->where('id_area', $request->id_area);
         }
 
-        if (request()->filled('id_area')) {
-            $query->where('id_area', request('id_area'));
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('waktu_keluar', '>=', $request->tanggal_dari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('waktu_keluar', '<=', $request->tanggal_sampai);
         }
 
-        $items = $query->orderBy('waktu_keluar', 'desc')->paginate(15);
-        return view('transaksi.index', ['transaksis' => $items]);
+        $transaksis = $query->orderBy('waktu_keluar', 'desc')->paginate(30)->withQueryString();
+        $areas = AreaParkir::orderBy('nama_area')->get();
+
+        return view('transaksi.index', compact('transaksis', 'areas'));
     }
 
     public function store(Request $request)

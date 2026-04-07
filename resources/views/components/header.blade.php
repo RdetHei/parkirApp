@@ -1,78 +1,73 @@
-<header class="bg-[#022c22]/80 backdrop-blur-xl border-b border-emerald-500/10">
-  <nav aria-label="Global" class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
-    <div class="flex lg:flex-1">
-      <a href="/" class="flex items-center gap-3">
-        <span class="sr-only">NESTON</span>
-        <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-9 w-auto" />
-        <span class="text-xl font-bold tracking-tight text-white uppercase">NESTON</span>
-      </a>
-    </div>
-    <div class="flex lg:hidden">
-      <button type="button" command="show-modal" commandfor="mobile-menu" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-emerald-500">
-        <span class="sr-only">Open main menu</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
-          <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
-    </div>
-    <div class="hidden lg:flex lg:gap-x-12">
-      <a href="#fitur" class="text-[11px] font-bold text-emerald-400/70 hover:text-amber-400 transition-colors tracking-widest uppercase">Fitur</a>
-      <a href="#teknologi" class="text-[11px] font-bold text-emerald-400/70 hover:text-amber-400 transition-colors tracking-widest uppercase">Teknologi</a>
-      <a href="#faq" class="text-[11px] font-bold text-emerald-400/70 hover:text-amber-400 transition-colors tracking-widest uppercase">FAQ</a>
-    </div>
-    <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-6">
-        @auth
-            <span class="text-[11px] font-bold text-emerald-100/60 uppercase tracking-widest">Hi, {{ Auth::user()->name }}</span>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-400 px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all">Log Out</button>
-            </form>
-        @else
-            <a href="{{ route('login') }}" class="text-[11px] font-bold text-emerald-100/60 hover:text-white transition-all uppercase tracking-widest">Log in</a>
-            <a href="{{ route('register') }}" class="bg-amber-400 text-[#022c22] hover:bg-amber-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.3)] transition-all duration-300 px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest">Mulai</a>
-        @endauth
-    </div>
-  </nav>
-  <el-dialog>
-    <dialog id="mobile-menu" class="backdrop:bg-transparent lg:hidden">
-      <div tabindex="0" class="fixed inset-0 focus:outline-none">
-        <el-dialog-panel class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-[#022c22] p-6 sm:max-w-sm sm:ring-1 sm:ring-emerald-500/10">
-          <div class="flex items-center justify-between">
-              <a href="/" class="flex items-center gap-3">
-                <span class="sr-only">NESTON</span>
-                <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto" />
-                <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
-              </a>
-            <button type="button" command="close" commandfor="mobile-menu" class="-m-2.5 rounded-md p-2.5 text-emerald-500">
-              <span class="sr-only">Close menu</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
-                <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-          </div>
-          <div class="mt-6 flow-root">
-            <div class="-my-6 divide-y divide-emerald-500/10">
-              <div class="space-y-2 py-6">
-                <a href="#fitur" class="-mx-3 block rounded-lg px-3 py-2 text-xs font-bold text-emerald-400/70 hover:text-white hover:bg-emerald-500/10 uppercase tracking-widest transition-all">Fitur</a>
-                <a href="#teknologi" class="-mx-3 block rounded-lg px-3 py-2 text-xs font-bold text-emerald-400/70 hover:text-white hover:bg-emerald-500/10 uppercase tracking-widest transition-all">Teknologi</a>
-                <a href="#faq" class="-mx-3 block rounded-lg px-3 py-2 text-xs font-bold text-emerald-400/70 hover:text-white hover:bg-emerald-500/10 uppercase tracking-widest transition-all">FAQ</a>
-              </div>
-              <div class="py-6 space-y-4">
-                @auth
-                    <span class="block text-xs font-bold text-emerald-100/60 uppercase tracking-widest">Hi, {{ Auth::user()->name }}</span>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full bg-emerald-900/40 text-emerald-400 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-left">Log Out</button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="block text-xs font-bold text-emerald-100/60 hover:text-white uppercase tracking-widest">Log in</a>
-                    <a href="{{ route('register') }}" class="block w-full bg-amber-400 text-[#022c22] px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-center">Mulai</a>
-                @endauth
-              </div>
+    <!-- Header -->
+    <nav class="fixed w-full top-0 z-50 bg-[#020617]/70 backdrop-blur-xl border-b border-white/5" x-data="{ mobileMenuOpen: false }">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3 group z-10">
+                    <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="w-8 h-8 shrink-0">
+                    <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
+                </a>
+
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <!-- Language Switcher -->
+                    <div class="flex items-center bg-white/5 rounded-lg p-1 border border-white/5">
+                        <a href="{{ route('lang.switch', 'id') }}" class="px-2 py-0.5 text-[10px] font-bold rounded {{ App::getLocale() == 'id' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 hover:text-white' }} transition-all uppercase tracking-tighter">ID</a>
+                        <a href="{{ route('lang.switch', 'en') }}" class="px-2 py-0.5 text-[10px] font-bold rounded {{ App::getLocale() == 'en' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 hover:text-white' }} transition-all uppercase tracking-tighter">EN</a>
+                    </div>
+
+                    <a href="#about" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">{{ __('About') }}</a>
+                    <a href="#workflow" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">{{ __('Workflow') }}</a>
+                    <a href="#fitur" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">{{ __('Features') }}</a>
+                    <a href="{{ route('docs') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">{{ __('Docs') }}</a>
+                    <a href="#contact" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">{{ __('Contact') }}</a>
+                    <div class="h-4 w-px bg-white/10"></div>
+                    <button onclick="openCardLogin()" class="group flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+                        <i class="fa-solid fa-id-card"></i>
+                        {{ __('Card Login') }}
+                    </button>
+                    <a href="{{ route('login') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">{{ __('Sign in') }}</a>
+                    <a href="{{ route('register') }}" class="btn-pro-primary !py-2 !px-5 !text-[11px] uppercase tracking-wider">
+                        {{ __('Get Started') }}
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-slate-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            <path x-show="mobileMenuOpen" x-cloak stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
-          </div>
-        </el-dialog-panel>
-      </div>
-    </dialog>
-  </el-dialog>
-</header>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div x-show="mobileMenuOpen"
+             x-cloak
+             @click.away="mobileMenuOpen = false"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             class="md:hidden absolute top-16 left-0 w-full bg-[#020617]/95 backdrop-blur-2xl border-b border-white/5 py-6 px-6 space-y-4 shadow-2xl">
+            <a href="#about" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">About</a>
+            <a href="#workflow" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Workflow</a>
+            <a href="#fitur" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Features</a>
+            <a href="{{ route('docs') }}" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Docs</a>
+            <a href="#contact" @click="mobileMenuOpen = false" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Contact</a>
+            <div class="h-px w-full bg-white/5"></div>
+            <button onclick="openCardLogin(); mobileMenuOpen = false" class="flex items-center gap-3 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+                <i class="fa-solid fa-id-card"></i>
+                Card Login
+            </button>
+            <a href="{{ route('login') }}" class="block text-sm font-semibold text-slate-400 hover:text-white transition-colors">Sign in</a>
+            <a href="{{ route('register') }}" class="btn-pro-primary block text-center !py-3 !text-sm uppercase tracking-wider">
+                Get Started
+            </a>
+        </div>
+    </nav>

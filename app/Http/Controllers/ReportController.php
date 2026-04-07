@@ -35,6 +35,12 @@ class ReportController extends Controller
             $query->where('metode', $request->metode);
         }
 
+        // Search by Transaction ID
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where('id_parkir', 'like', "%{$search}%");
+        }
+
         // Summary pakai filter yang sama (clone sebelum paginate)
         $total_nominal = (clone $query)->sum('nominal');
         $count_pembayaran = (clone $query)->count();
@@ -69,6 +75,14 @@ class ReportController extends Controller
         // Filter by area
         if ($request->filled('id_area')) {
             $query->where('id_area', $request->id_area);
+        }
+
+        // Search by plate number
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->whereHas('kendaraan', function($q) use ($search) {
+                $q->where('plat_nomor', 'like', "%{$search}%");
+            });
         }
 
         // Summary pakai filter yang sama (clone sebelum paginate)

@@ -8,10 +8,29 @@ use Illuminate\Validation\Rule;
 
 class RfidAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = User::query();
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('rfid_uid', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'linked') {
+                $query->whereNotNull('rfid_uid');
+            } elseif ($request->status === 'unlinked') {
+                $query->whereNull('rfid_uid');
+            }
+        }
+
+        $users = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
         $title = 'Manajemen Kartu RFID';
-        $users = User::orderBy('id', 'desc')->paginate(15);
         return view('rfid.index', compact('title', 'users'));
     }
 

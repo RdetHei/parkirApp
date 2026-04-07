@@ -260,21 +260,85 @@
                             <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span><span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Terisi</span></div>
                         </div>
                     </div>
-                    <div class="p-5">
-                        <div id="parking-map" class="w-full rounded-2xl overflow-hidden border" style="height:540px;background:#020617;border-color:rgba(255,255,255,0.06);"
-                             data-image-url="{{ $map->map_image_url }}"
-                             data-width="{{ $map->map_width }}"
-                             data-height="{{ $map->map_height }}"
-                             data-map-id="{{ $map->id_area }}"
-                             data-book-url-template="{{ route('user.bookings.book', 'AREA_ID_PLACEHOLDER') }}"
-                             data-unbook-url-template="{{ route('user.bookings.unbook', 'TRANS_ID_PLACEHOLDER') }}"
-                             data-csrf-token="{{ csrf_token() }}">
+                    <div class="p-0 sm:p-5">
+                        <div class="relative h-[400px] sm:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden border bg-[#020617]" style="border-color:rgba(255,255,255,0.06);">
+                            <div id="parking-map" class="w-full h-full relative z-10"
+                                 data-image-url="{{ $map->map_image_url }}"
+                                 data-width="{{ $map->map_width }}"
+                                 data-height="{{ $map->map_height }}"
+                                 data-map-id="{{ $map->id_area }}"
+                                 data-book-url-template="{{ route('user.bookings.book', 'AREA_ID_PLACEHOLDER') }}"
+                                 data-unbook-url-template="{{ route('user.bookings.unbook', 'TRANS_ID_PLACEHOLDER') }}"
+                                 data-csrf-token="{{ csrf_token() }}">
+                            </div>
+                            
+                            <!-- Loading Overlay -->
+                            <div id="map-loader" class="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-500">
+                                <div class="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
+                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Loading Map Layout...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
+                <style>
+                    /* Fix Leaflet Z-Index and layout */
+                    .leaflet-container {
+                        background: #020617 !important;
+                    }
+                    .leaflet-pane {
+                        z-index: 2 !important;
+                    }
+                    .leaflet-control-container .leaflet-top,
+                    .leaflet-control-container .leaflet-bottom {
+                        z-index: 3 !important;
+                    }
+                    .leaflet-popup-pane {
+                        z-index: 4 !important;
+                    }
+                    .modern-popup .leaflet-popup-content-wrapper {
+                        background: #0f172a !important;
+                        color: #f8fafc !important;
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 12px;
+                        padding: 0;
+                        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+                    }
+                    .modern-popup .leaflet-popup-tip {
+                        background: #0f172a !important;
+                    }
+                    .modern-popup .leaflet-popup-content {
+                        margin: 0 !important;
+                        width: auto !important;
+                    }
+                </style>
+                
                 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                 <script src="{{ asset('js/parking-map.js') }}" defer></script>
+                <script>
+                    // Add a small script to hide loader after parking-map.js initializes
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const checkMap = setInterval(() => {
+                            const loader = document.getElementById('map-loader');
+                            if (window.L && document.querySelector('.leaflet-container')) {
+                                if (loader) {
+                                    loader.style.opacity = '0';
+                                    setTimeout(() => loader.remove(), 500);
+                                }
+                                clearInterval(checkMap);
+                            }
+                        }, 500);
+                        // Fallback
+                        setTimeout(() => {
+                            const loader = document.getElementById('map-loader');
+                            if (loader) {
+                                loader.style.opacity = '0';
+                                setTimeout(() => loader.remove(), 500);
+                            }
+                        }, 3000);
+                    });
+                </script>
                 @else
                 <div class="rounded-2xl border overflow-hidden p-10 text-center" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
                     <p class="text-sm font-bold text-white mb-2">Peta area belum tersedia</p>

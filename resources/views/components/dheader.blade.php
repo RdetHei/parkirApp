@@ -1,78 +1,102 @@
 @php
-    $headerTitle = 'Dashboard';
+    $headerTitle = __('Dashboard');
     $addButton = null; // ['label' => '...', 'route' => '...', 'routeName' => '...']
 
-    if (request()->routeIs('dashboard', 'petugas.dashboard', 'owner.dashboard')) {
-        $headerTitle = 'Dashboard';
+    if (request()->routeIs('dashboard', 'petugas.dashboard', 'owner.dashboard', 'user.dashboard')) {
+        $headerTitle = __('Dashboard');
+    } elseif (request()->routeIs('user.saldo.index') || request()->routeIs('user.saldo.topup')) {
+        $headerTitle = 'NestonPay';
+    } elseif (request()->routeIs('user.vehicles.index')) {
+        $headerTitle = __('Kendaraan Saya');
+    } elseif (request()->routeIs('user.history')) {
+        $headerTitle = __('Riwayat Parkir');
+    } elseif (request()->routeIs('user.bills')) {
+        $headerTitle = __('Tagihan Saya');
+    } elseif (request()->routeIs('user.bookings')) {
+        $headerTitle = __('Booking Slot');
+    } elseif (request()->routeIs('anpr.index')) {
+        $headerTitle = 'AI Scanner';
     } elseif (request()->routeIs('transaksi.create-check-in')) {
-        $headerTitle = 'Catat Masuk';
+        $headerTitle = __('Catat Masuk');
     } elseif (request()->routeIs('transaksi.parkir.index')) {
-        $headerTitle = 'Parkir Aktif';
-        $addButton = ['label' => 'Tambah Parkir', 'route' => route('transaksi.create-check-in'), 'routeName' => 'transaksi.create-check-in'];
+        $headerTitle = __('Parkir Aktif');
+        $addButton = ['label' => __('Tambah Parkir'), 'route' => route('transaksi.create-check-in'), 'routeName' => 'transaksi.create-check-in'];
     } elseif (request()->routeIs('transaksi.index') || request()->routeIs('transaksi.show') || request()->routeIs('transaksi.edit')) {
-        $headerTitle = 'Riwayat Transaksi';
+        $headerTitle = __('Riwayat Transaksi');
         if ((auth()->user()->role ?? null) === 'admin') {
-            $addButton = ['label' => 'Tambah Transaksi', 'route' => route('transaksi.create'), 'routeName' => 'transaksi.create'];
+            $addButton = ['label' => __('Tambah Transaksi'), 'route' => route('transaksi.create'), 'routeName' => 'transaksi.create'];
         }
     } elseif (request()->routeIs('transaksi.create')) {
-        $headerTitle = 'Tambah Transaksi';
+        $headerTitle = __('Tambah Transaksi');
     } elseif (request()->routeIs('users.index') || request()->routeIs('users.show') || request()->routeIs('users.edit')) {
-        $headerTitle = 'Kelola User';
-        $addButton = ['label' => 'Tambah User', 'route' => route('users.create'), 'routeName' => 'users.create'];
+        $headerTitle = __('Kelola User');
+        $addButton = ['label' => __('Tambah User'), 'route' => route('users.create'), 'routeName' => 'users.create'];
+    } elseif (request()->routeIs('admin.rfid.index')) {
+        $headerTitle = __('Kelola RFID');
+    } elseif (request()->routeIs('rfid.identify.page')) {
+        $headerTitle = __('Identifikasi RFID');
+    } elseif (request()->routeIs('rfid.access.scan-page')) {
+        $headerTitle = __('Akses RFID');
+    } elseif (request()->routeIs('parkir.scan')) {
+        $headerTitle = __('Scan Parkir RFID');
+    } elseif (request()->routeIs('rfid.login.page')) {
+        $headerTitle = __('Login RFID');
     } elseif (request()->routeIs('users.create')) {
-        $headerTitle = 'Tambah User';
+        $headerTitle = __('Tambah User');
+    } elseif (request()->routeIs('users.scan-rfid')) {
+        $headerTitle = __('Registrasi RFID');
     } elseif (request()->routeIs('kendaraan.index') || request()->routeIs('kendaraan.show') || request()->routeIs('kendaraan.edit')) {
-        $headerTitle = 'Kendaraan';
-        $addButton = ['label' => 'Tambah Kendaraan', 'route' => route('kendaraan.create'), 'routeName' => 'kendaraan.create'];
+        $headerTitle = __('Kendaraan');
+        $addButton = ['label' => __('Tambah Kendaraan'), 'route' => route('kendaraan.create'), 'routeName' => 'kendaraan.create'];
     } elseif (request()->routeIs('kendaraan.create')) {
-        $headerTitle = 'Tambah Kendaraan';
+        $headerTitle = __('Tambah Kendaraan');
     } elseif (request()->routeIs('parking-maps.index') || request()->routeIs('parking-maps.edit')) {
-        $headerTitle = 'Layout Peta Parkir';
-        $addButton = ['label' => 'Tambah Layout', 'route' => route('parking-maps.create'), 'routeName' => 'parking-maps.create'];
+        $headerTitle = __('Layout Peta Parkir');
+        $addButton = ['label' => __('Tambah Layout'), 'route' => route('parking-maps.create'), 'routeName' => 'parking-maps.create'];
     } elseif (request()->routeIs('parking-maps.create')) {
-        $headerTitle = 'Tambah Layout Peta Parkir';
+        $headerTitle = __('Tambah Layout Peta Parkir');
     } elseif (request()->routeIs('parking-maps.slots.index')) {
-        $headerTitle = 'Slot Peta Parkir';
+        $headerTitle = __('Slot Peta Parkir');
     } elseif (request()->routeIs('parking-maps.slots.create')) {
-        $headerTitle = 'Tambah Slot';
+        $headerTitle = __('Tambah Slot');
     } elseif (request()->routeIs('parking-maps.slots.edit')) {
-        $headerTitle = 'Edit Slot';
-    } elseif (request()->routeIs('area-parkir.index') || request()->routeIs('area-parkir.show') || request()->routeIs('area-parkir.edit')) {
-        $headerTitle = 'Area Parkir';
-        $addButton = ['label' => 'Tambah Area', 'route' => route('area-parkir.create'), 'routeName' => 'area-parkir.create'];
+        $headerTitle = __('Edit Slot');
+    } elseif (request()->routeIs('area-parkir.index') || request()->routeIs('area-parkir.show') || request()->routeIs('area-parkir.edit') || request()->routeIs('area-parkir.design')) {
+        $headerTitle = __('Area Parkir');
+        $addButton = ['label' => __('Tambah Area'), 'route' => route('area-parkir.create'), 'routeName' => 'area-parkir.create'];
     } elseif (request()->routeIs('area-parkir.create')) {
-        $headerTitle = 'Tambah Area Parkir';
+        $headerTitle = __('Tambah Area Parkir');
     } elseif (request()->routeIs('kamera.index') || request()->routeIs('kamera.edit')) {
-        $headerTitle = 'Kamera';
-        $addButton = ['label' => 'Tambah Kamera', 'route' => route('kamera.create'), 'routeName' => 'kamera.create'];
+        $headerTitle = __('Kamera');
+        $addButton = ['label' => __('Tambah Kamera'), 'route' => route('kamera.create'), 'routeName' => 'kamera.create'];
     } elseif (request()->routeIs('kamera.create')) {
-        $headerTitle = 'Tambah Kamera';
+        $headerTitle = __('Tambah Kamera');
     } elseif (request()->routeIs('tarif.index') || request()->routeIs('tarif.show') || request()->routeIs('tarif.edit')) {
-        $headerTitle = 'Tarif Parkir';
-        $addButton = ['label' => 'Tambah Tarif', 'route' => route('tarif.create'), 'routeName' => 'tarif.create'];
+        $headerTitle = __('Tarif Parkir');
+        $addButton = ['label' => __('Tambah Tarif'), 'route' => route('tarif.create'), 'routeName' => 'tarif.create'];
     } elseif (request()->routeIs('tarif.create')) {
-        $headerTitle = 'Tambah Tarif';
+        $headerTitle = __('Tambah Tarif');
     } elseif (request()->routeIs('log-aktivitas.index') || request()->routeIs('log-aktivitas.show') || request()->routeIs('log-aktivitas.edit')) {
-        $headerTitle = 'Log Aktivitas';
-        $addButton = ['label' => 'Tambah Log Aktivitas', 'route' => route('log-aktivitas.create'), 'routeName' => 'log-aktivitas.create'];
+        $headerTitle = __('Log Aktivitas');
+        $addButton = ['label' => __('Tambah Log Aktivitas'), 'route' => route('log-aktivitas.create'), 'routeName' => 'log-aktivitas.create'];
     } elseif (request()->routeIs('log-aktivitas.create')) {
-        $headerTitle = 'Tambah Log Aktivitas';
+        $headerTitle = __('Tambah Log Aktivitas');
     } elseif (request()->routeIs('payment.select-transaction')) {
-        $headerTitle = 'Proses Pembayaran';
+        $headerTitle = __('Proses Pembayaran');
     } elseif (request()->routeIs('payment.create')) {
-        $headerTitle = 'Pembayaran';
+        $headerTitle = __('Pembayaran');
     } elseif (request()->routeIs('payment.success')) {
-        $headerTitle = 'Pembayaran Berhasil';
+        $headerTitle = __('Pembayaran Berhasil');
     } elseif (request()->routeIs('payment.index')) {
-        $headerTitle = 'Riwayat Pembayaran';
+        $headerTitle = __('Riwayat Pembayaran');
     } elseif (request()->routeIs('report.pembayaran')) {
-        $headerTitle = 'Laporan Pembayaran';
+        $headerTitle = __('Laporan Pembayaran');
     } elseif (request()->routeIs('report.transaksi')) {
-        $headerTitle = 'Laporan Transaksi';
+        $headerTitle = __('Laporan Transaksi');
     } elseif (request()->routeIs('parking.map.index')) {
-        $headerTitle = 'Peta Parkir';
+        $headerTitle = __('Peta Parkir');
     } elseif (request()->routeIs('user.profile')) {
-        $headerTitle = 'Profil Saya';
+        $headerTitle = __('Profil Saya');
     }
 @endphp
 <header class="app-top-header h-16 shrink-0 bg-[#020617] border-b border-white/10 sticky top-0 z-[55] lg:z-[55] isolate shadow-[0_1px_0_0_rgba(255,255,255,0.04)]">
@@ -100,6 +124,14 @@
                     <span class="hidden sm:inline">{{ $addButton['label'] }}</span>
                 </a>
             @endif
+
+            <div class="h-6 w-px bg-white/10 mx-1 lg:mx-2"></div>
+
+            <!-- Language Switcher -->
+            <div class="flex items-center bg-white/5 rounded-lg p-1 border border-white/5">
+                <a href="{{ route('lang.switch', 'id') }}" class="px-2 py-0.5 text-[9px] font-bold rounded {{ App::getLocale() == 'id' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 hover:text-white' }} transition-all uppercase tracking-tighter">ID</a>
+                <a href="{{ route('lang.switch', 'en') }}" class="px-2 py-0.5 text-[9px] font-bold rounded {{ App::getLocale() == 'en' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 hover:text-white' }} transition-all uppercase tracking-tighter">EN</a>
+            </div>
 
             <div class="h-6 w-px bg-white/10 mx-1 lg:mx-2"></div>
 

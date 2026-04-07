@@ -97,11 +97,35 @@ class PaymentController extends Controller
     /**
      * Riwayat pembayaran
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pembayarans = Pembayaran::with(['transaksi', 'petugas'])
-            ->orderBy('id_pembayaran', 'desc')
-            ->paginate(15);
+        $query = Pembayaran::with(['transaksi', 'petugas', 'user']);
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('midtrans_order_id', 'like', "%{$search}%")
+                  ->orWhereHas('transaksi.kendaraan', function($sub) use ($search) {
+                      $sub->where('plat_nomor', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('user', function($sub) use ($search) {
+                      $sub->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('waktu_pembayaran', '>=', $request->tanggal_dari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('waktu_pembayaran', '<=', $request->tanggal_sampai);
+        }
+
+        $pembayarans = $query->orderBy('id_pembayaran', 'desc')->paginate(15)->withQueryString();
 
         return view('payment.index', compact('pembayarans'));
     }

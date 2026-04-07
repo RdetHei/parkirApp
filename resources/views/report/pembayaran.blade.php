@@ -1,216 +1,193 @@
 @extends('layouts.app')
 
-@section('title','Report Pembayaran')
+@section('title', 'Report Pembayaran')
 
 @section('content')
-<div class="p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+<div class="p-8 relative z-10">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">Report Pembayaran</h1>
-            <p class="text-sm text-gray-500">Laporan transaksi pembayaran parkir</p>
+            <div class="flex items-center gap-3 mb-3">
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
+                    Financial Insights
+                </span>
+            </div>
+            <h1 class="text-4xl font-bold tracking-tight text-white">Payment <span class="text-emerald-500">Reports</span></h1>
+            <p class="text-slate-400 text-sm mt-2">Comprehensive analysis of all parking revenue and payment statuses.</p>
         </div>
-        <form action="{{ route('report.pembayaran.export-csv') }}" method="GET" class="inline-flex">
-            <input type="hidden" name="tanggal_dari" value="{{ request('tanggal_dari') }}">
-            <input type="hidden" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}">
-            <input type="hidden" name="status" value="{{ request('status') }}">
-            <button type="submit" class="inline-flex items-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                </svg>
-                Export CSV
-            </button>
-        </form>
+        <div class="flex items-center gap-4">
+            <form action="{{ route('report.pembayaran.export-csv') }}" method="GET" class="inline-flex">
+                <input type="hidden" name="tanggal_dari" value="{{ request('tanggal_dari') }}">
+                <input type="hidden" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}">
+                <input type="hidden" name="status" value="{{ request('status') }}">
+                <input type="hidden" name="metode" value="{{ request('metode') }}">
+                <button type="submit" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Export CSV
+                </button>
+            </form>
+        </div>
     </div>
 
-    <!-- Filter Card -->
-    <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Filter Data</h2>
+    <!-- Filter Console -->
+    <div class="card-pro mb-10 border-white/5 bg-white/[0.02]">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            </div>
+            <h2 class="text-[10px] font-black text-white uppercase tracking-widest">Report Parameters</h2>
+        </div>
+
         <form action="{{ route('report.pembayaran') }}" method="GET">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <div>
-                    <label for="tanggal_dari" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Dari</label>
-                    <input type="date" name="tanggal_dari" id="tanggal_dari" value="{{ request('tanggal_dari') }}"
-                           class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Search ID</label>
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Parkir ID..."
+                           class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white placeholder:text-slate-700 focus:outline-none focus:border-emerald-500/50 transition-all">
                 </div>
-
                 <div>
-                    <label for="tanggal_sampai" class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Sampai</label>
-                    <input type="date" name="tanggal_sampai" id="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
-                           class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Start Date</label>
+                    <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
+                           class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all [color-scheme:dark]">
                 </div>
-
                 <div>
-                    <label for="status" class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                    <select name="status" id="status"
-                            class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                        <option value="">-- Semua --</option>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">End Date</label>
+                    <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
+                           class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all [color-scheme:dark]">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Status</label>
+                    <select name="status"
+                            class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
+                        <option value="">All Statuses</option>
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="berhasil" {{ request('status') === 'berhasil' ? 'selected' : '' }}>Berhasil</option>
-                        <option value="gagal" {{ request('status') === 'gagal' ? 'selected' : '' }}>Gagal</option>
+                        <option value="berhasil" {{ request('status') === 'berhasil' ? 'selected' : '' }}>Success</option>
+                        <option value="gagal" {{ request('status') === 'gagal' ? 'selected' : '' }}>Failed</option>
                     </select>
                 </div>
-
                 <div>
-                    <label for="metode" class="block text-sm font-semibold text-gray-700 mb-2">Metode</label>
-                    <select name="metode" id="metode"
-                            class="block w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                        <option value="">-- Semua --</option>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Method</label>
+                    <select name="metode"
+                            class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
+                        <option value="">All Methods</option>
                         <option value="midtrans" {{ request('metode') === 'midtrans' ? 'selected' : '' }}>Midtrans</option>
+                        <option value="saldo" {{ request('metode') === 'saldo' ? 'selected' : '' }}>Saldo User</option>
                     </select>
                 </div>
             </div>
-
-            <div class="mt-4">
-                <button type="submit" class="w-full md:w-auto px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors">
-                    Terapkan Filter
-                </button>
+            <div class="mt-8 flex justify-end gap-3">
+                <a href="{{ route('report.pembayaran') }}" class="px-6 py-2.5 bg-slate-800 text-slate-400 font-bold text-[10px] uppercase tracking-widest rounded-xl border border-white/5 hover:bg-slate-700 transition-all">Reset</a>
+                <button type="submit" class="px-8 py-2.5 bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-emerald-400 transition-all">Generate Report</button>
             </div>
         </form>
     </div>
 
     <!-- Summary Statistics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-2xl p-5 border border-gray-200">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                </div>
-            </div>
-            <p class="text-sm text-gray-500 mb-1">Total Pembayaran</p>
-            <p class="text-2xl font-bold text-gray-900">{{ $count_pembayaran }}</p>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div class="card-pro border-white/5 bg-white/[0.02]">
+            <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">Total Payments</p>
+            <p class="text-2xl font-bold text-white">{{ $count_pembayaran }}</p>
         </div>
-
-        <div class="bg-white rounded-2xl p-5 border border-gray-200">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-            <p class="text-sm text-gray-500 mb-1">Total Nominal</p>
-            <p class="text-2xl font-bold text-gray-900">Rp {{ number_format($total_nominal, 0, ',', '.') }}</p>
+        <div class="card-pro border-white/5 bg-white/[0.02]">
+            <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Total Revenue</p>
+            <p class="text-2xl font-bold text-white">Rp {{ number_format($total_nominal, 0, ',', '.') }}</p>
         </div>
-
-        <div class="bg-white rounded-2xl p-5 border border-gray-200">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-            </div>
-            <p class="text-sm text-gray-500 mb-1">Rata-rata Nominal</p>
-            <p class="text-2xl font-bold text-gray-900">Rp {{ number_format($avg_nominal, 0, ',', '.') }}</p>
+        <div class="card-pro border-white/5 bg-white/[0.02]">
+            <p class="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-2">Average Ticket</p>
+            <p class="text-2xl font-bold text-white">Rp {{ number_format($avg_nominal, 0, ',', '.') }}</p>
         </div>
-
-        <div class="bg-white rounded-2xl p-5 border border-gray-200">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-            </div>
-            <p class="text-sm text-gray-500 mb-1">Periode</p>
-            <p class="text-sm font-bold text-gray-900">
-                {{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d M Y') : 'Awal' }}
-                -
-                {{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d M Y') : 'Akhir' }}
+        <div class="card-pro border-white/5 bg-white/[0.02]">
+            <p class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-2">Active Period</p>
+            <p class="text-sm font-bold text-white leading-snug">
+                {{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d M Y') : 'Start' }}
+                <span class="text-slate-500 font-normal">to</span>
+                {{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d M Y') : 'Now' }}
             </p>
         </div>
     </div>
 
     <!-- Data Table -->
-    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 class="text-lg font-bold text-gray-900">Data Pembayaran</h2>
+    <div class="card-pro !p-0 overflow-hidden shadow-2xl">
+        <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <h2 class="text-sm font-bold text-white uppercase tracking-widest">Payment Audit Logs</h2>
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ $pembayarans->total() }} records</span>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Transaksi</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nominal</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Metode</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Petugas</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Waktu</th>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-white/[0.01] text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        <th class="px-8 py-4">Ref ID</th>
+                        <th class="px-8 py-4">Transaction</th>
+                        <th class="px-8 py-4">Nominal</th>
+                        <th class="px-8 py-4">Method</th>
+                        <th class="px-8 py-4">Status</th>
+                        <th class="px-8 py-4">Officer</th>
+                        <th class="px-8 py-4 text-right">Timestamp</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-white/5">
                     @forelse($pembayarans as $item)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-semibold text-gray-900">#{{ $item->id_pembayaran }}</span>
+                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                            <td class="px-8 py-5">
+                                <span class="text-[10px] font-mono font-bold text-emerald-500/80">#{{ str_pad($item->id_pembayaran, 8, '0', STR_PAD_LEFT) }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-gray-900">Parkir #{{ $item->id_parkir }}</span>
+                            <td class="px-8 py-5 text-sm text-slate-300">
+                                Parkir #{{ $item->id_parkir }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-bold text-green-600">Rp {{ number_format($item->nominal, 0, ',', '.') }}</span>
+                            <td class="px-8 py-5">
+                                <span class="text-sm font-bold text-white">Rp {{ number_format($item->nominal, 0, ',', '.') }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-8 py-5">
                                 @if($item->metode === 'midtrans')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Midtrans
-                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">Midtrans</span>
+                                @elseif($item->metode === 'saldo')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Saldo User</span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        QR Scan
-                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-slate-800 text-slate-500 border border-white/5">Other</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-8 py-5">
                                 @if($item->status === 'berhasil')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Berhasil
-                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Success</span>
                                 @elseif($item->status === 'pending')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        Pending
-                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">Pending</span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        Gagal
-                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-rose-500/10 text-rose-500 border border-rose-500/20">Failed</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-8 py-5">
                                 <div class="flex items-center gap-2">
                                     @if($item->petugas)
-                                        <x-user-avatar :user="$item->petugas" size="sm" round="full" class="!bg-green-100 !text-green-600 !border-0" />
-                                        <span class="text-sm text-gray-900">{{ $item->petugas->name }}</span>
+                                        <div class="w-6 h-6 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-bold text-[10px]">
+                                            {{ strtoupper(substr($item->petugas->name, 0, 1)) }}
+                                        </div>
+                                        <span class="text-xs font-medium text-slate-300">{{ $item->petugas->name }}</span>
                                     @else
-                                        <span class="text-sm text-gray-400">-</span>
+                                        <span class="text-xs text-slate-600 italic">System</span>
                                     @endif
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-8 py-5 text-right">
                                 @if($item->waktu_pembayaran)
-                                    <div class="text-sm text-gray-900">{{ $item->waktu_pembayaran->format('d M Y') }}</div>
-                                    <div class="text-xs text-gray-500">{{ $item->waktu_pembayaran->format('H:i') }}</div>
+                                    <div class="text-xs font-bold text-white">{{ $item->waktu_pembayaran->format('d M Y') }}</div>
+                                    <div class="text-[10px] text-slate-500 mt-0.5 font-semibold">{{ $item->waktu_pembayaran->format('H:i') }}</div>
                                 @else
-                                    <span class="text-sm text-gray-400">-</span>
+                                    <span class="text-xs text-slate-600">-</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
+                            <td colspan="7" class="px-8 py-24 text-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-20 h-20 bg-slate-900 border border-white/5 rounded-[2rem] flex items-center justify-center text-slate-700 mb-6">
+                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                                     </div>
-                                    <p class="text-gray-900 font-semibold mb-1">Tidak Ada Data Pembayaran</p>
-                                    <p class="text-sm text-gray-500">Belum ada transaksi pembayaran untuk periode ini</p>
+                                    <h3 class="text-lg font-bold text-white mb-2">No payment records</h3>
+                                    <p class="text-slate-500 text-sm max-w-xs mx-auto">Try adjusting your filters or search criteria to find specific payments.</p>
                                 </div>
                             </td>
                         </tr>
@@ -220,7 +197,7 @@
         </div>
 
         @if($pembayarans->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div class="px-8 py-6 border-t border-white/5 bg-white/[0.01]">
                 {{ $pembayarans->links() }}
             </div>
         @endif

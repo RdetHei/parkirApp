@@ -26,8 +26,10 @@ Route::post('/kendaraan/upload', [KendaraanController::class, 'store']);
 
 // Public Routes
 Route::get('/', function () {
-    return view('welcome');
+    return view('layouts.landing');
 });
+
+Route::get('/lang/{locale}', [\App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
 
 Route::post('/api/contact', [ContactController::class, 'store'])->name('contact.store');
 

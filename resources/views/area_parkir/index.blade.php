@@ -39,10 +39,26 @@
     --}}
 
     {{-- Summary bar --}}
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             Zone Inventory — <span class="text-white">{{ $areas->total() }}</span> total
         </p>
+
+        <form action="{{ route('area-parkir.index') }}" method="GET" class="flex items-center gap-3">
+            <div class="relative min-w-[240px]">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Search name, daerah..." 
+                       class="block w-full pl-10 pr-3 py-2 bg-slate-900/50 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all">
+            </div>
+
+            @if(request()->filled('q'))
+                <a href="{{ route('area-parkir.index') }}" class="p-2 text-slate-500 hover:text-white transition-colors" title="Clear Search">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </a>
+            @endif
+        </form>
     </div>
 
     @if($areas->isEmpty())

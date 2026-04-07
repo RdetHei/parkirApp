@@ -44,14 +44,37 @@
 
         <!-- Main Data Table -->
         <div class="card-pro !p-0 overflow-hidden shadow-2xl">
-            <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 class="text-sm font-bold text-white uppercase tracking-widest">Live Inventory <span class="text-slate-500 ml-2 font-medium">({{ $transaksis->total() }} total)</span></h2>
-                <div class="flex items-center gap-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Search plate..." class="bg-slate-900/50 border border-white/5 rounded-lg px-4 py-1.5 text-[10px] text-white focus:outline-none focus:border-emerald-500/50 min-w-[200px]">
-                        <svg class="w-3 h-3 text-slate-600 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                
+                <form action="{{ url()->current() }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    {{-- Maintain status query param if exists --}}
+                    @if(request('status'))
+                        <input type="hidden" name="status" value="{{ request('status') }}">
+                    @endif
+
+                    <div class="relative min-w-[200px]">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Search plate..." 
+                               class="block w-full pl-10 pr-3 py-2 bg-slate-900/50 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all">
                     </div>
-                </div>
+                    
+                    <select name="area" onchange="this.form.submit()" 
+                            class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
+                        <option value="">All Areas</option>
+                        @foreach($areas as $area)
+                            <option value="{{ $area->id_area }}" {{ request('area') == $area->id_area ? 'selected' : '' }}>{{ $area->nama_area }}</option>
+                        @endforeach
+                    </select>
+
+                    @if(request()->anyFilled(['q', 'area']))
+                        <a href="{{ url()->current() }}{{ request('status') ? '?status='.request('status') : '' }}" class="p-2 text-slate-500 hover:text-white transition-colors" title="Clear Filters">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </a>
+                    @endif
+                </form>
             </div>
 
             <div class="overflow-x-auto">

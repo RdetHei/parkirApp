@@ -60,10 +60,11 @@ class ParkingSlotController extends Controller
                 $vehiclePlate = null;
                 $areaName = $slot->areaParkir?->nama_area ?? null;
                 $transaksiId = null;
+                $isMineFlag = false;
 
                 if (isset($activeBySlot[$slot->id])) {
                     $tx = $activeBySlot[$slot->id];
-                    $isMine = $currentUserId && $tx['user_id'] === $currentUserId;
+                    $isMine = $currentUserId && (int) $tx['user_id'] === (int) $currentUserId;
                     if ($tx['status'] === 'bookmarked') {
                         $status = $isMine ? 'reserved-by-me' : 'reserved';
                     } else {
@@ -71,12 +72,14 @@ class ParkingSlotController extends Controller
                     }
                     $vehiclePlate = $tx['vehicle_plate'] ?? null;
                     $transaksiId = $tx['transaksi_id'] ?? null;
+                    $isMineFlag = $isMine;
                 } elseif (isset($activeReservationsBySlot[$slot->id])) {
                     $rsv = $activeReservationsBySlot[$slot->id];
-                    $isMine = $currentUserId && $rsv['user_id'] === $currentUserId;
+                    $isMine = $currentUserId && (int) $rsv['user_id'] === (int) $currentUserId;
                     $status = $isMine ? 'reserved-by-me' : 'reserved';
                     $vehiclePlate = $rsv['vehicle_plate'] ?? null;
                     $transaksiId = $rsv['reservation_id'] ?? null;
+                    $isMineFlag = $isMine;
                 }
 
                 $slots[] = [
@@ -87,6 +90,7 @@ class ParkingSlotController extends Controller
                     'width' => (int) $slot->width,
                     'height' => (int) $slot->height,
                     'status' => $status,
+                    'is_mine' => $isMineFlag ?? false,
                     'vehicle_plate' => $vehiclePlate,
                     'area_name' => $areaName,
                     'notes' => $slot->notes,

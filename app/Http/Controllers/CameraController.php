@@ -7,9 +7,24 @@ use App\Models\Camera;
 
 class CameraController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = Camera::orderBy('is_default', 'desc')->orderBy('id')->paginate(15);
+        $query = Camera::query();
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where('nama', 'like', "%{$search}%");
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        $items = $query->orderBy('is_default', 'desc')
+                      ->orderBy('id', 'desc')
+                      ->paginate(15)
+                      ->withQueryString();
+
         return view('kamera.index', compact('items'));
     }
 

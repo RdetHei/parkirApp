@@ -11,10 +11,17 @@ class TarifController extends Controller
 {
     use LogsActivity;
 
-    public function index()
+    public function index(Request $request)
     {
-        $items = Tarif::orderBy('id_tarif','desc')->paginate(15);
-        $title = 'Data Tarif';
+        $query = Tarif::query();
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where('jenis_kendaraan', 'like', "%{$search}%");
+        }
+
+        $items = $query->orderBy('id_tarif', 'desc')->paginate(15)->withQueryString();
+        $title = 'Tarif Parkir';
         return view('tarif.index', compact('items', 'title'));
     }
 

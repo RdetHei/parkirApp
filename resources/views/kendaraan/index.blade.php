@@ -35,10 +35,33 @@
 
     <!-- Main Data Table -->
     <div class="card-pro !p-0 overflow-hidden shadow-2xl">
-        <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-            <h2 class="text-sm font-bold text-white uppercase tracking-widest">Registered Assets <span class="text-slate-500 ml-2 font-medium">({{ $items->total() }} total)</span></h2>
+        <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h2 class="text-sm font-bold text-white uppercase tracking-widest">Registered Assets <span class="text-slate-500 ml-2 font-medium">({{ $kendaraans->total() }} total)</span></h2>
+
+            <form action="{{ route('kendaraan.index') }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div class="relative min-w-[240px]">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Search plat, pemilik..."
+                           class="block w-full pl-10 pr-3 py-2 bg-slate-900/50 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all">
+                </div>
+
+                <select name="jenis" onchange="this.form.submit()"
+                        class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
+                    <option value="">All Types</option>
+                    <option value="motor" {{ request('jenis') == 'motor' ? 'selected' : '' }}>Motor</option>
+                    <option value="mobil" {{ request('jenis') == 'mobil' ? 'selected' : '' }}>Mobil</option>
+                </select>
+
+                @if(request()->anyFilled(['q', 'jenis']))
+                    <a href="{{ route('kendaraan.index') }}" class="p-2 text-slate-500 hover:text-white transition-colors" title="Clear Filters">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </a>
+                @endif
+            </form>
         </div>
-        
+
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -52,7 +75,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
-                    @forelse($items as $item)
+                    @forelse($kendaraans as $item)
                         <tr class="hover:bg-white/[0.02] transition-colors group">
                             <td class="px-8 py-5">
                                 <span class="text-[10px] font-mono font-bold text-emerald-500/80">#{{ str_pad($item->id_kendaraan, 5, '0', STR_PAD_LEFT) }}</span>
@@ -149,9 +172,9 @@
             </table>
         </div>
 
-        @if($items->hasPages())
+        @if($kendaraans->hasPages())
         <div class="px-8 py-6 border-t border-white/5 bg-white/[0.01]">
-            {{ $items->links() }}
+            {{ $kendaraans->links() }}
         </div>
         @endif
     </div>

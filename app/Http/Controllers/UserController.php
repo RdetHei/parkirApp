@@ -39,9 +39,25 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'Saldo berhasil ditambahkan.');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('id', 'desc')->paginate(15);
+        $query = User::query();
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('rfid_uid', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        $users = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
         $title = 'Data Pengguna';
         return view('users.index', compact('users', 'title'));
     }

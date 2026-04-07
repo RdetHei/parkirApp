@@ -14,10 +14,20 @@ class AreaParkirController extends Controller
 {
     use LogsActivity;
 
-    public function index()
+    public function index(Request $request)
     {
-        $areas = AreaParkir::withCount('slots')->orderBy('id_area', 'desc')->paginate(15);
-        $title = 'Data Area Parkir';
+        $query = AreaParkir::query();
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_area', 'like', "%{$search}%")
+                  ->orWhere('daerah', 'like', "%{$search}%");
+            });
+        }
+
+        $areas = $query->orderBy('id_area', 'desc')->paginate(15)->withQueryString();
+        $title = 'Area Parkir';
         return view('area_parkir.index', compact('areas', 'title'));
     }
 
@@ -52,8 +62,12 @@ class AreaParkirController extends Controller
                 'folder' => 'neston/maps'
             ]);
             $data['map_image'] = $upload['secure_url'];
+            $data['map_width'] = $upload['width'];
+            $data['map_height'] = $upload['height'];
         } else {
             $data['map_image'] = 'https://res.cloudinary.com/' . env('CLOUDINARY_CLOUD_NAME') . '/image/upload/v1/neston/maps/default.png';
+            $data['map_width'] = 1000;
+            $data['map_height'] = 800;
         }
 
         if (empty($data['map_code'])) {
@@ -112,6 +126,8 @@ class AreaParkirController extends Controller
                 'folder' => 'neston/maps'
             ]);
             $data['map_image'] = $upload['secure_url'];
+            $data['map_width'] = $upload['width'];
+            $data['map_height'] = $upload['height'];
         }
 
         $area->update($data);

@@ -10,12 +10,12 @@
                     Enterprise Console
                 </span>
             </div>
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">System <span class="text-emerald-500">Overview</span></h1>
-            <p class="text-slate-400 text-sm mt-2">Monitoring operational performance and real-time analytics.</p>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{{ __('System') }} <span class="text-emerald-500">{{ __('Overview') }}</span></h1>
+            <p class="text-slate-400 text-sm mt-2">{{ __('Monitoring operational performance and real-time analytics.') }}</p>
         </div>
         <div class="flex items-center gap-4">
             <div class="flex flex-col items-end">
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Current Date</span>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{{ __('Current Date') }}</span>
                 <div class="inline-flex items-center gap-3 px-4 py-2 bg-slate-900/50 border border-white/5 rounded-xl text-xs font-bold text-white shadow-xl backdrop-blur-md">
                     <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
                     {{ now()->translatedFormat('d F Y') }}
@@ -36,14 +36,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <span class="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20 uppercase">Live</span>
+                    <span class="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20 uppercase">{{ __('Live') }}</span>
                 </div>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">Revenue Today</p>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">{{ __('Revenue Today') }}</p>
                 <div class="flex items-baseline gap-2">
                     <h3 class="text-3xl font-black text-white tracking-tighter">Rp {{ number_format($pendapatanHariIni, 0, ',', '.') }}</h3>
                 </div>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase">Updated now</span>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase">{{ __('Updated now') }}</span>
                     <div class="flex items-center gap-1 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 10l7-7m0 0l7 7m-7-7v18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                         +{{ rand(2, 5) }}%
@@ -63,11 +63,11 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">Total Transactions</p>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">{{ __('Total Transactions') }}</p>
                 <h3 class="text-3xl font-black text-white tracking-tighter">{{ $transaksiHariIni }}</h3>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase">Daily throughput</span>
-                    <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">+{{ rand(5, 15) }}% vs avg</span>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase">{{ __('Daily throughput') }}</span>
+                    <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">+{{ rand(5, 15) }}% {{ __('vs avg') }}</span>
                 </div>
             </div>
         </div>
@@ -87,11 +87,11 @@
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                     </span>
                 </div>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">Active Parking</p>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">{{ __('Active Parking') }}</p>
                 <h3 class="text-3xl font-black text-white tracking-tighter">{{ $transaksiAktif }}</h3>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase">Currently in-lot</span>
-                    <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest">High Load</span>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase">{{ __('Currently in-lot') }}</span>
+                    <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest">{{ __('High Load') }}</span>
                 </div>
             </div>
         </div>
@@ -107,11 +107,11 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">Total Members</p>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1">{{ __('Total Members') }}</p>
                 <h3 class="text-3xl font-black text-white tracking-tighter">{{ $totalUser }}</h3>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                    <span class="text-[10px] text-slate-500 font-bold uppercase">Verified accounts</span>
-                    <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Active</span>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase">{{ __('Verified accounts') }}</span>
+                    <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest">{{ __('Active') }}</span>
                 </div>
             </div>
         </div>
@@ -122,17 +122,17 @@
         <div class="lg:col-span-2 card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.5s">
             <div class="p-8 flex items-center justify-between border-b border-white/5 bg-white/[0.01]">
                 <div>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Revenue Analytics</h2>
-                    <p class="text-xs text-slate-500 mt-1 font-medium">Income performance for the last 7 days</p>
+                    <h2 class="text-xl font-bold text-white tracking-tight">{{ __('Revenue Analytics') }}</h2>
+                    <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Income performance for the last 7 days') }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                         <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Live Sync</span>
+                        <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{{ __('Live Sync') }}</span>
                     </div>
                     <select class="bg-slate-950 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer">
-                        <option>Last 7 Days</option>
-                        <option>Last 30 Days</option>
+                        <option>{{ __('Last 7 Days') }}</option>
+                        <option>{{ __('Last 30 Days') }}</option>
                     </select>
                 </div>
             </div>
@@ -145,21 +145,21 @@
 
         <div class="card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.6s">
             <div class="p-8 border-b border-white/5 bg-white/[0.01]">
-                <h2 class="text-xl font-bold text-white tracking-tight">Vehicle Distribution</h2>
-                <p class="text-xs text-slate-500 mt-1 font-medium">Breakdown by vehicle category</p>
+                <h2 class="text-xl font-bold text-white tracking-tight">{{ __('Vehicle Distribution') }}</h2>
+                <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Breakdown by vehicle category') }}</p>
             </div>
             <div class="p-8">
                 <div class="h-[260px] flex items-center justify-center relative">
                     <canvas id="vehicleChart"></canvas>
                     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div class="text-center">
-                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Total</p>
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{{ __('Total') }}</p>
                             <p class="text-4xl font-black text-white tracking-tighter">{{ array_sum($grafikKendaraan['data']) }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="mt-10 space-y-5">
-                    @php 
+                    @php
                         $totalV = array_sum($grafikKendaraan['data']);
                         $colors = ['#10b981', '#6366f1', '#f59e0b', '#3b82f6'];
                     @endphp
@@ -187,8 +187,8 @@
         <!-- Monitoring Area -->
         <div class="card-pro !p-0 overflow-hidden">
             <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-                <h2 class="text-sm font-black text-white uppercase tracking-widest">Area Monitoring</h2>
-                <a href="{{ route('area-parkir.index') }}" class="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-[0.2em] transition-all">Manage <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                <h2 class="text-sm font-black text-white uppercase tracking-widest">{{ __('Area Monitoring') }}</h2>
+                <a href="{{ route('area-parkir.index') }}" class="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-[0.2em] transition-all">{{ __('Manage') }} <i class="fa-solid fa-arrow-right ml-1"></i></a>
             </div>
             <div class="p-8 space-y-8">
                 @foreach($areaParkir as $area)
@@ -203,7 +203,7 @@
                                 <div class="w-1.5 h-1.5 rounded-full {{ $colorClass }}"></div>
                                 <span class="text-xs font-bold text-slate-300 group-hover:text-white transition-colors uppercase tracking-widest">{{ $area->nama_area }}</span>
                                 @if($percent > 90)
-                                    <span class="px-2 py-0.5 bg-rose-500/10 text-rose-500 text-[8px] font-black uppercase rounded border border-rose-500/20 animate-pulse">Critical</span>
+                                    <span class="px-2 py-0.5 bg-rose-500/10 text-rose-500 text-[8px] font-black uppercase rounded border border-rose-500/20 animate-pulse">{{ __('Critical') }}</span>
                                 @endif
                             </div>
                             <span class="text-[10px] font-black text-slate-500 tabular-nums">
@@ -223,17 +223,17 @@
         <!-- Recent Activity Table -->
         <div class="lg:col-span-2 card-pro !p-0 overflow-hidden">
             <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-                <h2 class="text-sm font-black text-white uppercase tracking-widest">Live Activity Stream</h2>
-                <a href="{{ route('transaksi.index') }}" class="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-[0.2em] transition-all">Full Logs <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                <h2 class="text-sm font-black text-white uppercase tracking-widest">{{ __('Live Activity Stream') }}</h2>
+                <a href="{{ route('transaksi.index') }}" class="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-[0.2em] transition-all">{{ __('Full Logs') }} <i class="fa-solid fa-arrow-right ml-1"></i></a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="bg-white/[0.01] text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
-                            <th class="px-8 py-5">Vehicle Entity</th>
-                            <th class="px-8 py-5">Access Point</th>
-                            <th class="px-8 py-5">Event Time</th>
-                            <th class="px-8 py-5 text-right">Status</th>
+                            <th class="px-8 py-5">{{ __('Vehicle Entity') }}</th>
+                            <th class="px-8 py-5">{{ __('Access Point') }}</th>
+                            <th class="px-8 py-5">{{ __('Event Time') }}</th>
+                            <th class="px-8 py-5 text-right">{{ __('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
@@ -247,7 +247,7 @@
                                         </div>
                                         <div>
                                             <p class="text-sm font-black text-white tracking-tight">{{ $trx->kendaraan?->plat_nomor ?? '-' }}</p>
-                                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">{{ $trx->kendaraan?->jenis_kendaraan ?? 'Vehicle' }}</p>
+                                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.1em]">{{ $trx->kendaraan?->jenis_kendaraan ?? __('Vehicle') }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -274,7 +274,7 @@
                                         <div class="w-20 h-20 bg-slate-950 rounded-[2.5rem] flex items-center justify-center border border-white/5 mb-6">
                                             <svg class="w-10 h-10 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                                         </div>
-                                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">No activity detected in the last 24h</p>
+                                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">{{ __('No activity detected in the last 24h') }}</p>
                                     </div>
                                 </td>
                             </tr>

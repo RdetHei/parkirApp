@@ -30,12 +30,34 @@
             menampilkan form register langsung di dalam tabel — tidak ada panel terpisah.
         --}}
         <div class="card-pro !p-0 overflow-hidden">
-            <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <div class="p-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h3 class="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-3">
                     <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-                    Daftar User
+                    Daftar User <span class="text-slate-500 ml-2 font-medium">({{ $users->total() }} total)</span>
                 </h3>
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total: {{ $users->total() }}</span>
+                
+                <form action="{{ route('admin.rfid.index') }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div class="relative min-w-[240px]">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama, email, UID..." 
+                               class="block w-full pl-10 pr-3 py-2 bg-slate-900/50 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
+                    </div>
+                    
+                    <select name="status" onchange="this.form.submit()" 
+                            class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all min-w-[120px]">
+                        <option value="">Semua Status</option>
+                        <option value="linked" {{ request('status') == 'linked' ? 'selected' : '' }}>Sudah Ada RFID</option>
+                        <option value="unlinked" {{ request('status') == 'unlinked' ? 'selected' : '' }}>Belum Ada RFID</option>
+                    </select>
+
+                    @if(request()->anyFilled(['q', 'status']))
+                        <a href="{{ route('admin.rfid.index') }}" class="p-2 text-slate-500 hover:text-white transition-colors" title="Clear Filters">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </a>
+                    @endif
+                </form>
             </div>
 
             <div class="overflow-x-auto">

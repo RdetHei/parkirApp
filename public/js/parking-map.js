@@ -1,361 +1,339 @@
-// Leaflet map untuk indoor parking dengan CRS.Simple dan image overlay
+// Leaflet map for indoor parking with CRS.Simple and image overlay
+(function() {
+    const container = document.getElementById('parking-map');
+    if (!container) return;
 
-const container = document.getElementById('parking-map');
-if (!container) {
-    // Tidak ada container
-} else {
-    const FLOOR_IMAGE_URL = container.dataset.imageUrl || '/images/floor1.png';
-    const FLOOR_WIDTH = parseInt(container.dataset.width || '1000', 10);
-    const FLOOR_HEIGHT = parseInt(container.dataset.height || '800', 10);
-    const MAP_ID = container.dataset.mapId || '';
-
-    const imageBounds = [[0, 0], [FLOOR_HEIGHT, FLOOR_WIDTH]];
-
-    const map = L.map('parking-map', {
-        crs: L.CRS.Simple,
-        minZoom: -2,
-        maxZoom: 4,
-        zoomControl: true,
-        attributionControl: false
-    });
-
-    L.imageOverlay(FLOOR_IMAGE_URL, imageBounds).addTo(map);
-    map.fitBounds(imageBounds);
-
-    const slotsLayer = L.layerGroup().addTo(map);
-    const camerasLayer = L.layerGroup().addTo(map);
-    const userMarkerLayer = L.layerGroup().addTo(map);
-
-    function getSlotColor(status) {
-        switch (status) {
-            case 'occupied':
-                return {
-                    border: '#dc2626',
-                    fill: '#fecaca',
-                    text: '#991b1b'
-                };
-            case 'reserved':
-                return {
-                    border: '#ea580c',
-                    fill: '#ffedd5',
-                    text: '#9a3412'
-                };
-            case 'reserved-by-me':
-                return {
-                    border: '#2563eb',
-                    fill: '#dbeafe',
-                    text: '#1e40af'
-                };
-            case 'empty':
-            default:
-                return {
-                    border: '#16a34a',
-                    fill: '#dcfce7',
-                    text: '#166534'
-                };
-        }
-    }
-
-    function updateSummary(summary) {
-        const el = document.getElementById('parking-map-summary');
-        if (!el) return;
-        if (!summary) {
-            el.innerHTML = '<span class="text-gray-400">Gagal memuat ringkasan.</span>';
-            return;
-        }
-        
-        el.innerHTML = `
-            <div class="flex flex-wrap items-center gap-4 py-2">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-gray-400"></span>
-                    <span class="font-medium text-gray-700">Total: ${summary.total}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                    <span class="font-medium text-emerald-700">Kosong: ${summary.empty}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                    <span class="font-medium text-red-700">Terisi: ${summary.occupied}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-orange-500"></span>
-                    <span class="font-medium text-orange-700">Reserved: ${summary.reserved}</span>
-                </div>
-            </div>
-        `;
-    }
-
-    function buildSlotPopup(slot) {
-        const colors = getSlotColor(slot.status);
-        const statusLabel = slot.status.charAt(0).toUpperCase() + slot.status.slice(1).replace('-', ' ');
-        
-        return `
-            <div class="p-1 min-w-[180px]">
-                <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Slot Detail</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: ${colors.fill}; color: ${colors.text}; border: 1px solid ${colors.border}">
-                        ${statusLabel}
-                    </span>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-gray-400">ID / Kode</span>
-                        <span class="text-sm font-bold text-gray-900">${slot.code || slot.id || '-'}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-gray-400">Area</span>
-                        <span class="text-sm font-semibold text-gray-700">${slot.area_name || '-'}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-gray-400">Kendaraan</span>
-                        <span class="text-sm font-mono font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">${slot.vehicle_plate || '-'}</span>
-                    </div>
-                    ${slot.notes ? `
-                    <div class="mt-2 pt-2 border-t border-gray-50">
-                        <span class="text-[10px] text-gray-400 uppercase block mb-1">Catatan</span>
-                        <p class="text-xs text-gray-600 italic">${slot.notes}</p>
-                    </div>` : ''}
-                </div>
-            </div>
-        `;
-    }
-
+    const imageUrl = container.dataset.imageUrl || '';
+    const mapWidth = parseInt(container.dataset.width || '1000', 10);
+    const mapHeight = parseInt(container.dataset.height || '800', 10);
+    const mapId = container.dataset.mapId || '';
     const bookUrlTemplate = container.dataset.bookUrlTemplate || null;
     const unbookUrlTemplate = container.dataset.unbookUrlTemplate || null;
     const csrfToken = container.dataset.csrfToken || null;
     const bookingEnabled = !!bookUrlTemplate && !!csrfToken;
 
-    function renderSlots(slots) {
-        slotsLayer.clearLayers();
-        if (!Array.isArray(slots)) return;
+    if (!imageUrl) {
+        console.error('Map image URL is missing');
+        return;
+    }
 
-        // Find my parked slot if any
-        const mySlot = slots.find(s => s.status === 'reserved-by-me' || (s.status === 'occupied' && s.is_mine));
-        if (mySlot) {
-            const latLng = L.latLng(mySlot.y + (mySlot.height / 2), mySlot.x + (mySlot.width / 2));
-            
-            userMarkerLayer.clearLayers();
-            const userIcon = L.divIcon({
-                className: 'user-location-marker',
-                html: `
-                    <div class="relative flex items-center justify-center">
-                        <div class="absolute w-12 h-12 bg-indigo-500/20 rounded-full animate-ping"></div>
-                        <div class="w-8 h-8 bg-indigo-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center text-white">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                    </div>
-                `,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
-            });
+    let map, slotsLayer, camerasLayer, userMarkerLayer;
 
-            L.marker(latLng, { icon: userIcon })
-                .bindPopup('<div class="p-2 font-bold text-center">Lokasi Kendaraan Anda</div>')
-                .addTo(userMarkerLayer);
+    function initMap() {
+        if (map) map.remove();
+
+        map = L.map('parking-map', {
+            crs: L.CRS.Simple,
+            minZoom: -2,
+            maxZoom: 3,
+            zoomControl: false,
+            attributionControl: false
+        });
+
+        const bounds = [[0, 0], [mapHeight, mapWidth]];
+        const overlay = L.imageOverlay(imageUrl, bounds);
+        overlay.addTo(map);
+
+        overlay.on('load', () => {
+            map.fitBounds(bounds);
+            const loader = document.getElementById('map-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 500);
+            }
+            map.invalidateSize();
+        });
+
+        // Fallback for loader
+        setTimeout(() => {
+            const loader = document.getElementById('map-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 500);
+            }
+            map.invalidateSize();
+            map.fitBounds(bounds);
+        }, 2500);
+
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        slotsLayer = L.layerGroup().addTo(map);
+        camerasLayer = L.layerGroup().addTo(map);
+        userMarkerLayer = L.layerGroup().addTo(map);
+
+        fetchData();
+    }
+
+    function getSlotColor(status) {
+        switch (status) {
+            case 'occupied':
+                return { border: '#475569', fill: '#475569', text: '#fff' };
+            case 'reserved':
+            case 'reserved-by-me':
+                return { border: '#f59e0b', fill: '#f59e0b', text: '#fff' };
+            case 'empty':
+            default:
+                return { border: '#10b981', fill: '#10b981', text: '#fff' };
         }
+    }
 
-        slots.forEach(function (slot) {
-            const topLeft = L.latLng(slot.y, slot.x);
-            const bottomRight = L.latLng(slot.y + slot.height, slot.x + slot.width);
-            const rectBounds = [topLeft, bottomRight];
+    function buildSlotPopup(slot) {
+        const statusLabel = slot.status === 'reserved-by-me' ? 'Milik Anda' : (slot.status.charAt(0).toUpperCase() + slot.status.slice(1));
+        const color = getSlotColor(slot.status).border;
+
+        return `
+            <div style="min-width:180px; padding: 12px; background: #0f172a; border-radius: 12px; color: #fff;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <span style="font-size:14px; font-weight:900;">Slot ${slot.code || '—'}</span>
+                    <span style="padding:2px 8px; background:${color}20; border:1px solid ${color}40; font-size:9px; font-weight:800; color:${color}; border-radius:6px; text-transform:uppercase;">${statusLabel}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div>
+                        <p style="font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:0;">Plat Nomor</p>
+                        <p style="font-size:12px; font-weight:700; color:#fff; margin:2px 0 0 0;">${slot.vehicle_plate || '—'}</p>
+                    </div>
+                    ${slot.notes ? `
+                    <div>
+                        <p style="font-size:9px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin:0;">Catatan</p>
+                        <p style="font-size:11px; color:#94a3b8; margin:2px 0 0 0;">${slot.notes}</p>
+                    </div>` : ''}
+                </div>
+                ${bookingEnabled && slot.status === 'empty' ? `
+                <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
+                    <p style="font-size:10px; color: #10b981; font-weight:bold; text-align:center; margin:0;">Klik slot untuk booking</p>
+                </div>` : ''}
+            </div>
+        `;
+    }
+
+    function renderSlots(slots) {
+        if (!slotsLayer) return;
+        slotsLayer.clearLayers();
+        userMarkerLayer.clearLayers();
+
+        slots.forEach(slot => {
+            const y = mapHeight - slot.y - slot.height;
+            const bounds = [[y, slot.x], [y + slot.height, slot.x + slot.width]];
             const colors = getSlotColor(slot.status);
 
-            const rect = L.rectangle(rectBounds, {
+            const rect = L.rectangle(bounds, {
                 color: colors.border,
                 weight: 2,
                 fillColor: colors.fill,
-                fillOpacity: 0.8,
-                className: 'parking-slot-rect transition-all duration-300'
+                fillOpacity: 0.3,
+                className: 'parking-slot-rect'
             });
 
             rect.bindPopup(buildSlotPopup(slot), {
                 className: 'modern-popup',
-                maxWidth: 300
+                offset: [0, -5]
             });
+
             rect.addTo(slotsLayer);
 
-            // Hover effect
-            rect.on('mouseover', function() {
-                this.setStyle({
-                    fillOpacity: 1,
-                    weight: 3
+            // Special marker for my slot
+            if (slot.status === 'reserved-by-me' || (slot.status === 'occupied' && slot.is_mine)) {
+                const centerY = y + (slot.height / 2);
+                const centerX = slot.x + (slot.width / 2);
+                
+                const userIcon = L.divIcon({
+                    className: 'user-location-marker',
+                    html: `
+                        <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+                            <div style="position:absolute; width:30px; height:30px; background:#3b82f640; border-radius:50%; animation:ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                            <div style="width:16px; height:16px; background:#3b82f6; border:2px solid #fff; border-radius:50%; box-shadow:0 0 10px rgba(59,130,246,0.5);"></div>
+                        </div>
+                    `,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
                 });
-            });
-            rect.on('mouseout', function() {
-                this.setStyle({
-                    fillOpacity: 0.8,
-                    weight: 2
-                });
-            });
+
+                L.marker([centerY, centerX], { icon: userIcon, zIndexOffset: 1000 })
+                    .bindPopup('<div style="padding:5px 10px; font-weight:bold; font-size:11px; color:#fff; background:#1e293b; border-radius:6px;">Lokasi Anda</div>', { className: 'modern-popup' })
+                    .addTo(userMarkerLayer);
+            }
 
             if (bookingEnabled) {
-                rect.on('click', async function () {
-                    try {
-                        if (slot.status === 'empty') {
-                            if (!slot.area_id) return;
-                            const kendaraanEl = document.getElementById('booking_kendaraan_id');
-                            const tarifEl = document.getElementById('booking_tarif_id');
-                            const kendaraanId = kendaraanEl ? kendaraanEl.value : '';
-                            const tarifId = tarifEl ? tarifEl.value : '';
-                            if (!kendaraanId) {
-                                alert('Pilih kendaraan terlebih dahulu sebelum booking.');
-                                return;
-                            }
-                            const url = bookUrlTemplate.replace('AREA_ID_PLACEHOLDER', encodeURIComponent(slot.area_id));
-                            const body = new URLSearchParams();
-                            body.append('_token', csrfToken);
-                            if (slot.id) {
-                                body.append('parking_map_slot_id', String(slot.id));
-                            }
-                            if (slot.code) {
-                                body.append('slot_code', String(slot.code));
-                            }
-                            body.append('id_kendaraan', String(kendaraanId));
-                            if (tarifId) {
-                                body.append('id_tarif', String(tarifId));
-                            }
-                            const response = await fetch(url, {
-                                method: 'POST',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                    'Accept': 'application/json'
-                                },
-                                body: body.toString()
-                            });
-                            
-                            const data = await response.json();
-                            if (!response.ok) {
-                                alert(data.message || 'Gagal melakukan booking.');
-                            } else {
-                                // Optional: success feedback
-                            }
-                        } else if (slot.status === 'reserved-by-me' && slot.transaksi_id && unbookUrlTemplate) {
-                            const url = unbookUrlTemplate.replace('TRANS_ID_PLACEHOLDER', encodeURIComponent(slot.transaksi_id));
-                            const body = new URLSearchParams();
-                            body.append('_token', csrfToken);
-                            body.append('_method', 'DELETE');
-                            const response = await fetch(url, {
-                                method: 'POST',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                    'Accept': 'application/json'
-                                },
-                                body: body.toString()
-                            });
-                            
-                            const data = await response.json();
-                            if (!response.ok) {
-                                alert(data.message || 'Gagal membatalkan booking.');
-                            }
-                        }
-                    } catch (err) {
-                        console.error('Booking/unbooking slot error', err);
-                    } finally {
-                        fetchData();
+                rect.on('click', async function() {
+                    if (slot.status === 'empty') {
+                        handleBooking(slot);
+                    } else if (slot.status === 'reserved-by-me' && slot.transaksi_id) {
+                        handleUnbooking(slot.transaksi_id);
                     }
                 });
             }
         });
     }
 
-    function renderCameras(cameras) {
-        camerasLayer.clearLayers();
-        if (!Array.isArray(cameras) || cameras.length === 0) return;
+    async function handleBooking(slot) {
+        const kendaraanEl = document.getElementById('booking_kendaraan_id');
+        const tarifEl = document.getElementById('booking_tarif_id');
+        const kendaraanId = kendaraanEl ? kendaraanEl.value : '';
+        const tarifId = tarifEl ? tarifEl.value : '';
 
-        const iconSize = [32, 32];
-        const icon = L.divIcon({
-            className: 'parking-map-camera-marker',
-            html: `
-                <div class="flex items-center justify-center w-8 h-8 bg-indigo-600 rounded-lg shadow-lg border-2 border-white text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-            `,
-            iconSize: iconSize,
-            iconAnchor: [16, 16]
-        });
+        if (!kendaraanId) {
+            if (window.Swal) {
+                Swal.fire({ icon: 'warning', title: 'Pilih Kendaraan', text: 'Silakan pilih kendaraan terlebih dahulu.', background: '#0f172a', color: '#fff' });
+            } else {
+                alert('Pilih kendaraan terlebih dahulu.');
+            }
+            return;
+        }
 
-        cameras.forEach(function (cam) {
-            const latLng = L.latLng(cam.y, cam.x);
-            const marker = L.marker(latLng, { icon: icon });
-            
-            const popupHtml = `
-                <div class="p-1 min-w-[150px]">
-                    <div class="flex items-center gap-2 mb-2 border-b border-gray-100 pb-2">
-                        <div class="w-6 h-6 bg-indigo-100 text-indigo-600 rounded flex items-center justify-center">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                        <span class="text-sm font-bold text-gray-900">${cam.name || 'Kamera'}</span>
-                    </div>
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center text-[10px]">
-                            <span class="text-gray-400 uppercase">Tipe</span>
-                            <span class="font-bold text-gray-700 px-1.5 py-0.5 bg-gray-100 rounded">${cam.type || '-'}</span>
-                        </div>
-                        ${cam.url ? `
-                        <div class="mt-2">
-                            <a href="${cam.url}" target="_blank" class="block w-full text-center py-1.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded hover:bg-indigo-100 transition-colors">
-                                Lihat Live Feed
-                            </a>
-                        </div>` : ''}
-                    </div>
-                </div>
-            `;
-            
-            marker.bindPopup(popupHtml, {
-                className: 'modern-popup',
-                offset: [0, -5]
+        try {
+            const url = bookUrlTemplate.replace('AREA_ID_PLACEHOLDER', encodeURIComponent(mapId));
+            const body = new URLSearchParams();
+            body.append('_token', csrfToken);
+            if (slot.id) body.append('parking_map_slot_id', slot.id);
+            if (slot.code) body.append('slot_code', slot.code);
+            body.append('id_kendaraan', kendaraanId);
+            if (tarifId) body.append('id_tarif', tarifId);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+                body: body.toString()
             });
-            marker.addTo(camerasLayer);
+
+            const data = await response.json();
+            if (response.ok) {
+                if (window.Swal) {
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Slot berhasil dipesan.', timer: 2000, showConfirmButton: false, background: '#0f172a', color: '#fff' });
+                }
+                fetchData();
+            } else {
+                throw new Error(data.message || 'Gagal melakukan booking');
+            }
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        }
+    }
+
+    async function handleUnbooking(transId) {
+        if (!confirm('Batalkan pesanan slot ini?')) return;
+
+        try {
+            const url = unbookUrlTemplate.replace('TRANS_ID_PLACEHOLDER', encodeURIComponent(transId));
+            const body = new URLSearchParams();
+            body.append('_token', csrfToken);
+            body.append('_method', 'DELETE');
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+                body: body.toString()
+            });
+
+            if (response.ok) {
+                fetchData();
+            } else {
+                const data = await response.json();
+                throw new Error(data.message || 'Gagal membatalkan booking');
+            }
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        }
+    }
+
+    function renderCameras(cameras) {
+        if (!camerasLayer) return;
+        camerasLayer.clearLayers();
+
+        cameras.forEach(cam => {
+            const y = mapHeight - cam.y;
+            const icon = L.divIcon({
+                className: 'camera-icon',
+                html: `<div style="width:30px;height:30px;background:#0d1526;border:1px solid rgba(255,255,255,0.15);border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+                    <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            const marker = L.marker([y, cam.x], { icon });
+            marker.bindPopup(`
+                <div style="width:220px; overflow:hidden; border-radius:12px; background:#0d1526;">
+                    <div style="padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between;">
+                        <span style="font-size:11px; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:.05em;">CCTV: ${cam.name || 'Cam'}</span>
+                        <span style="width:6px; height:6px; background:#10b981; border-radius:50%; box-shadow:0 0 8px #10b981;"></span>
+                    </div>
+                    <div style="aspect-ratio:16/9; background:#000; display:flex; align-items:center; justify-content:center; position:relative;">
+                        ${cam.stream_url ? `<img src="${cam.stream_url}" style="width:100%; height:100%; object-fit:cover;">` : '<div style="text-align:center;"><svg style="width:24px;height:24px;color:#334155;margin-bottom:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg><p style="color:#475569;font-size:9px;font-weight:bold;margin:0;">NO SIGNAL</p></div>'}
+                    </div>
+                </div>`, { className: 'modern-popup !p-0', offset: [0, -10] });
+            camerasLayer.addLayer(marker);
         });
+    }
+
+    function updateSummary(s) {
+        const el = document.getElementById('parking-map-summary');
+        if (!el) return;
+
+        el.innerHTML = [
+            { label: 'Total', val: s.total, color: '#fff' },
+            { label: 'Tersedia', val: s.empty, color: '#10b981' },
+            { label: 'Terisi', val: s.occupied, color: '#64748b' },
+            { label: 'Reserved', val: s.reserved, color: '#f59e0b' },
+        ].map(r => `
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-size:12px; color:#64748b; font-weight:500;">${r.label}</span>
+                <span style="font-size:15px; font-weight:900; color:${r.color};">${r.val}</span>
+            </div>`).join('');
+
+        const pct = s.total > 0 ? Math.round(s.occupied / s.total * 100) : 0;
+        const bar = document.getElementById('util-bar');
+        const txt = document.getElementById('util-pct');
+        if (bar) {
+            bar.style.width = pct + '%';
+            bar.style.background = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#10b981';
+        }
+        if (txt) txt.textContent = pct + '%';
     }
 
     async function fetchData() {
         try {
-            const url = MAP_ID ? '/api/parking-slots?map_id=' + encodeURIComponent(MAP_ID) : '/api/parking-slots';
-            const response = await fetch(url, {
-                headers: { 'Accept': 'application/json' }
-            });
-            if (!response.ok) {
-                console.error('Gagal memuat data slot parkir', response.status);
-                updateSummary(null);
-                return;
-            }
+            const url = `/api/parking-slots?map_id=${encodeURIComponent(mapId)}`;
+            const response = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) return;
             const data = await response.json();
 
-            if (data.slots) {
-                renderSlots(data.slots);
-            } else if (Array.isArray(data)) {
-                renderSlots(data);
-            } else {
-                renderSlots([]);
-            }
-
-            if (data.cameras) {
-                renderCameras(data.cameras);
-            } else {
-                renderCameras([]);
-            }
-
-            if (data.summary) {
-                updateSummary(data.summary);
-            } else {
-                updateSummary(null);
-            }
-        } catch (error) {
-            console.error('Error fetch /api/parking-slots', error);
-            updateSummary(null);
-        }
+            if (data.summary) updateSummary(data.summary);
+            if (data.slots) renderSlots(data.slots);
+            if (data.cameras) renderCameras(data.cameras);
+        } catch (e) { console.error('Map fetch error:', e); }
     }
 
-    fetchData();
-    setInterval(fetchData, 5000);
-}
+    // Initialize
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMap);
+    } else {
+        initMap();
+    }
+
+    // Refresh data periodically
+    setInterval(fetchData, 10000);
+
+    // Global refresh function
+    window.refreshParkingMap = fetchData;
+
+    // Handle resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => { if (map) map.invalidateSize(); }, 200);
+    });
+
+    // CSS for animations
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            75%, 100% { transform: scale(2.5); opacity: 0; }
+        }
+        .parking-slot-rect { cursor: pointer; transition: all 0.3s ease; }
+        .parking-slot-rect:hover { fill-opacity: 0.5 !important; stroke-width: 3px !important; }
+    `;
+    document.head.appendChild(style);
+})();

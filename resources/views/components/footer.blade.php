@@ -1,88 +1,71 @@
-    <!-- Footer -->
-    <footer id="kontak" class="bg-[#022c22] border-t border-emerald-500/10 py-20 relative overflow-hidden">
-        <!-- Batik Pattern Overlay -->
-        <div class="absolute inset-0 bg-batik opacity-[0.03] pointer-events-none"></div>
-
-        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-            <div class="grid md:grid-cols-4 gap-16 mb-20">
-                <!-- Company Info -->
-                <div class="col-span-1 md:col-span-1">
-                    <div class="flex items-center space-x-3 mb-8">
-                        <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-10 w-auto">
-                        <span class="text-2xl font-bold tracking-tighter text-white uppercase">NESTON</span>
-                    </div>
-                    <p class="text-emerald-100/50 text-sm font-medium leading-relaxed mb-8">
-                        Solusi manajemen parkir cerdas berbasis AI dengan sentuhan budaya batik untuk efisiensi total.
+   <!-- Footer -->
+    <footer class="py-24 border-t border-white/5 bg-slate-950">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
+                <div class="col-span-2">
+                    <a href="#" class="flex items-center space-x-3 mb-6 group">
+                        <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto shrink-0">
+                        <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
+                    </a>
+                    <p class="text-slate-500 text-sm leading-relaxed max-w-xs mb-8 font-medium">
+                        Solusi ekosistem parkir modern berbasis AI untuk manajemen kendaraan yang lebih cerdas dan efisien.
                     </p>
-                    <!-- Social Media -->
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
-                            <i class="fab fa-facebook-f text-xs"></i>
+                    <div class="flex gap-4">
+                        <a href="https://x.com/neston2026" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                            <i class="fa-brands fa-twitter text-xs"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
-                            <i class="fab fa-instagram text-xs"></i>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                            <i class="fa-brands fa-linkedin-in text-xs"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
+                        <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                            <i class="fa-brands fa-github text-xs"></i>
+                        </a>
+                         <a href="https://www.youtube.com/@NESTON-2026" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
                             <i class="fab fa-youtube text-xs"></i>
                         </a>
-                         <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
-                            <i class="fab fa-linkedin-in text-xs"></i>
-                         </a>
-                         <a href="#" class="w-10 h-10 bg-emerald-900/40 border border-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 hover:bg-amber-400 hover:text-[#022c22] hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
-                            <i class="fab fa-twitter text-xs"></i>
+                         <a href="#" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">
+                            <i class="fab fa-discord text-xs"></i>
                         </a>
                     </div>
                 </div>
 
-                <!-- Menu Links -->
                 <div>
-                    <h3 class="text-[10px] font-bold text-amber-400 uppercase tracking-[0.3em] mb-8">Navigasi</h3>
+                    <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Product</h5>
                     <ul class="space-y-4">
-                        <li><a href="#beranda" class="text-xs font-bold text-emerald-100/40 hover:text-white transition-colors flex items-center uppercase tracking-widest"><i class="fas fa-chevron-right text-[8px] mr-3 text-emerald-800"></i> Beranda</a></li>
-                        <li><a href="#fitur" class="text-xs font-bold text-emerald-100/40 hover:text-white transition-colors flex items-center uppercase tracking-widest"><i class="fas fa-chevron-right text-[8px] mr-3 text-emerald-800"></i> Fitur</a></li>
-                        <li><a href="#teknologi" class="text-xs font-bold text-emerald-100/40 hover:text-white transition-colors flex items-center uppercase tracking-widest"><i class="fas fa-chevron-right text-[8px] mr-3 text-emerald-800"></i> Teknologi</a></li>
+                        <li><a href="#fitur" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Features</a></li>
+                        <li><a href="#workflow" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Workflow</a></li>
+                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Pricing</a></li>
+                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Mobile App</a></li>
                     </ul>
                 </div>
 
-                <!-- Help Links -->
                 <div>
-                    <h3 class="text-[10px] font-bold text-amber-400 uppercase tracking-[0.3em] mb-8">Bantuan</h3>
+                    <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Resources</h5>
                     <ul class="space-y-4">
-                        <li><a href="#" class="text-xs font-bold text-emerald-100/40 hover:text-white transition-colors flex items-center uppercase tracking-widest"><i class="fas fa-chevron-right text-[8px] mr-3 text-emerald-800"></i> FAQ</a></li>
-                        <li><a href="#" class="text-xs font-bold text-emerald-100/40 hover:text-white transition-colors flex items-center uppercase tracking-widest"><i class="fas fa-chevron-right text-[8px] mr-3 text-emerald-800"></i> Syarat & Ketentuan</a></li>
-                        <li><a href="#" class="text-xs font-bold text-emerald-100/40 hover:text-white transition-colors flex items-center uppercase tracking-widest"><i class="fas fa-chevron-right text-[8px] mr-3 text-emerald-800"></i> Kebijakan Privasi</a></li>
+                        <li><a href="#docs" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">API Reference</a></li>
+                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Status</a></li>
                     </ul>
                 </div>
 
-                <!-- Contact Info -->
                 <div>
-                    <h3 class="text-[10px] font-bold text-amber-400 uppercase tracking-[0.3em] mb-8">Hubungi</h3>
-                    <ul class="space-y-5">
-                        <li class="flex items-start group">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-900/40 flex items-center justify-center text-emerald-500 mr-4 group-hover:text-amber-400 transition-colors">
-                                <i class="fas fa-envelope text-xs"></i>
-                            </div>
-                            <span class="text-xs font-bold text-emerald-100/40 uppercase tracking-widest leading-loose">support@neston.id</span>
-                        </li>
-                        <li class="flex items-start group">
-                            <div class="w-8 h-8 rounded-lg bg-emerald-900/40 flex items-center justify-center text-emerald-500 mr-4 group-hover:text-amber-400 transition-colors">
-                                <i class="fas fa-phone text-xs"></i>
-                            </div>
-                            <span class="text-xs font-bold text-emerald-100/40 uppercase tracking-widest leading-loose">+62 21-NEST-ON</span>
-                        </li>
+                    <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Company</h5>
+                    <ul class="space-y-4">
+                        <li><a href="#about" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">About Us</a></li>
+                        <li><a href="#contact" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Contact</a></li>
+                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Footer Bottom -->
-            <div class="border-t border-emerald-500/10 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-                <p class="text-[9px] font-bold text-emerald-800 uppercase tracking-[0.2em]">
-                    &copy; 2026 NESTON CORE. ALL RIGHTS RESERVED.
+            <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                    © 2026 NESTON CORE SYSTEM. ALL RIGHTS RESERVED.
                 </p>
-                <div class="flex space-x-8">
-                    <a href="#" class="text-[9px] font-bold text-emerald-800 hover:text-amber-400 transition-colors uppercase tracking-[0.2em]">Security</a>
-                    <a href="#" class="text-[9px] font-bold text-emerald-800 hover:text-amber-400 transition-colors uppercase tracking-[0.2em]">Compliance</a>
-                    <a href="#" class="text-[9px] font-bold text-emerald-800 hover:text-amber-400 transition-colors uppercase tracking-[0.2em]">API Docs</a>
+                <div class="flex gap-6">
+                    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Designed for Excellence</span>
                 </div>
             </div>
         </div>
