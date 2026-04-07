@@ -92,19 +92,29 @@
         @endif
 
         {{-- PETUGAS OPERATIONS --}}
-        @if($role === 'petugas')
+        @if($role === 'petugas' || $role === 'admin')
         <div class="pt-4 pb-2 px-3">
-            <p class="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] sidebar-label">{{ __('Operations') }}</p>
+            <p class="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] sidebar-label">{{ __('Parking Ops') }}</p>
         </div>
         <a href="{{ route('transaksi.create-check-in') }}"
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.create-check-in') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             <span class="sidebar-label">Check-in</span>
         </a>
-        <a href="{{ route('transaksi.parkir.index') }}"
-           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.parkir.index') ? 'active' : '' }}">
+        <a href="{{ route('transaksi.active') }}"
+           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.active') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             <span class="sidebar-label">{{ __('Active Parking') }}</span>
+        </a>
+        <a href="{{ route('transaksi.bookings') }}"
+           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.bookings') ? 'active' : '' }}">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            <span class="sidebar-label">{{ __('Bookings') }}</span>
+        </a>
+        <a href="{{ route('transaksi.history') }}"
+           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.history') ? 'active' : '' }}">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="sidebar-label">{{ __('History') }}</span>
         </a>
         <a href="{{ route('anpr.index') }}"
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('anpr.index') ? 'active' : '' }}">

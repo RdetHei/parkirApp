@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Transactions')
+@section('title', $title ?? 'Transactions')
 
 @section('content')
 <div class="p-8 relative z-10">
@@ -12,8 +12,8 @@
                     Financial Ledger
                 </span>
             </div>
-            <h1 class="text-4xl font-bold tracking-tight text-white">Parking <span class="text-emerald-500">History</span></h1>
-            <p class="text-slate-400 text-sm mt-2">Comprehensive logs of all vehicle movements and payments.</p>
+            <h1 class="text-4xl font-bold tracking-tight text-white">{{ explode(' ', $title ?? 'Parking History')[0] }} <span class="text-emerald-500">{{ explode(' ', $title ?? 'Parking History')[1] ?? '' }}</span></h1>
+            <p class="text-slate-400 text-sm mt-2">Comprehensive logs of all completed vehicle movements and payments.</p>
         </div>
     </div>
 

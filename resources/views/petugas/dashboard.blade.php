@@ -46,7 +46,7 @@
                 </div>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                     <span class="text-[10px] text-slate-500 font-bold uppercase">Live tracking</span>
-                    <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">In-Lot</span>
+                    <a href="{{ route('transaksi.active') }}" class="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors">Manage <i class="fa-solid fa-arrow-right ml-1"></i></a>
                 </div>
             </div>
         </div>
@@ -114,7 +114,7 @@
                 </div>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                     <span class="text-[10px] text-slate-500 font-bold uppercase">Pending arrival</span>
-                    <a href="{{ route('transaksi.parkir.index') }}" class="text-[10px] font-black text-blue-500 uppercase tracking-widest hover:text-blue-400 transition-colors">Manage <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                    <a href="{{ route('transaksi.bookings') }}" class="text-[10px] font-black text-blue-500 uppercase tracking-widest hover:text-blue-400 transition-colors">Manage <i class="fa-solid fa-arrow-right ml-1"></i></a>
                 </div>
             </div>
         </div>
@@ -183,17 +183,29 @@
                     <h2 class="text-sm font-black text-white uppercase tracking-widest">Quick Navigation</h2>
                 </div>
                 <div class="p-6 grid grid-cols-2 gap-4">
-                    <a href="{{ route('parking.map.index') }}" class="p-6 rounded-[2rem] bg-slate-950 border border-white/5 hover:border-emerald-500/50 transition-all group">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform mb-4">
-                            <i class="fa-solid fa-map-location-dot text-lg"></i>
+                    <a href="{{ route('transaksi.active') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-emerald-500/50 transition-all group flex flex-col items-center text-center">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform mb-3">
+                            <i class="fa-solid fa-car-side text-base"></i>
                         </div>
-                        <span class="text-[10px] font-black text-slate-500 group-hover:text-white uppercase tracking-[0.2em] transition-colors">Live Map</span>
+                        <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Active</span>
                     </a>
-                    <a href="{{ route('transaksi.index') }}" class="p-6 rounded-[2rem] bg-slate-950 border border-white/5 hover:border-indigo-500/50 transition-all group">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform mb-4">
-                            <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+                    <a href="{{ route('transaksi.bookings') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-blue-500/50 transition-all group flex flex-col items-center text-center">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform mb-3">
+                            <i class="fa-solid fa-bookmark text-base"></i>
                         </div>
-                        <span class="text-[10px] font-black text-slate-500 group-hover:text-white uppercase tracking-[0.2em] transition-colors">History</span>
+                        <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Bookings</span>
+                    </a>
+                    <a href="{{ route('transaksi.history') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-indigo-500/50 transition-all group flex flex-col items-center text-center">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform mb-3">
+                            <i class="fa-solid fa-clock-rotate-left text-base"></i>
+                        </div>
+                        <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">History</span>
+                    </a>
+                    <a href="{{ route('parking.map.index') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-amber-500/50 transition-all group flex flex-col items-center text-center">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform mb-3">
+                            <i class="fa-solid fa-map-location-dot text-base"></i>
+                        </div>
+                        <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Map</span>
                     </a>
                 </div>
             </div>

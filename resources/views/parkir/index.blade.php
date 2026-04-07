@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Active Parking')
+@section('title', $title ?? 'Active Parking')
 
 @section('content')
     <div class="p-8 relative z-10">
@@ -12,8 +12,8 @@
                         Operational Live
                     </span>
                 </div>
-                <h1 class="text-4xl font-bold tracking-tight text-white">Active <span class="text-emerald-500">Vehicles</span></h1>
-                <p class="text-slate-400 text-sm mt-2">Real-time monitoring of vehicles currently within the premises.</p>
+                <h1 class="text-4xl font-bold tracking-tight text-white">{{ explode(' ', $title ?? 'Active Parking')[0] }} <span class="text-emerald-500">{{ explode(' ', $title ?? 'Active Parking')[1] ?? '' }}</span></h1>
+                <p class="text-slate-400 text-sm mt-2">Real-time monitoring and management of parking sessions.</p>
             </div>
             <div class="flex items-center gap-4">
                 <a href="{{ route('transaksi.create-check-in') }}" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">

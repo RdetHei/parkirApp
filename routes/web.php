@@ -22,12 +22,12 @@ use App\Http\Controllers\RfidAdminController;
 use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\ContactController;
 
+use App\Http\Controllers\LandingController;
+
 Route::post('/kendaraan/upload', [KendaraanController::class, 'store']);
 
 // Public Routes
-Route::get('/', function () {
-    return view('layouts.landing');
-});
+Route::get('/', [LandingController::class, 'index']);
 
 Route::get('/lang/{locale}', [\App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
 
@@ -391,6 +391,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
 
     // Transaksi: CRUD hanya untuk Admin
     Route::middleware(['role:admin'])->group(function () {
+        Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.index');
         Route::get('/transaksi/create', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create');
         Route::post('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'store'])->name('transaksi.store');
         Route::get('/transaksi/{transaksi}/edit', [\App\Http\Controllers\TransaksiController::class, 'edit'])->name('transaksi.edit');
@@ -398,11 +399,20 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::delete('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'destroy'])->name('transaksi.destroy');
     });
 
-    // ========== PETUGAS ONLY (sesuai SPK: Transaksi) ==========
-    // Petugas: Transaksi (catat masuk, parkir aktif, checkout, pembayaran)
-    Route::middleware(['role:petugas'])->group(function () {
-        Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.parkir.index')->defaults('status', 'masuk');
+    // ========== PETUGAS OPERATIONS ==========
+    Route::middleware(['role:admin,petugas'])->group(function () {
+        // Management Unifikasi
+        Route::get('/active-parking', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.active');
+        Route::get('/active-bookings', [\App\Http\Controllers\TransaksiController::class, 'bookings'])->name('transaksi.bookings');
+        Route::get('/parking-history', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.history');
+        
+        // Tetap dukung route lama jika ada yang pakai (alias)
+        Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.parkir.index');
+
+        Route::get('/check-in', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create-check-in');
+        Route::post('/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
         Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
+        
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');

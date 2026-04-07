@@ -11,7 +11,7 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        @import url:('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
         [x-cloak] { display: none !important; }
 
@@ -30,7 +30,7 @@
         }
 
         .bg-batik {
-            background-image: url("{{ asset('images/batik-pattern.svg') }}");
+            background-image: url:("{{ asset('images/batik-pattern.svg') }}");
             background-size: 560px 560px;
             background-repeat: repeat;
         }
@@ -41,50 +41,6 @@
             100% { transform: translateY(0px); }
         }
 
-        /* Parking Animation */
-        .parking-lot {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: #0f172a;
-            border: 2px solid rgba(255,255,255,0.05);
-            border-radius: 1rem;
-            overflow: hidden;
-        }
-
-        .parking-slot {
-            position: absolute;
-            width: 60px;
-            height: 100px;
-            border: 2px dashed rgba(255,255,255,0.1);
-            border-top: none;
-        }
-
-        .car {
-            position: absolute;
-            width: 40px;
-            height: 70px;
-            border-radius: 8px;
-            transition: all 1s ease-in-out;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-
-        .car-light {
-            position: absolute;
-            width: 6px;
-            height: 4px;
-            background: #fff;
-            border-radius: 2px;
-            opacity: 0.8;
-            top: 4px;
-        }
-
-        .car-light.left { left: 6px; }
-        .car-light.right { right: 6px; }
 
     @keyframes marquee {
         0%   { transform: translateX(0); }
@@ -122,10 +78,10 @@
                     {{ __('Automate vehicle tracking, payment processing, and space management with our AI-powered ecosystem. Secure, scalable, and built for modern infrastructure.') }}
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('register') }}" class="btn-pro-primary !px-8 !py-4 text-sm uppercase tracking-widest">
+                    <a href="{{ route('register') }}" class="btn-pro-primary !px-8 !py-4 text-sm uppercase tracking-widest hover:text-emerald-600 transition-colors">
                         {{ __('Start for Free') }}
                     </a>
-                    <a href="#fitur" class="btn-pro-outline !px-8 !py-4 text-sm uppercase tracking-widest">
+                    <a href="#fitur" class="btn-pro-outline !px-8 !py-4 text-sm uppercase tracking-widest hover:text-emerald-600 transition-colors">
                         {{ __('View Demo') }}
                     </a>
                 </div>
@@ -146,27 +102,34 @@
 
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
                             <div class="text-slate-400 text-sm font-medium flex justify-between items-center">
-                                <span>{{ __('Slot Tersedia') }}</span>
-                                <span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded text-[10px]">{{ __('Live') }}</span>
+                                <span>{{ __('Slot Total') }}</span>
+                                <span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded text-[10px]">{{ __('Database') }}</span>
                             </div>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-3xl lg:text-4xl font-bold text-white">142</span>
-                                <span class="text-slate-500 text-xs font-medium">/ 500 {{ __('total') }}</span>
+                                <span class="text-3xl lg:text-4xl font-bold text-white">{{ number_format($total_slots) }}</span>
+                                <span class="text-slate-500 text-xs font-medium">{{ __('Titik Slot') }}</span>
                             </div>
                         </div>
 
                         <div class="h-28 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
-                            <div class="text-slate-400 text-sm font-medium">{{ __('Kendaraan Masuk') }}</div>
+                            <div class="text-slate-400 text-sm font-medium flex justify-between items-center">
+                                <span>{{ __('Total Zona/Area') }}</span>
+                                <span class="text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded text-[10px]">{{ __('Aktif') }}</span>
+                            </div>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-3xl lg:text-4xl font-bold text-white">358</span>
-                                <span class="text-emerald-400 text-xs font-medium">↑ 12%</span>
+                                <span class="text-3xl lg:text-4xl font-bold text-white">{{ number_format($total_areas) }}</span>
+                                <span class="text-slate-500 text-xs font-medium">{{ __('Lokasi Area') }}</span>
                             </div>
                         </div>
 
                         <div class="h-28 sm:col-span-2 lg:col-span-1 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col justify-between backdrop-blur-sm shadow-lg">
-                            <div class="text-slate-400 text-sm font-medium">{{ __('Pendapatan (Harian)') }}</div>
+                            <div class="text-slate-400 text-sm font-medium flex justify-between items-center">
+                                <span>{{ __('Kendaraan Masuk') }}</span>
+                                <span class="text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded text-[10px]">{{ __('Total') }}</span>
+                            </div>
                             <div class="flex items-baseline gap-2">
-                                <span class="text-3xl font-bold text-white">Rp 2.4M</span>
+                                <span class="text-3xl font-bold text-white">{{ number_format($total_vehicles) }}</span>
+                                <span class="text-slate-500 text-xs font-medium">{{ __('Kendaraan') }}</span>
                             </div>
                         </div>
 
@@ -236,33 +199,9 @@
             </div>
     </section>
 
-    <!-- Stats -->
-    <section class="py-20 border-y border-white/5 bg-slate-950/50 relative overflow-hidden">
-        <div class="absolute inset-0 bg-emerald-500/5 blur-[120px] -z-10"></div>
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-                <div class="animate-fade-in-up" style="animation-delay: 0.1s">
-                    <p class="text-3xl font-extrabold text-white mb-1 tracking-tight">99.9%</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ __('Accuracy') }}</p>
-                </div>
-                <div class="animate-fade-in-up" style="animation-delay: 0.2s">
-                    <p class="text-3xl font-extrabold text-white mb-1 tracking-tight">1.2M</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ __('Scans/Year') }}</p>
-                </div>
-                <div class="animate-fade-in-up" style="animation-delay: 0.3s">
-                    <p class="text-3xl font-extrabold text-white mb-1 tracking-tight">500+</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ __('Enterprises') }}</p>
-                </div>
-                <div class="animate-fade-in-up" style="animation-delay: 0.4s">
-                    <p class="text-3xl font-extrabold text-white mb-1 tracking-tight">24/7</p>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ __('Support') }}</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
 <!-- Trusted By -->
-<section class="py-12 border-b border-white/5">
+<section class="py-12 border-t border-b border-white/5">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <p class="text-center text-[9px] font-black text-slate-600 uppercase tracking-[0.4em] mb-10">
             {{ __('Trusted by Forward-Thinking Infrastructure') }}

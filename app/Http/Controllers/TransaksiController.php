@@ -243,48 +243,87 @@ class TransaksiController extends Controller
 
     public function index(Request $request)
     {
-        if (
-            $request->query('status') === 'masuk' ||
-            request()->routeIs('transaksi.index') && $request->query('status') !== 'keluar'
-        ) {
-            $tenMinutesAgo = Carbon::now()->subMinutes(10);
+        return $this->history($request);
+    }
 
-            // Cleanup expired bookmarks automatically
-            Transaksi::where('status', 'bookmarked')
-                ->where('bookmarked_at', '<', $tenMinutesAgo)
-                ->delete();
+    /**
+     * Parkir Aktif: Kendaraan yang sedang di dalam lot.
+     */
+    public function activeParking(Request $request)
+    {
+        $tenMinutesAgo = Carbon::now()->subMinutes(10);
+        // Cleanup expired bookmarks
+        Transaksi::where('status', 'bookmarked')
+            ->where('bookmarked_at', '<', $tenMinutesAgo)
+            ->delete();
 
-            $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
-                ->where(function ($q) use ($tenMinutesAgo) {
-                    $q->where(function ($q2) {
-                        $q2->where('status', 'masuk')->whereNull('waktu_keluar');
-                    })->orWhere(function ($q2) use ($tenMinutesAgo) {
-                        $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
-                    });
-                });
+        $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
+            ->where('status', 'masuk')
+            ->whereNull('waktu_keluar');
 
-            if ($request->filled('q')) {
-                $search = $request->q;
-                $query->whereHas('kendaraan', function($sub) use ($search) {
-                    $sub->where('plat_nomor', 'like', "%{$search}%");
-                });
-            }
-
-            if ($request->filled('area')) {
-                $query->where('id_area', $request->area);
-            }
-
-            $items = $query->orderByRaw("CASE WHEN status = 'bookmarked' THEN 0 ELSE 1 END")
-                ->orderBy('waktu_masuk', 'desc')
-                ->orderBy('bookmarked_at', 'desc')
-                ->paginate(30)
-                ->withQueryString();
-
-            $areas = AreaParkir::orderBy('nama_area')->get();
-
-            return view('parkir.index', ['transaksis' => $items, 'areas' => $areas]);
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->whereHas('kendaraan', function($sub) use ($search) {
+                $sub->where('plat_nomor', 'like', "%{$search}%");
+            });
         }
 
+        if ($request->filled('area')) {
+            $query->where('id_area', $request->area);
+        }
+
+        $items = $query->orderBy('waktu_masuk', 'desc')
+            ->paginate(30)
+            ->withQueryString();
+
+        $areas = AreaParkir::orderBy('nama_area')->get();
+        $title = 'Active Parking';
+
+        return view('parkir.index', ['transaksis' => $items, 'areas' => $areas, 'title' => $title]);
+    }
+
+    /**
+     * Bookings: Kendaraan yang sudah booking tapi belum masuk.
+     */
+    public function bookings(Request $request)
+    {
+        $tenMinutesAgo = Carbon::now()->subMinutes(10);
+
+        // Cleanup expired bookmarks
+        Transaksi::where('status', 'bookmarked')
+            ->where('bookmarked_at', '<', $tenMinutesAgo)
+            ->delete();
+
+        $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
+            ->where('status', 'bookmarked')
+            ->where('bookmarked_at', '>', $tenMinutesAgo);
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->whereHas('kendaraan', function($sub) use ($search) {
+                $sub->where('plat_nomor', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('area')) {
+            $query->where('id_area', $request->area);
+        }
+
+        $items = $query->orderBy('bookmarked_at', 'desc')
+            ->paginate(30)
+            ->withQueryString();
+
+        $areas = AreaParkir::orderBy('nama_area')->get();
+        $title = 'Active Bookings';
+
+        return view('parkir.index', ['transaksis' => $items, 'areas' => $areas, 'title' => $title]);
+    }
+
+    /**
+     * Riwayat: Transaksi yang sudah selesai (keluar).
+     */
+    public function history(Request $request)
+    {
         $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->where('status', 'keluar')
             ->where('status_pembayaran', 'berhasil');
@@ -309,8 +348,9 @@ class TransaksiController extends Controller
 
         $transaksis = $query->orderBy('waktu_keluar', 'desc')->paginate(30)->withQueryString();
         $areas = AreaParkir::orderBy('nama_area')->get();
+        $title = 'Parking History';
 
-        return view('transaksi.index', compact('transaksis', 'areas'));
+        return view('transaksi.index', compact('transaksis', 'areas', 'title'));
     }
 
     public function store(Request $request)

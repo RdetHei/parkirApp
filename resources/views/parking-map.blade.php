@@ -41,7 +41,7 @@
                      data-height="{{ $area->map_height }}"
                      data-map-id="{{ $area->id_area }}">
                 </div>
-                
+
                 <!-- Loading Overlay -->
                 <div id="map-loader" class="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-500">
                     <div class="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>

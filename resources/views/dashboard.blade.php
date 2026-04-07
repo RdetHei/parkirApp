@@ -67,7 +67,7 @@
                 <h3 class="text-3xl font-black text-white tracking-tighter">{{ $transaksiHariIni }}</h3>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                     <span class="text-[10px] text-slate-500 font-bold uppercase">{{ __('Daily throughput') }}</span>
-                    <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">+{{ rand(5, 15) }}% {{ __('vs avg') }}</span>
+                    <a href="{{ route('transaksi.history') }}" class="text-[10px] font-black text-indigo-500 uppercase tracking-widest hover:text-indigo-400 transition-colors">History <i class="fa-solid fa-arrow-right ml-1"></i></a>
                 </div>
             </div>
         </div>
@@ -91,7 +91,7 @@
                 <h3 class="text-3xl font-black text-white tracking-tighter">{{ $transaksiAktif }}</h3>
                 <div class="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
                     <span class="text-[10px] text-slate-500 font-bold uppercase">{{ __('Currently in-lot') }}</span>
-                    <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest">{{ __('High Load') }}</span>
+                    <a href="{{ route('transaksi.active') }}" class="text-[10px] font-black text-amber-500 uppercase tracking-widest hover:text-amber-400 transition-colors">Manage <i class="fa-solid fa-arrow-right ml-1"></i></a>
                 </div>
             </div>
         </div>
