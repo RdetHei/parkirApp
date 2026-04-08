@@ -404,6 +404,9 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         // RFID Parking Operation (Admin & Petugas)
         Route::get('/parkir/scan', [RfidParkingController::class, 'index'])->name('parkir.scan');
         Route::post('/api/parkir/rfid-scan', [RfidParkingController::class, 'processScan'])->name('api.parkir.rfid-scan');
+
+        // Kamera: daftar perangkat (read-only untuk petugas)
+        Route::get('/petugas/kamera', [\App\Http\Controllers\CameraController::class, 'index'])->name('petugas.kamera.index');
     });
 
     // Transaksi: CRUD hanya untuk Admin

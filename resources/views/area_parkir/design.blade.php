@@ -34,6 +34,28 @@
                     </button>
                 </div>
 
+                <!-- Zoom Controls -->
+                <div class="flex items-center gap-2 px-3 py-2 rounded-2xl border border-white/5 bg-slate-900/70 shadow-2xl backdrop-blur-xl">
+                    <button type="button"
+                            onclick="zoomOut()"
+                            class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all active:scale-[0.98] text-white font-black flex items-center justify-center">
+                        <span class="text-lg">-</span>
+                    </button>
+                    <div class="min-w-[80px] text-center">
+                        <p id="zoom-indicator" class="text-[10px] font-black text-slate-300 uppercase tracking-widest">100%</p>
+                    </div>
+                    <button type="button"
+                            onclick="zoomIn()"
+                            class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all active:scale-[0.98] text-white font-black flex items-center justify-center">
+                        <span class="text-lg">+</span>
+                    </button>
+                    <button type="button"
+                            onclick="resetZoom()"
+                            class="ml-1 px-3 h-10 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all active:scale-[0.99] font-black text-[10px] uppercase tracking-widest">
+                        Reset
+                    </button>
+                </div>
+
                 <button type="button" onclick="saveDesign()" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95">
                     Save Layout
                 </button>
@@ -51,9 +73,15 @@
 
                     <div id="canvas-container" class="overflow-auto min-h-[700px] p-12 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:20px_20px] flex items-center justify-center">
                         @if($area->map_image_url)
-                            <div id="map-canvas" class="relative mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all cursor-crosshair"
-                                 onclick="handleCanvasClick(event)"
-                                 style="width: {{ $area->map_width ?: 1000 }}px; height: {{ $area->map_height ?: 800 }}px; background-image: url('{{ $area->map_image_url }}'); background-size: cover; background-position: center;">
+                            <div id="map-zoom-viewport"
+                                 class="relative mx-auto"
+                                 style="width: {{ $area->map_width ?: 1000 }}px; height: {{ $area->map_height ?: 800 }}px;">
+                                <div id="map-canvas"
+                                     class="relative shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all cursor-crosshair"
+                                     onclick="handleCanvasClick(event)"
+                                     data-base-width="{{ $area->map_width ?: 1000 }}"
+                                     data-base-height="{{ $area->map_height ?: 800 }}"
+                                     style="width: {{ $area->map_width ?: 1000 }}px; height: {{ $area->map_height ?: 800 }}px; background-image: url('{{ $area->map_image_url }}'); background-size: 100% 100%; background-position: 0 0; transform-origin: top left;">
 
                                 <!-- Slots -->
                                 @foreach($area->slots as $slot)
@@ -81,6 +109,7 @@
                                     </div>
                                 </div>
                                 @endforeach
+                            </div>
                             </div>
                         @else
                             <div class="text-center p-12 max-w-md">
@@ -226,7 +255,55 @@
     let currentMode = 'select';
     let activeElement = null;
     const canvas = document.getElementById('map-canvas');
+    const mapZoomViewport = document.getElementById('map-zoom-viewport');
+    const zoomIndicator = document.getElementById('zoom-indicator');
     const modeIndicator = document.getElementById('mode-indicator');
+
+    let zoomLevel = 1;
+    const zoomMin = 0.5;
+    const zoomMax = 3;
+    const baseWidth = canvas ? parseFloat(canvas.dataset.baseWidth) : 0;
+    const baseHeight = canvas ? parseFloat(canvas.dataset.baseHeight) : 0;
+
+    function applyZoom(nextZoom) {
+        if (!canvas || !mapZoomViewport) return;
+        zoomLevel = Math.max(zoomMin, Math.min(zoomMax, nextZoom));
+        canvas.style.transform = `scale(${zoomLevel})`;
+        if (baseWidth > 0 && baseHeight > 0) {
+            mapZoomViewport.style.width = (baseWidth * zoomLevel) + 'px';
+            mapZoomViewport.style.height = (baseHeight * zoomLevel) + 'px';
+        }
+        if (zoomIndicator) zoomIndicator.innerText = Math.round(zoomLevel * 100) + '%';
+    }
+
+    function zoomIn() {
+        applyZoom(zoomLevel + 0.1);
+    }
+
+    function zoomOut() {
+        applyZoom(zoomLevel - 0.1);
+    }
+
+    function resetZoom() {
+        applyZoom(1);
+    }
+
+    // Init zoom (only if blueprint exists)
+    applyZoom(1);
+
+    // Zoom with mouse wheel: Ctrl + Wheel
+    const canvasContainer = document.getElementById('canvas-container');
+    if (canvasContainer) {
+        canvasContainer.addEventListener('wheel', function (e) {
+            if (!e.ctrlKey) return;
+            if (!canvas || !mapZoomViewport) return;
+            e.preventDefault();
+
+            // deltaY > 0 => scroll down => zoom out
+            const step = e.deltaY > 0 ? -0.1 : 0.1;
+            applyZoom(zoomLevel + step);
+        }, { passive: false });
+    }
 
     function setMode(mode) {
         currentMode = mode;
@@ -246,8 +323,8 @@
         if (e.target !== canvas) return; // Only trigger if clicking canvas itself
 
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = (e.clientX - rect.left) / zoomLevel;
+        const y = (e.clientY - rect.top) / zoomLevel;
 
         if (currentMode === 'add-slot') {
             createNewSlot(x - 30, y - 20); // Center the new slot on click
@@ -263,18 +340,20 @@
         const el = e.target.closest('.parking-slot, .parking-camera');
         if (el) {
             selectElement(el);
-            let startX = e.clientX - el.offsetLeft;
-            let startY = e.clientY - el.offsetTop;
+            const startClientX = e.clientX;
+            const startClientY = e.clientY;
+            const startLeft = parseFloat(el.style.left || el.offsetLeft || 0);
+            const startTop = parseFloat(el.style.top || el.offsetTop || 0);
 
             function move(e) {
-                let x = e.clientX - startX;
-                let y = e.clientY - startY;
+                let x = startLeft + (e.clientX - startClientX) / zoomLevel;
+                let y = startTop + (e.clientY - startClientY) / zoomLevel;
 
-                x = Math.max(0, Math.min(x, canvas.offsetWidth - el.offsetWidth));
-                y = Math.max(0, Math.min(y, canvas.offsetHeight - el.offsetHeight));
+                x = Math.max(0, Math.min(x, baseWidth - el.offsetWidth));
+                y = Math.max(0, Math.min(y, baseHeight - el.offsetHeight));
 
-                el.style.left = x + 'px';
-                el.style.top = y + 'px';
+                el.style.left = Math.round(x) + 'px';
+                el.style.top = Math.round(y) + 'px';
             }
 
             function stop() {

@@ -38,8 +38,8 @@
                         <div class="absolute -inset-4 bg-emerald-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         @if($user->profile_photo_url)
                             <div class="relative w-32 h-32 lg:w-40 lg:h-40 rounded-3xl overflow-hidden border-2 border-emerald-500/30 shadow-2xl transition-all group-hover:border-emerald-500 z-10">
-                                <img src="{{ $user->profile_photo_url }}"
-                                     alt="{{ $user->name }}"
+                                <img src="{{ $user->profile_photo_url }}" 
+                                     alt="{{ $user->name }}" 
                                      class="w-full h-full object-cover">
                                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
                                     <span class="text-[8px] font-black text-white uppercase tracking-widest">Active Photo</span>
@@ -111,41 +111,12 @@
                                 <label for="photo" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Foto Profil</label>
                                 <div class="flex flex-col sm:flex-row items-center gap-6 p-5 lg:p-6 rounded-[2rem] bg-slate-950/50 border border-white/5 group hover:border-emerald-500/30 transition-all">
                                     <div class="shrink-0">
-                                        <label for="photo"
-                                               class="relative block cursor-pointer rounded-2xl overflow-hidden border border-white/10 bg-slate-900 shadow-xl transition-all group-hover:border-emerald-500/40 focus:outline-none focus:ring-4 focus:ring-emerald-500/10">
-                                            <div class="w-16 h-16 lg:w-20 lg:h-20">
-                                                @if($user->profile_photo_url)
-                                                    <img id="profile-photo-preview"
-                                                         src="{{ $user->profile_photo_url }}"
-                                                         alt="{{ $user->name }}"
-                                                         class="w-full h-full object-cover">
-                                                @else
-                                                    <div id="profile-photo-preview-fallback"
-                                                         class="w-full h-full flex items-center justify-center text-emerald-500 text-2xl lg:text-3xl font-black">
-                                                        {{ substr($user->name ?? 'U', 0, 1) }}
-                                                    </div>
-                                                @endif
-                                            </div>
-
-                                            <div class="absolute inset-0 bg-slate-950/60 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"></div>
-                                            <div class="absolute inset-0 flex items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                                <div class="px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-[8px] lg:text-[9px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2">
-                                                    <i class="fa-solid fa-camera"></i>
-                                                    Ubah
-                                                </div>
-                                            </div>
-                                        </label>
+                                        <x-user-avatar :user="$user" size="md" round="2xl" class="!w-16 !h-16 lg:!w-20 lg:!h-20 !bg-slate-900 !border-white/10" />
                                     </div>
                                     <div class="flex-1 w-full text-center sm:text-left">
-                                        <input type="file"
-                                               name="photo"
-                                               id="photo"
-                                               accept="image/jpeg,image/png,image/gif,image/webp"
-                                               class="sr-only">
-                                        <div class="space-y-2">
-                                            <p class="text-[9px] lg:text-[10px] text-slate-300 font-black uppercase tracking-widest">Klik foto untuk upload</p>
-                                            <p class="text-[8px] lg:text-[9px] text-slate-600 font-bold uppercase tracking-widest">JPG, PNG, GIF, atau WebP (Maks. 4MB)</p>
-                                        </div>
+                                        <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/gif,image/webp"
+                                               class="block w-full text-[9px] lg:text-[10px] text-slate-500 file:mr-4 lg:file:mr-6 file:py-2 file:px-4 lg:file:py-2.5 lg:file:px-5 file:rounded-xl file:border-0 file:text-[8px] lg:file:text-[9px] file:font-black file:uppercase file:tracking-widest file:bg-emerald-500/10 file:text-emerald-500 hover:file:bg-emerald-500/20 cursor-pointer">
+                                        <p class="mt-3 text-[8px] lg:text-[9px] text-slate-600 font-bold uppercase tracking-widest">JPG, PNG, GIF, atau WebP (Maks. 4MB)</p>
                                     </div>
                                 </div>
                                 @error('photo') <p class="mt-3 text-[10px] lg:text-[11px] text-rose-500 font-bold ml-1 uppercase tracking-widest">{{ $message }}</p> @enderror
@@ -222,38 +193,4 @@
         100% { transform: translateX(100%); }
     }
 </style>
-
-@push('scripts')
-<script>
-    (function () {
-        const input = document.getElementById('photo');
-        if (!input) return;
-
-        input.addEventListener('change', function () {
-            const file = input.files && input.files[0];
-            if (!file) return;
-            if (!file.type || !file.type.startsWith('image/')) return;
-
-            const img = document.getElementById('profile-photo-preview');
-            const fallback = document.getElementById('profile-photo-preview-fallback');
-
-            const url = URL.createObjectURL(file);
-
-            if (img) {
-                img.src = url;
-                return;
-            }
-
-            if (fallback) {
-                const newImg = document.createElement('img');
-                newImg.id = 'profile-photo-preview';
-                newImg.alt = 'Preview';
-                newImg.className = 'w-full h-full object-cover';
-                newImg.src = url;
-                fallback.replaceWith(newImg);
-            }
-        });
-    })();
-</script>
-@endpush
 @endsection

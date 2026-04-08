@@ -40,7 +40,7 @@ class RfidParkingController extends Controller
 
         // Ambil kendaraan default user (yang pertama didaftarkan)
         $kendaraan = Kendaraan::where('id_user', $user->id)->first();
-        
+
         // --- FITUR BARU: AUTO-PAYMENT TAGIHAN TERTUNDA ---
         // Cek apakah user memiliki tagihan yang belum dibayar (status 'keluar' dan status_pembayaran != 'berhasil')
         $unpaidTransaksi = Transaksi::where('id_user', $user->id)
@@ -72,7 +72,7 @@ class RfidParkingController extends Controller
                         'user_id' => $user->id,
                         'amount' => -$totalTagihan,
                         'type' => 'payment',
-                        'description' => 'Pelunasan Otomatis RFID - ' . ($unpaidTransaksi->kendaraan->plat_nomor ?? 'Parkir'),
+                        'description' => 'Pelunasan Otomatis RFID - ' . ($unpaidTransaksi->kendaraan?->plat_nomor ?? 'Parkir'),
                         'reference_id' => (string) $unpaidTransaksi->id_parkir,
                     ]);
 
@@ -88,11 +88,14 @@ class RfidParkingController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Tagihan Rp ' . number_format($totalTagihan, 0, ',', '.') . ' berhasil dilunasi otomatis via Saldo NestonPay!',
+                    'amount' => (float) $totalTagihan,
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
                         'balance' => $currentSaldo - $totalTagihan,
-                        'status' => 'Tagihan Dilunasi'
+                        'status' => 'Tagihan Dilunasi',
+                        'vehicle' => $unpaidTransaksi->kendaraan?->plat_nomor ?? null,
+                        'type' => 'OUT',
                     ]
                 ]);
             } else {
@@ -103,8 +106,20 @@ class RfidParkingController extends Controller
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
                         'balance' => $currentSaldo,
-                        'status' => 'Tagihan Tertunda'
-                    ]
+                        'status' => 'Tagihan Tertunda',
+                        'vehicle' => $unpaidTransaksi->kendaraan?->plat_nomor ?? null,
+                        'type' => 'OUT'
+                    ],
+                    'payment_required' => [
+                        'id_parkir' => (int) $unpaidTransaksi->id_parkir,
+                        'amount' => (float) $totalTagihan,
+                        'methods' => [
+                            // Sedang tidak mencukupi, jadi NestonPay (saldo) tidak bisa langsung dipakai
+                            'nestonpay' => false,
+                            'midtrans' => true,
+                        ],
+                    ],
+                    'amount' => (float) $totalTagihan,
                 ], 402);
             }
         }
@@ -133,7 +148,7 @@ class RfidParkingController extends Controller
             // Check-in (ENTRY)
             $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
             $tarif = Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->first() ?? Tarif::first();
-            
+
             if (!$area) {
                 return response()->json([
                     'success' => false,
@@ -196,7 +211,7 @@ class RfidParkingController extends Controller
             // Check-out (EXIT + PAYMENT)
             $tarif = $activeTransaksi->tarif ?? Tarif::first();
             $rate = $tarif ? $tarif->tarif_perjam : 2000;
-            
+
             $startTime = Carbon::parse($activeTransaksi->waktu_masuk);
             $endTime = now();
             $durationHours = max(1, ceil($startTime->diffInMinutes($endTime) / 60));
@@ -205,18 +220,47 @@ class RfidParkingController extends Controller
             $currentBalance = $user->balance ?? $user->saldo ?? 0;
 
             if ($currentBalance < $totalAmount) {
+                // Saat saldo kurang, tetap selesaikan check-out dan set status pembayaran menjadi pending
+                // agar operator bisa langsung lanjutkan pembayaran (NestonPay/Midtrans).
+                DB::transaction(function () use ($activeTransaksi, $totalAmount, $durationHours, $user) {
+                    $activeTransaksi->update([
+                        'waktu_keluar' => now(),
+                        'durasi_jam' => $durationHours,
+                        'biaya_total' => $totalAmount,
+                        'status' => 'keluar',
+                        'status_pembayaran' => 'pending',
+                    ]);
+
+                    // Legacy OUT transaction for history
+                    Transaction::create([
+                        'user_id' => $user->id,
+                        'type' => 'OUT',
+                        'amount' => $totalAmount,
+                        'created_at' => now(),
+                    ]);
+                });
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Saldo tidak cukup! Biaya: Rp ' . number_format($totalAmount, 0, ',', '.'),
+                    'message' => 'Saldo tidak cukup! Check-out selesai, silakan bayar Rp ' . number_format($totalAmount, 0, ',', '.'),
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
                         'balance' => $currentBalance,
-                        'status' => 'Saldo Kurang',
+                        'status' => 'Menunggu Pembayaran',
                         'vehicle' => $kendaraan->plat_nomor,
-                        'fee' => $totalAmount
-                    ]
-                ], 400);
+                        'type' => 'OUT',
+                    ],
+                    'amount' => (float) $totalAmount,
+                    'payment_required' => [
+                        'id_parkir' => (int) $activeTransaksi->id_parkir,
+                        'amount' => (float) $totalAmount,
+                        'methods' => [
+                            'nestonpay' => false,
+                            'midtrans' => true,
+                        ],
+                    ],
+                ], 402);
             }
 
             DB::transaction(function () use ($user, $activeTransaksi, $totalAmount, $durationHours) {

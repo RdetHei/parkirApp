@@ -33,12 +33,8 @@
         $addButton = ['label' => __('Tambah User'), 'route' => route('users.create'), 'routeName' => 'users.create'];
     } elseif (request()->routeIs('admin.rfid.index')) {
         $headerTitle = __('Kelola RFID');
-    } elseif (request()->routeIs('rfid.identify.page')) {
-        $headerTitle = __('Identifikasi RFID');
-    } elseif (request()->routeIs('rfid.access.scan-page')) {
-        $headerTitle = __('Akses RFID');
-    } elseif (request()->routeIs('parkir.scan')) {
-        $headerTitle = __('Scan Parkir RFID');
+    } elseif (request()->routeIs('rfid.identify.page', 'rfid.access.scan-page', 'parkir.scan')) {
+        $headerTitle = __('RFID Terminal');
     } elseif (request()->routeIs('rfid.login.page')) {
         $headerTitle = __('Login RFID');
     } elseif (request()->routeIs('users.create')) {

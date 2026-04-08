@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Parking Scan RFID')
+@section('title', 'RFID Terminal')
 
 @section('content')
 <div class="p-8 relative z-10 animate-fade-in">
@@ -118,8 +118,45 @@
                     </div>
 
                     <!-- Action Message -->
-                    <div id="message-container" class="mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all">
+                    <div id="message-container" class="mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all">
                         --
+                    </div>
+
+                    <!-- Payment Actions (only when transaction needs payment) -->
+                    <div id="payment-actions" class="hidden w-full mt-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div id="nestonpay-action" class="card-pro !p-0 overflow-hidden border-white/5 bg-slate-950/30">
+                                <div class="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">NestonPay (Saldo)</p>
+                                </div>
+                                <div class="p-4">
+                                    <form id="nestonpay-payment-form" method="POST" action="{{ route('user.saldo.pay', ['id_parkir' => '__ID__']) }}">
+                                        @csrf
+                                        <button type="submit"
+                                                class="w-full py-3 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-slate-950 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.99]">
+                                            Bayar NestonPay
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div id="midtrans-action" class="card-pro !p-0 overflow-hidden border-white/5 bg-slate-950/30">
+                                <div class="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Midtrans (Online)</p>
+                                </div>
+                                <div class="p-4">
+                                    <a id="midtrans-payment-link"
+                                       href="{{ route('payment.create', ['id_parkir' => '__ID__']) }}"
+                                       class="w-full block text-center py-3 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-slate-950 border border-blue-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.99]">
+                                        Bayar Midtrans
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-center">
+                            <p id="payment-amount-text" class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Rp 0</p>
+                        </div>
                     </div>
 
                     <!-- Reset Progress -->
@@ -163,6 +200,15 @@
     const countdownBar     = document.getElementById('countdown-bar');
     const lastScanTime     = document.getElementById('last-scan-time');
     const indicator        = document.getElementById('processing-indicator');
+    const paymentActions   = document.getElementById('payment-actions');
+    const paymentAmountText = document.getElementById('payment-amount-text');
+    const nestonPayAction = document.getElementById('nestonpay-action');
+    const midtransAction = document.getElementById('midtrans-action');
+    const nestonPayPaymentForm = document.getElementById('nestonpay-payment-form');
+    const midtransPaymentLink = document.getElementById('midtrans-payment-link');
+    const nestonPayUrlTemplate = @json(route('user.saldo.pay', ['id_parkir' => '__ID__']));
+    const midtransUrlTemplate = @json(route('payment.create', ['id_parkir' => '__ID__']));
+    const accessScanUrl = @json(route('api.rfid.access.scan'));
 
     document.addEventListener('click', () => rfidInput.focus());
     rfidInput.focus();
@@ -170,6 +216,7 @@
     let isProcessing = false;
     let resetTimer;
     let timer;
+    let keepResult = false;
 
     rfidInput.addEventListener('input', function(e) {
         if (isProcessing) return;
@@ -212,6 +259,19 @@
             const ct = response.headers.get('content-type');
             if (!ct || !ct.includes('application/json')) throw new Error('Sistem bermasalah (Server Error)');
             const data = await response.json();
+
+            // Best-effort: set session akses RFID (tanpa mengganggu alur check-in/out).
+            fetch(accessScanUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ rfid_uid: uid })
+            }).catch(() => {});
+
             showResult(data, response.ok);
 
         } catch (error) {
@@ -219,6 +279,13 @@
         } finally {
             indicator.classList.add('hidden');
             clearTimeout(resetTimer);
+            if (keepResult) {
+                isProcessing = false;
+                rfidInput.disabled = false;
+                rfidInput.focus();
+                return;
+            }
+
             resetTimer = setTimeout(() => {
                 hideResult();
                 isProcessing = false;
@@ -238,6 +305,14 @@
             countdownBar.style.width = '0%';
         }, 50);
 
+        keepResult = !!data.payment_required;
+        if (paymentActions) paymentActions.classList.toggle('hidden', !keepResult);
+
+        if (!keepResult) {
+            if (nestonPayAction) nestonPayAction.classList.remove('hidden');
+            if (midtransAction) midtransAction.classList.remove('hidden');
+        }
+
         if (data.user) {
             userName.innerText    = data.user.name;
             userPhoto.src         = data.user.photo || '{{ asset('images/default-user.png') }}';
@@ -256,21 +331,50 @@
                 statusBadge.innerText = 'IN';
                 statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-emerald-500 text-slate-950';
                 resultTopbar.className = 'h-1.5 w-full bg-emerald-500 transition-all duration-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]';
-                messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
             } else if (data.user?.type === 'OUT') {
                 statusBadge.innerText = 'OUT';
                 statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-blue-500 text-white';
                 resultTopbar.className = 'h-1.5 w-full bg-blue-500 transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]';
-                messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20';
             } else {
                 statusBadge.innerText = 'ERR';
                 statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-rose-500 text-white';
                 resultTopbar.className = 'h-1.5 w-full bg-rose-500 transition-all duration-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]';
-                messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
+                messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
+            }
+
+            if (data.payment_required) {
+                const p = data.payment_required;
+                const amount = p.amount ?? data.amount ?? 0;
+                const idParkir = p.id_parkir;
+
+                if (paymentAmountText) {
+                    paymentAmountText.innerText = amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+                }
+
+                const canNestonPay = p.methods?.nestonpay !== false;
+                const canMidtrans = p.methods?.midtrans !== false;
+
+                if (nestonPayAction) nestonPayAction.classList.toggle('hidden', !canNestonPay);
+                if (midtransAction) midtransAction.classList.toggle('hidden', !canMidtrans);
+
+                if (nestonPayPaymentForm) {
+                    nestonPayPaymentForm.action = nestonPayUrlTemplate.replace('__ID__', idParkir);
+                }
+                if (midtransPaymentLink) {
+                    midtransPaymentLink.href = midtransUrlTemplate.replace('__ID__', idParkir);
+                }
+
+                // Override visual state for "payment pending"
+                statusBadge.innerText = 'PAY';
+                statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-amber-500 text-slate-950';
+                resultTopbar.className = 'h-1.5 w-full bg-amber-500 transition-all duration-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]';
+                messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-amber-500/10 text-amber-400 border border-amber-500/20';
             }
         } else {
             resultTopbar.className = 'h-1.5 w-full bg-rose-500 transition-all duration-500';
-            messageContainer.className = 'mt-auto w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
+            messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
             userName.innerText = 'Unknown';
             userStatus.innerText = 'Error';
         }
@@ -279,6 +383,8 @@
     }
 
     function hideResult() {
+        keepResult = false;
+        if (paymentActions) paymentActions.classList.add('hidden');
         resultFilled.classList.add('opacity-0', 'scale-95');
         setTimeout(() => {
             resultFilled.classList.add('hidden');

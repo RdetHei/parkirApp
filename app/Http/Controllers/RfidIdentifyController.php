@@ -11,8 +11,8 @@ class RfidIdentifyController extends Controller
 {
     public function page()
     {
-        $title = 'RFID Identifikasi';
-        return view('rfid.identify', compact('title'));
+        $title = 'RFID Terminal';
+        return view('parkir.scan', compact('title'));
     }
 
     public function identify(Request $request)

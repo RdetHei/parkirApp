@@ -15,12 +15,14 @@
             <h1 class="text-4xl font-bold tracking-tight text-white">Device <span class="text-emerald-500">Cameras</span></h1>
             <p class="text-slate-400 text-sm mt-2">Manage and monitor all connected camera devices in the system.</p>
         </div>
-        <div class="flex items-center gap-4">
-            <a href="{{ route('kamera.create') }}" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Add New Camera
-            </a>
-        </div>
+        @if((auth()->user()->role ?? null) === 'admin')
+            <div class="flex items-center gap-4">
+                <a href="{{ route('kamera.create') }}" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Add New Camera
+                </a>
+            </div>
+        @endif
     </div>
 
     <!-- Success Alert -->
@@ -37,7 +39,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <h2 class="text-sm font-bold text-white uppercase tracking-widest">Connected Devices <span class="text-slate-500 ml-2 font-medium">({{ $items->total() }} total)</span></h2>
 
-        <form action="{{ route('kamera.index') }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <form action="{{ request()->routeIs('petugas.kamera.index') ? route('petugas.kamera.index') : route('kamera.index') }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div class="relative min-w-[240px]">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -54,7 +56,7 @@
             </select>
 
             @if(request()->anyFilled(['q', 'tipe']))
-                <a href="{{ route('kamera.index') }}" class="p-2 text-slate-500 hover:text-white transition-colors" title="Clear Filters">
+                <a href="{{ request()->routeIs('petugas.kamera.index') ? route('petugas.kamera.index') : route('kamera.index') }}" class="p-2 text-slate-500 hover:text-white transition-colors" title="Clear Filters">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </a>
             @endif
@@ -95,21 +97,22 @@
 
                     <div class="pt-6 border-t border-white/5 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <a href="{{ route('kamera.edit', $item) }}"
-                               class="p-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 rounded-lg border border-amber-500/20 transition-all"
-                               title="Modify Camera">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </a>
-                            <form action="{{ route('kamera.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Archive this camera? All associated parking maps will be updated.')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                        class="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
-                                        title="Archive Device">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </form>
-                        </div>
+                            @if((auth()->user()->role ?? null) === 'admin')
+                                <a href="{{ route('kamera.edit', $item) }}"
+                                   class="p-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 rounded-lg border border-amber-500/20 transition-all"
+                                   title="Modify Camera">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </a>
+                                <form action="{{ route('kamera.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Archive this camera? All associated parking maps will be updated.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
+                                            title="Archive Device">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </form>
+                            @endif
                         <div class="flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                             <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Status</span>

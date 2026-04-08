@@ -9,8 +9,8 @@ class RfidAccessController extends Controller
 {
     public function scanPage()
     {
-        $title = 'RFID Access';
-        return view('rfid.access-scan', compact('title'));
+        $title = 'RFID Terminal';
+        return view('parkir.scan', compact('title'));
     }
 
     public function scan(Request $request)
