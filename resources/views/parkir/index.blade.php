@@ -46,7 +46,7 @@
         <div class="card-pro !p-0 overflow-hidden shadow-2xl">
             <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 class="text-sm font-bold text-white uppercase tracking-widest">Live Inventory <span class="text-slate-500 ml-2 font-medium">({{ $transaksis->total() }} total)</span></h2>
-                
+
                 <form action="{{ url()->current() }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     {{-- Maintain status query param if exists --}}
                     @if(request('status'))
@@ -57,11 +57,12 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Search plate..." 
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Search plate..."
+                               oninput="debounceSearch(this)"
                                class="block w-full pl-10 pr-3 py-2 bg-slate-900/50 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all">
                     </div>
-                    
-                    <select name="area" onchange="this.form.submit()" 
+
+                    <select name="area" onchange="this.form.submit()"
                             class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
                         <option value="">All Areas</option>
                         @foreach($areas as $area)
@@ -197,6 +198,17 @@
             @endif
         </div>
     </div>
+@push('scripts')
+<script>
+    let searchTimer;
+    function debounceSearch(input) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            input.form.submit();
+        }, 800);
+    }
+</script>
+@endpush
 @endsection
 
 @push('styles')

@@ -44,12 +44,13 @@
             </div>
             <h2 class="text-[10px] font-black text-white uppercase tracking-widest">Advanced Filtering</h2>
         </div>
-        
+
         <form action="{{ route('transaksi.index') }}" method="GET">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <div class="lg:col-span-2">
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Plate Number</label>
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Search by plate..."
+                           oninput="debounceSearch(this)"
                            class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white placeholder:text-slate-700 focus:outline-none focus:border-emerald-500/50 transition-all">
                 </div>
                 <div>
@@ -220,4 +221,15 @@
         @endif
     </div>
 </div>
+@push('scripts')
+<script>
+    let searchTimer;
+    function debounceSearch(input) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            input.form.submit();
+        }, 800);
+    }
+</script>
+@endpush
 @endsection

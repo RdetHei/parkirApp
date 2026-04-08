@@ -116,18 +116,21 @@
 
     <script>
         // Check for notifications
-        function checkNotifications() {
-            // Simulated real-time check for new activities
-            // In a real app, this would use Pusher or Echo
-            const hasNewNotify = localStorage.getItem('neston_new_activity');
-            if (hasNewNotify) {
-                if (window.Notification && Notification.permission === "granted") {
-                    new Notification("Neston Update", {
-                        body: "Ada aktivitas parkir baru pada akun Anda.",
-                        icon: "/favicon.ico"
-                    });
-                    localStorage.removeItem('neston_new_activity');
+        async function checkNotifications() {
+            try {
+                const response = await fetch('{{ route('api.notifications.check') }}');
+                const data = await response.json();
+                
+                if (data.has_new) {
+                    if (window.Notification && Notification.permission === "granted") {
+                        new Notification("Neston Update", {
+                            body: data.message || "Ada aktivitas parkir baru pada akun Anda.",
+                            icon: "/favicon.ico"
+                        });
+                    }
                 }
+            } catch (e) {
+                // Silently ignore errors for background checks
             }
         }
 

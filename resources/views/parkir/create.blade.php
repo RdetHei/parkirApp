@@ -313,13 +313,14 @@
                     }
 
                     (this.filteredSlots || []).forEach((s) => {
+                        if (s.occupied) return; // Hide occupied slots from dropdown
+
                         const opt = new Option(
-                            s.code + (s.occupied ? ' (Occupied)' : ''),
+                            s.code,
                             String(s.id),
                             false,
                             false
                         );
-                        opt.disabled = !!s.occupied;
                         sel.add(opt);
                     });
                 } catch (e) {

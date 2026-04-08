@@ -29,33 +29,26 @@
                     </div>
                 </div>
 
-                <div>
+                 <div>
                     <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Product</h5>
                     <ul class="space-y-4">
-                        <li><a href="#fitur" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Features</a></li>
-                        <li><a href="#workflow" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Workflow</a></li>
-                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Pricing</a></li>
-                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Mobile App</a></li>
+                        <li><a href="{{ url('/#fitur') }}" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Features</a></li>
+                        <li><a href="{{ url('/#workflow') }}" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Workflow</a></li>
                     </ul>
                 </div>
 
                 <div>
                     <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Resources</h5>
                     <ul class="space-y-4">
-                        <li><a href="#docs" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Documentation</a></li>
-                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Help Center</a></li>
-                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">API Reference</a></li>
-                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Status</a></li>
+                        <li><a href="{{ route('docs') }}" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Documentation</a></li>
                     </ul>
                 </div>
 
                 <div>
                     <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Company</h5>
                     <ul class="space-y-4">
-                        <li><a href="#about" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">About Us</a></li>
-                        <li><a href="#contact" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Contact</a></li>
-                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
-                        <li><a href="#" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Terms of Service</a></li>
+                        <li><a href="{{ url('/#about') }}" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">About Us</a></li>
+                        <li><a href="{{ url('/#contact') }}" class="text-slate-500 text-xs hover:text-emerald-400 transition-colors">Contact</a></li>
                     </ul>
                 </div>
             </div>

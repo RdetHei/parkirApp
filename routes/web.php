@@ -107,20 +107,37 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
 
 // Protected: wajib email terverifikasi
 Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
-    // API & halaman Peta Parkir: admin, petugas, dan user (user hanya untuk lihat & booking slot)
+    // API & halaman Peta Parkir: admin, petugas, dan user (Dihapus sesuai permintaan)
     Route::middleware(['role:admin,petugas,user'])->group(function () {
         // Halaman peta parkir (Leaflet + image overlay)
-        Route::get('/parking-map', [ParkingSlotController::class, 'view'])->name('parking.map.index');
+        // Route::get('/parking-map', [ParkingSlotController::class, 'view'])->name('parking.map.index');
         // API data slot + kamera + summary (untuk Leaflet)
-        Route::get('/api/parking-slots', [ParkingSlotController::class, 'index'])->name('api.parking-slots.index');
-        Route::get('/api/areas/{area}/slots', [ParkingSlotController::class, 'slotsByArea'])->name('api.areas.slots');
+        // Route::get('/api/parking-slots', [ParkingSlotController::class, 'index'])->name('api.parking-slots.index');
+        // Route::get('/api/areas/{area}/slots', [ParkingSlotController::class, 'slotsByArea'])->name('api.areas.slots');
 
         // Endpoint lain untuk fitur bookmark lama tetap menggunakan ParkingSlotController
-        Route::post('/api/parking-slots/{area_id}/bookmark', [ParkingSlotController::class, 'bookmark'])->name('api.parking-slots.bookmark');
-        Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [ParkingSlotController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
+        // Route::post('/api/parking-slots/{area_id}/bookmark', [ParkingSlotController::class, 'bookmark'])->name('api.parking-slots.bookmark');
+        // Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [ParkingSlotController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
 
         // Plate Recognizer API
         Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
+
+        // Notification Check API
+        Route::get('/api/notifications/check', function () {
+            $user = request()->user();
+            if (!$user) return response()->json(['has_new' => false]);
+
+            $latest = \App\Models\NotificationLog::where('user_id', $user->id)
+                ->where('created_at', '>', now()->subSeconds(30))
+                ->where('status', 'success')
+                ->latest()
+                ->first();
+
+            return response()->json([
+                'has_new' => !!$latest,
+                'message' => $latest ? $latest->message : null
+            ]);
+        })->name('api.notifications.check');
 
         // New ANPR Features
         Route::get('/anpr', function () {
@@ -405,14 +422,14 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::get('/active-parking', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.active');
         Route::get('/active-bookings', [\App\Http\Controllers\TransaksiController::class, 'bookings'])->name('transaksi.bookings');
         Route::get('/parking-history', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.history');
-        
+
         // Tetap dukung route lama jika ada yang pakai (alias)
         Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.parkir.index');
 
         Route::get('/check-in', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create-check-in');
         Route::post('/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
         Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
-        
+
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');

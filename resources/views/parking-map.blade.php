@@ -3,9 +3,9 @@
 @section('title', 'Peta Parkir')
 
 @section('content')
-<div class="parking-map-page flex w-full min-w-0 flex-1 min-h-0 flex flex-col" style="background:#020617;">
-<div class="w-full min-w-0 flex-1 min-h-0 p-6 lg:p-8">
-<div class="max-w-7xl mx-auto w-full min-w-0">
+<div class="flex flex-col h-full bg-[#020617] overflow-hidden">
+    <div class="flex-1 flex flex-col p-6 lg:p-8 min-h-0">
+        <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col min-h-0">
 
     {{--
         VARIANT 2: Peta lebar kiri + sidebar kanan
@@ -28,17 +28,17 @@
         </div>
     </div>
 
-    <div class="flex flex-col lg:flex-row gap-5 items-start">
+    <div class="flex flex-col lg:flex-row gap-5 flex-1 min-h-0">
 
         {{-- ── MAP AREA ── --}}
-        <div class="flex-1 w-full min-w-0 bg-[#0d1526] rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
+        <div class="flex-1 min-h-0 bg-[#0d1526] rounded-2xl border border-white/5 shadow-2xl overflow-hidden flex flex-col">
             @if($area && $area->map_image_url)
-            <div class="relative h-[450px] sm:h-[600px] lg:h-[720px] bg-[#020617]">
+            <div class="relative flex-1 bg-[#020617] min-h-[400px]">
                 <div id="parking-map"
-                     class="w-full h-full relative z-10"
+                     class="absolute inset-0 z-10"
                      data-image-url="{{ $area->map_image_url }}"
-                     data-width="{{ $area->map_width }}"
-                     data-height="{{ $area->map_height }}"
+                     data-width="{{ $area->map_width ?: 1000 }}"
+                     data-height="{{ $area->map_height ?: 800 }}"
                      data-map-id="{{ $area->id_area }}">
                 </div>
 
@@ -85,7 +85,7 @@
         </div>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-full lg:w-60 shrink-0 flex flex-col gap-4">
+        <div class="w-full lg:w-60 shrink-0 flex flex-col gap-4 overflow-y-auto lg:h-full lg:pr-1 custom-scrollbar">
 
             {{-- Area selector --}}
             <div class="rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">

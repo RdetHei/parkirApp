@@ -53,12 +53,6 @@
             <span class="sidebar-label">{{ __('Dashboard') }}</span>
         </a>
 
-        <a href="{{ route('parking.map.index') }}"
-           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('parking.map.index') ? 'active' : '' }}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7" /></svg>
-            <span class="sidebar-label">{{ __('Parking Map') }}</span>
-        </a>
-
         {{-- USER / Common Account Items --}}
         @if($role === 'user')
         <div class="pt-4 pb-2 px-3">
@@ -92,7 +86,7 @@
         @endif
 
         {{-- PETUGAS OPERATIONS --}}
-        @if($role === 'petugas' || $role === 'admin')
+        @if($role === 'petugas')
         <div class="pt-4 pb-2 px-3">
             <p class="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] sidebar-label">{{ __('Parking Ops') }}</p>
         </div>

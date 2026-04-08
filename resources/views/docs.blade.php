@@ -38,12 +38,12 @@
         <!-- Mobile Chapter Selector -->
         <div class="lg:hidden sticky top-16 z-30 bg-[#020617]/80 backdrop-blur-md -mx-6 px-6 py-4 border-b border-white/5 overflow-x-auto no-scrollbar">
             <div class="flex gap-2 min-w-max">
-                <button @click="activeTab = 'intro'" :class="activeTab === 'intro' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Pengenalan</button>
-                <button @click="activeTab = 'features'" :class="activeTab === 'features' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Fitur</button>
-                <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Manfaat</button>
-                <button @click="activeTab = 'tech'" :class="activeTab === 'tech' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Teknologi</button>
-                <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Tim</button>
-                <button @click="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Legal & lisensi</button>
+                <button @click="activeTab = 'intro'" :class="activeTab === 'intro' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">{{ __('Pengenalan') }}</button>
+                <button @click="activeTab = 'features'" :class="activeTab === 'features' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">{{ __('Fitur') }}</button>
+                <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">{{ __('Manfaat') }}</button>
+                <button @click="activeTab = 'tech'" :class="activeTab === 'tech' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">{{ __('Teknologi') }}</button>
+                <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">{{ __('Tim') }}</button>
+                <button @click="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950' : 'bg-white/5 text-slate-400'" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">{{ __('Legal & lisensi') }}</button>
             </div>
         </div>
 
@@ -52,7 +52,7 @@
             <div class="sticky top-32 rounded-2xl border border-white/[0.06] bg-[#020617]/60 backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] p-3.5">
                 <div class="space-y-7">
                     <div>
-                        <p class="mb-2.5 px-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">Materi utama</p>
+                        <p class="mb-2.5 px-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">{{ __('Materi utama') }}</p>
                         <nav class="flex flex-col gap-0.5" role="navigation" aria-label="Materi dokumentasi">
                             <button type="button" @click="activeTab = 'intro'"
                                 :class="activeTab === 'intro'
@@ -62,7 +62,7 @@
                                 <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] transition-colors" :class="activeTab === 'intro' ? 'bg-emerald-500/15 text-emerald-500/90' : 'bg-white/[0.03] text-slate-500 group-hover:text-slate-400'">
                                     <i class="fa-solid fa-house-chimney"></i>
                                 </span>
-                                <span>Pengenalan</span>
+                                <span>{{ __('Pengenalan') }}</span>
                             </button>
                             <button type="button" @click="activeTab = 'features'"
                                 :class="activeTab === 'features'
@@ -72,7 +72,7 @@
                                 <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] transition-colors" :class="activeTab === 'features' ? 'bg-emerald-500/15 text-emerald-500/90' : 'bg-white/[0.03] text-slate-500 group-hover:text-slate-400'">
                                     <i class="fa-solid fa-microchip"></i>
                                 </span>
-                                <span>Fitur utama</span>
+                                <span>{{ __('Fitur utama') }}</span>
                             </button>
                             <button type="button" @click="activeTab = 'benefits'"
                                 :class="activeTab === 'benefits'
@@ -82,7 +82,7 @@
                                 <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] transition-colors" :class="activeTab === 'benefits' ? 'bg-emerald-500/15 text-emerald-500/90' : 'bg-white/[0.03] text-slate-500 group-hover:text-slate-400'">
                                     <i class="fa-solid fa-chart-line"></i>
                                 </span>
-                                <span>Manfaat</span>
+                                <span>{{ __('Manfaat') }}</span>
                             </button>
                             <button type="button" @click="activeTab = 'tech'"
                                 :class="activeTab === 'tech'
@@ -92,13 +92,13 @@
                                 <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] transition-colors" :class="activeTab === 'tech' ? 'bg-emerald-500/15 text-emerald-500/90' : 'bg-white/[0.03] text-slate-500 group-hover:text-slate-400'">
                                     <i class="fa-solid fa-code"></i>
                                 </span>
-                                <span>Teknologi</span>
+                                <span>{{ __('Teknologi') }}</span>
                             </button>
                         </nav>
                     </div>
 
                     <div class="border-t border-white/[0.05] pt-5">
-                        <p class="mb-2.5 px-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">Organisasi</p>
+                        <p class="mb-2.5 px-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">{{ __('Organisasi') }}</p>
                         <nav class="flex flex-col gap-0.5" role="navigation" aria-label="Organisasi">
                             <button type="button" @click="activeTab = 'team'"
                                 :class="activeTab === 'team'
@@ -108,7 +108,7 @@
                                 <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] transition-colors" :class="activeTab === 'team' ? 'bg-emerald-500/15 text-emerald-500/90' : 'bg-white/[0.03] text-slate-500 group-hover:text-slate-400'">
                                     <i class="fa-solid fa-users-gear"></i>
                                 </span>
-                                <span>Tim pengembang</span>
+                                <span>{{ __('Tim pengembang') }}</span>
                             </button>
                             <button type="button" @click="activeTab = 'license'"
                                 :class="activeTab === 'license'
@@ -118,7 +118,7 @@
                                 <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] transition-colors" :class="activeTab === 'license' ? 'bg-emerald-500/15 text-emerald-500/90' : 'bg-white/[0.03] text-slate-500 group-hover:text-slate-400'">
                                     <i class="fa-solid fa-file-contract"></i>
                                 </span>
-                                <span>Legal & lisensi</span>
+                                <span>{{ __('Legal & lisensi') }}</span>
                             </button>
                         </nav>
                     </div>
@@ -139,20 +139,37 @@
             <div x-show="activeTab === 'intro'" x-cloak class="animate-fade-in">
                 <div class="doc-card mb-8">
                     <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-4 block">Chapter 01</span>
-                    <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 leading-tight">SELAMAT DATANG DI <br/><span class="text-emerald-500">NESTON ECOSYSTEM</span></h1>
-                    <p class="text-slate-400 text-base lg:text-lg leading-relaxed font-medium mb-12">
-                        NESTON adalah platform manajemen parkir modern yang mengintegrasikan teknologi IoT dan AI untuk menyederhanakan pengelolaan infrastruktur parkir secara menyeluruh.
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
-                            <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Visi Kami</h3>
-                            <p class="text-slate-400 text-sm leading-relaxed">Menjadikan manajemen parkir lebih cerdas, aman, dan transparan melalui digitalisasi total.</p>
+                    @if(App::getLocale() == 'en')
+                        <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 leading-tight">WELCOME TO <br/><span class="text-emerald-500">NESTON ECOSYSTEM</span></h1>
+                        <p class="text-slate-400 text-base lg:text-lg leading-relaxed font-medium mb-12">
+                            NESTON is a modern parking management platform that integrates IoT and AI technology to simplify overall parking infrastructure management.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
+                                <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Our Vision</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Making parking management smarter, safer, and more transparent through total digitalization.</p>
+                            </div>
+                            <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
+                                <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Target</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Office buildings, shopping centers, and modern public facilities.</p>
+                            </div>
                         </div>
-                        <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
-                            <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Target</h3>
-                            <p class="text-slate-400 text-sm leading-relaxed">Gedung perkantoran, pusat perbelanjaan, dan fasilitas publik modern.</p>
+                    @else
+                        <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 leading-tight">SELAMAT DATANG DI <br/><span class="text-emerald-500">NESTON ECOSYSTEM</span></h1>
+                        <p class="text-slate-400 text-base lg:text-lg leading-relaxed font-medium mb-12">
+                            NESTON adalah platform manajemen parkir modern yang mengintegrasikan teknologi IoT dan AI untuk menyederhanakan pengelolaan infrastruktur parkir secara menyeluruh.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
+                                <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Visi Kami</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Menjadikan manajemen parkir lebih cerdas, aman, dan transparan melalui digitalisasi total.</p>
+                            </div>
+                            <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5">
+                                <h3 class="text-emerald-500 font-bold mb-3 uppercase text-[10px] tracking-[0.2em]">Target</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Gedung perkantoran, pusat perbelanjaan, dan fasilitas publik modern.</p>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -161,39 +178,75 @@
                 <div class="space-y-8">
                     <div class="doc-card">
                         <span class="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mb-4 block">Chapter 02</span>
-                        <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12">ARSITEKTUR <span class="text-blue-500">FITUR</span></h1>
+                        @if(App::getLocale() == 'en')
+                            <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12">FEATURE <span class="text-blue-500">ARCHITECTURE</span></h1>
 
-                        <div class="space-y-6">
-                            <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
-                                <div class="w-14 h-14 lg:w-16 lg:h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-camera-retro text-xl lg:text-2xl"></i>
+                            <div class="space-y-6">
+                                <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-camera-retro text-xl lg:text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">ANPR (Automatic Number Plate Recognition)</h3>
+                                        <p class="text-slate-400 text-sm leading-relaxed font-medium">Automatic license plate recognition using Computer Vision, speeding up the check-in process by up to 70%.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">ANPR (Automatic Number Plate Recognition)</h3>
-                                    <p class="text-slate-400 text-sm leading-relaxed font-medium">Pengenalan plat nomor otomatis menggunakan Computer Vision, mempercepat proses check-in hingga 70%.</p>
+
+                                <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-map-location-dot text-xl lg:text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Visual Map Architect</h3>
+                                        <p class="text-slate-400 text-sm leading-relaxed font-medium">Interactive layout editor that allows administrators to visually map parking slots.</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-wallet text-xl lg:text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Integrated NestonPay</h3>
+                                        <p class="text-slate-400 text-sm leading-relaxed font-medium">Integrated digital payment system with Midtrans gateway for non-cash transactions.</p>
+                                    </div>
                                 </div>
                             </div>
+                        @else
+                            <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12">ARSITEKTUR <span class="text-blue-500">FITUR</span></h1>
 
-                            <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
-                                <div class="w-14 h-14 lg:w-16 lg:h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-map-location-dot text-xl lg:text-2xl"></i>
+                            <div class="space-y-6">
+                                <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-camera-retro text-xl lg:text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">ANPR (Automatic Number Plate Recognition)</h3>
+                                        <p class="text-slate-400 text-sm leading-relaxed font-medium">Pengenalan plat nomor otomatis menggunakan Computer Vision, mempercepat proses check-in hingga 70%.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Visual Map Architect</h3>
-                                    <p class="text-slate-400 text-sm leading-relaxed font-medium">Editor layout interaktif yang memungkinkan administrator memetakan slot parkir secara visual.</p>
+
+                                <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-map-location-dot text-xl lg:text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Visual Map Architect</h3>
+                                        <p class="text-slate-400 text-sm leading-relaxed font-medium">Editor layout interaktif yang memungkinkan administrator memetakan slot parkir secara visual.</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
+                                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        <i class="fa-solid fa-wallet text-xl lg:text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Integrated NestonPay</h3>
+                                        <p class="text-slate-400 text-sm leading-relaxed font-medium">Sistem pembayaran digital terintegrasi dengan gateway Midtrans untuk transaksi non-tunai.</p>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="flex flex-col md:flex-row gap-6 lg:gap-8 p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 group">
-                                <div class="w-14 h-14 lg:w-16 lg:h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-wallet text-xl lg:text-2xl"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg lg:text-xl font-bold text-white mb-2 uppercase tracking-wide">Integrated NestonPay</h3>
-                                    <p class="text-slate-400 text-sm leading-relaxed font-medium">Sistem pembayaran digital terintegrasi dengan gateway Midtrans untuk transaksi non-tunai.</p>
-                                </div>
-                            </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -202,24 +255,45 @@
             <div x-show="activeTab === 'benefits'" x-cloak class="animate-fade-in">
                 <div class="doc-card">
                     <span class="text-[10px] font-black text-purple-500 uppercase tracking-[0.4em] mb-4 block">Chapter 03</span>
-                    <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12 leading-tight">VALUE & <span class="text-purple-500">IMPACT</span></h1>
+                    @if(App::getLocale() == 'en')
+                        <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12 leading-tight">VALUE & <span class="text-purple-500">IMPACT</span></h1>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
-                            <div class="w-10 h-10 lg:w-12 lg:h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-6">
-                                <i class="fa-solid fa-shield-halved text-lg lg:text-xl"></i>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
+                                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-6">
+                                    <i class="fa-solid fa-shield-halved text-lg lg:text-xl"></i>
+                                </div>
+                                <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Guaranteed Security</h3>
+                                <p class="text-slate-500 text-sm leading-relaxed font-medium">Vehicle identity verification and comprehensive real-time activity log recording.</p>
                             </div>
-                            <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Keamanan Terjamin</h3>
-                            <p class="text-slate-500 text-sm leading-relaxed font-medium">Verifikasi identitas kendaraan dan pencatatan log aktivitas yang komprehensif secara real-time.</p>
-                        </div>
-                        <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
-                            <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-6">
-                                <i class="fa-solid fa-bolt text-lg lg:text-xl"></i>
+                            <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
+                                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-6">
+                                    <i class="fa-solid fa-bolt text-lg lg:text-xl"></i>
+                                </div>
+                                <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Service Speed</h3>
+                                <p class="text-slate-500 text-sm leading-relaxed font-medium">System automation reduces queues and provides a better experience for users.</p>
                             </div>
-                            <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Kecepatan Layanan</h3>
-                            <p class="text-slate-500 text-sm leading-relaxed font-medium">Otomatisasi sistem mengurangi antrian dan memberikan pengalaman yang lebih baik bagi pengguna.</p>
                         </div>
-                    </div>
+                    @else
+                        <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12 leading-tight">VALUE & <span class="text-purple-500">IMPACT</span></h1>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
+                                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-6">
+                                    <i class="fa-solid fa-shield-halved text-lg lg:text-xl"></i>
+                                </div>
+                                <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Keamanan Terjamin</h3>
+                                <p class="text-slate-500 text-sm leading-relaxed font-medium">Verifikasi identitas kendaraan dan pencatatan log aktivitas yang komprehensif secara real-time.</p>
+                            </div>
+                            <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] border border-white/5">
+                                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-6">
+                                    <i class="fa-solid fa-bolt text-lg lg:text-xl"></i>
+                                </div>
+                                <h3 class="text-white font-bold mb-4 uppercase tracking-widest text-[10px] lg:text-xs">Kecepatan Layanan</h3>
+                                <p class="text-slate-500 text-sm leading-relaxed font-medium">Otomatisasi sistem mengurangi antrian dan memberikan pengalaman yang lebih baik bagi pengguna.</p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -232,7 +306,7 @@
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12">
                         <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
                             <i class="fa-brands fa-laravel text-3xl lg:text-4xl text-[#FF2D20] mb-4"></i>
-                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">Laravel 10</p>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">Laravel 11</p>
                         </div>
                         <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
                             <i class="fa-brands fa-js text-3xl lg:text-4xl text-[#F7DF1E] mb-4"></i>
@@ -244,7 +318,7 @@
                         </div>
                         <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
                             <i class="fa-solid fa-database text-3xl lg:text-4xl text-emerald-500 mb-4"></i>
-                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">MySQL</p>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">SQLite</p>
                         </div>
                     </div>
                 </div>
@@ -253,7 +327,7 @@
             <!-- Tab: Team -->
             <div x-show="activeTab === 'team'" x-cloak class="animate-fade-in">
                 <div class="doc-card">
-                    <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-4 block">Our Team</span>
+                    <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-4 block">{{ __('Our Team') }}</span>
                     <h1 class="text-3xl lg:text-5xl font-black tracking-tighter text-white mb-8 lg:mb-12">ENGINEERING <span class="text-emerald-500">TEAM</span></h1>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
@@ -282,32 +356,43 @@
             <!-- Tab: License -->
             <div x-show="activeTab === 'license'" x-cloak class="animate-fade-in">
                 <div class="doc-card">
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4 block">Legal</span>
-                    <h1 class="text-5xl font-black tracking-tighter text-white mb-8 leading-tight">LISENSI <span class="text-slate-500">& LEGAL</span></h1>
-                    <div class="space-y-8 text-slate-400 text-lg leading-relaxed font-medium">
-                        <p>Ekosistem NESTON dilisensikan di bawah standar lisensi komersial terbatas. Seluruh hak cipta dilindungi undang-undang.</p>
-                        <div class="p-10 bg-rose-500/5 rounded-[2.5rem] border border-rose-500/10 mt-16">
-                            <h3 class="text-rose-500 font-black mb-4 uppercase text-xs tracking-[0.2em]">Peringatan Keamanan</h3>
-                            <p class="text-slate-500 text-sm leading-relaxed">Dilarang melakukan rekayasa balik (reverse engineering) atau mendistribusikan ulang kode sumber tanpa otorisasi resmi.</p>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-4 block">{{ __('Legal') }}</span>
+                    @if(App::getLocale() == 'en')
+                        <h1 class="text-5xl font-black tracking-tighter text-white mb-8 leading-tight">LICENSE <span class="text-slate-500">& LEGAL</span></h1>
+                        <div class="space-y-8 text-slate-400 text-lg leading-relaxed font-medium">
+                            <p>The NESTON ecosystem is licensed under a limited commercial license standard. All rights reserved.</p>
+                            <div class="p-10 bg-rose-500/5 rounded-[2.5rem] border border-rose-500/10 mt-16">
+                                <h3 class="text-rose-500 font-black mb-4 uppercase text-xs tracking-[0.2em]">Security Warning</h3>
+                                <p class="text-slate-500 text-sm leading-relaxed">It is prohibited to reverse engineer or redistribute the source code without official authorization.</p>
+                            </div>
                         </div>
-                    </div>
+                    @else
+                        <h1 class="text-5xl font-black tracking-tighter text-white mb-8 leading-tight">LISENSI <span class="text-slate-500">& LEGAL</span></h1>
+                        <div class="space-y-8 text-slate-400 text-lg leading-relaxed font-medium">
+                            <p>Ekosistem NESTON dilisensikan di bawah standar lisensi komersial terbatas. Seluruh hak cipta dilindungi undang-undang.</p>
+                            <div class="p-10 bg-rose-500/5 rounded-[2.5rem] border border-rose-500/10 mt-16">
+                                <h3 class="text-rose-500 font-black mb-4 uppercase text-xs tracking-[0.2em]">Peringatan Keamanan</h3>
+                                <p class="text-slate-500 text-sm leading-relaxed">Dilarang melakukan rekayasa balik (reverse engineering) atau mendistribusikan ulang kode sumber tanpa otorisasi resmi.</p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 
             <!-- Inline Footer -->
             <footer class="mt-20 pt-10 border-t border-white/5 text-center lg:text-left">
-                <p class="text-slate-600 text-[9px] font-black uppercase tracking-[0.4em]">NESTON Parking Ecosystem • 2024 System Documentation</p>
+                <p class="text-slate-600 text-[9px] font-black uppercase tracking-[0.4em]">NESTON Parking Ecosystem • 2026 System Documentation</p>
             </footer>
         </main>
     </div>
 
     <!-- Mobile Nav Bar (Bottom) -->
     <div class="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-slate-900/90 backdrop-blur-xl border border-white/10 p-2 rounded-2xl flex items-center gap-1 shadow-2xl">
-        <button @click="activeTab = 'intro'" :class="activeTab === 'intro' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-house-chimney"></i></button>
-        <button @click="activeTab = 'features'" :class="activeTab === 'features' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-microchip"></i></button>
-        <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-chart-line"></i></button>
-        <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all"><i class="fa-solid fa-users-gear"></i></button>
-        <button @click="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950 shadoe-lg shadow-emerald-500/40' : 'text-slate-400' " class="p-3 rounded-xl transition-all"><i class="fa-solid fa-file-contract"></i></button>
+        <button @click="activeTab = 'intro'" :class="activeTab === 'intro' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all" title="{{ __('Pengenalan') }}"><i class="fa-solid fa-house-chimney"></i></button>
+        <button @click="activeTab = 'features'" :class="activeTab === 'features' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all" title="{{ __('Fitur') }}"><i class="fa-solid fa-microchip"></i></button>
+        <button @click="activeTab = 'benefits'" :class="activeTab === 'benefits' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all" title="{{ __('Manfaat') }}"><i class="fa-solid fa-chart-line"></i></button>
+        <button @click="activeTab = 'team'" :class="activeTab === 'team' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400'" class="p-3 rounded-xl transition-all" title="{{ __('Tim') }}"><i class="fa-solid fa-users-gear"></i></button>
+        <button @click="activeTab = 'license'" :class="activeTab === 'license' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40' : 'text-slate-400' " class="p-3 rounded-xl transition-all" title="{{ __('Legal & lisensi') }}"><i class="fa-solid fa-file-contract"></i></button>
     </div>
 
     <!-- Card Login Modal -->
@@ -322,9 +407,9 @@
                     <i class="fa-solid fa-id-card text-3xl text-emerald-500"></i>
                 </div>
 
-                <h3 class="text-2xl font-extrabold text-white mb-3">Card Authentication</h3>
+                <h3 class="text-2xl font-extrabold text-white mb-3">{{ __('Card Authentication') }}</h3>
                 <p class="text-slate-400 text-sm leading-relaxed mb-10">
-                    Silakan tempelkan kartu Anda pada pembaca kartu (reader) untuk masuk secara otomatis.
+                    {{ __('Silakan tempelkan kartu Anda pada pembaca kartu (reader) untuk masuk secara otomatis.') }}
                 </p>
 
                 <!-- Hidden Input for Scanner -->
@@ -333,14 +418,14 @@
                 <div class="space-y-6">
                     <div id="scanningState" class="flex flex-col items-center">
                         <div class="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Waiting for card tap...</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">{{ __('Waiting for card tap...') }}</p>
                     </div>
 
                     <div id="loginStatus" class="hidden text-sm font-bold"></div>
                 </div>
 
                 <button onclick="closeCardLogin()" class="mt-12 text-xs font-bold text-slate-500 hover:text-white uppercase tracking-widest transition-colors">
-                    Cancel and go back
+                    {{ __('Cancel and go back') }}
                 </button>
             </div>
         </div>

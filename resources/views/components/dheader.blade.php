@@ -93,8 +93,6 @@
         $headerTitle = __('Laporan Pembayaran');
     } elseif (request()->routeIs('report.transaksi')) {
         $headerTitle = __('Laporan Transaksi');
-    } elseif (request()->routeIs('parking.map.index')) {
-        $headerTitle = __('Peta Parkir');
     } elseif (request()->routeIs('user.profile')) {
         $headerTitle = __('Profil Saya');
     }

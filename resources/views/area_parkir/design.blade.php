@@ -53,7 +53,7 @@
                         @if($area->map_image_url)
                             <div id="map-canvas" class="relative mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all cursor-crosshair"
                                  onclick="handleCanvasClick(event)"
-                                 style="width: {{ $area->map_width }}px; height: {{ $area->map_height }}px; background-image: url('{{ $area->map_image_url }}'); background-size: cover; background-position: center;">
+                                 style="width: {{ $area->map_width ?: 1000 }}px; height: {{ $area->map_height ?: 800 }}px; background-image: url('{{ $area->map_image_url }}'); background-size: cover; background-position: center;">
 
                                 <!-- Slots -->
                                 @foreach($area->slots as $slot)

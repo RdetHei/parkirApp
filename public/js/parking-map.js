@@ -4,8 +4,10 @@
     if (!container) return;
 
     const imageUrl = container.dataset.imageUrl || '';
-    const mapWidth = parseInt(container.dataset.width || '1000', 10);
-    const mapHeight = parseInt(container.dataset.height || '800', 10);
+    const mapWidthStr = container.dataset.width || '1000';
+    const mapHeightStr = container.dataset.height || '800';
+    const mapWidth = parseInt(mapWidthStr) || 1000;
+    const mapHeight = parseInt(mapHeightStr) || 800;
     const mapId = container.dataset.mapId || '';
     const bookUrlTemplate = container.dataset.bookUrlTemplate || null;
     const unbookUrlTemplate = container.dataset.unbookUrlTemplate || null;
@@ -24,36 +26,39 @@
 
         map = L.map('parking-map', {
             crs: L.CRS.Simple,
-            minZoom: -2,
+            minZoom: -3,
             maxZoom: 3,
             zoomControl: false,
-            attributionControl: false
+            attributionControl: false,
+            preferCanvas: true
         });
 
+        // Use slightly larger bounds for padding
         const bounds = [[0, 0], [mapHeight, mapWidth]];
         const overlay = L.imageOverlay(imageUrl, bounds);
         overlay.addTo(map);
 
+        // Ensure fitBounds is called after everything is ready
+        setTimeout(() => {
+            map.invalidateSize();
+            map.fitBounds(bounds);
+        }, 100);
+
         overlay.on('load', () => {
+            map.invalidateSize();
             map.fitBounds(bounds);
             const loader = document.getElementById('map-loader');
             if (loader) {
                 loader.style.opacity = '0';
                 setTimeout(() => loader.remove(), 500);
             }
-            map.invalidateSize();
         });
 
-        // Fallback for loader
-        setTimeout(() => {
-            const loader = document.getElementById('map-loader');
-            if (loader) {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.remove(), 500);
-            }
+        // Watch for sidebar collapse to invalidate size
+        const observer = new MutationObserver(() => {
             map.invalidateSize();
-            map.fitBounds(bounds);
-        }, 2500);
+        });
+        observer.observe(document.body, { attributes: true, attributeFilter: ['data-sidebar'] });
 
         L.control.zoom({ position: 'topright' }).addTo(map);
 
@@ -135,7 +140,7 @@
             if (slot.status === 'reserved-by-me' || (slot.status === 'occupied' && slot.is_mine)) {
                 const centerY = y + (slot.height / 2);
                 const centerX = slot.x + (slot.width / 2);
-                
+
                 const userIcon = L.divIcon({
                     className: 'user-location-marker',
                     html: `
