@@ -26,7 +26,10 @@ class AreaParkirController extends Controller
             });
         }
 
-        $areas = $query->orderBy('id_area', 'desc')->paginate(15)->withQueryString();
+        $areas = $query->withCount('slots')
+            ->orderBy('id_area', 'desc')
+            ->paginate(15)
+            ->withQueryString();
         $title = 'Area Parkir';
         return view('area_parkir.index', compact('areas', 'title'));
     }

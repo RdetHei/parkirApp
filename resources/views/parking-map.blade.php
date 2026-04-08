@@ -1,220 +1,237 @@
 @extends('layouts.app')
 
-@section('title', 'Peta Parkir')
+@section('title', 'Live Parking Map')
 
 @section('content')
-<div class="flex flex-col h-full bg-[#020617] overflow-hidden">
-    <div class="flex-1 flex flex-col p-6 lg:p-8 min-h-0">
-        <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col min-h-0">
-
-    {{--
-        VARIANT 2: Peta lebar kiri + sidebar kanan
-        Sidebar: area selector, summary stats, legend, live indicator.
-        Peta mengisi sisa ruang di sebelah kiri.
-    --}}
-
-    {{-- Page header --}}
-    <div class="flex items-center justify-between mb-5">
-        <div class="flex items-center gap-3">
-            <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+<div class="p-4 lg:p-8 h-[calc(100vh-64px)] flex flex-col overflow-hidden">
+    <div class="max-w-[1600px] mx-auto w-full flex-1 flex flex-col min-h-0 gap-6">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
             <div>
-                <h1 class="text-xl font-bold text-white tracking-tight">Peta Interaktif Parkir</h1>
-                <p class="text-slate-500 text-xs mt-0.5">Real-time slot & kamera pemantau</p>
+                <div class="flex items-center gap-3 mb-1">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                    <h1 class="text-2xl lg:text-3xl font-black tracking-tighter text-white uppercase">Live <span class="text-emerald-500">Map</span> Monitoring</h1>
+                </div>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">Real-time occupancy & security status</p>
+            </div>
+
+            <div class="flex items-center gap-3 bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 backdrop-blur-xl">
+                <div class="flex items-center gap-2 px-4 py-2">
+                    <i class="fa-solid fa-layer-group text-slate-500 text-xs"></i>
+                    <select id="area-selector" onchange="window.location.href='{{ route('parking.map.index') }}?map_id=' + this.value"
+                            class="bg-transparent text-white text-[10px] font-black uppercase tracking-widest focus:outline-none cursor-pointer">
+                        @foreach($maps as $m)
+                            <option value="{{ $m->id_area }}" {{ $area && $area->id_area == $m->id_area ? 'selected' : '' }} class="bg-slate-900">{{ $m->nama_area }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="w-px h-4 bg-white/10"></div>
+                <button onclick="refreshMapData()" class="p-2.5 text-slate-400 hover:text-white transition-colors group" title="Manual Refresh">
+                    <i class="fa-solid fa-arrows-rotate text-xs group-active:rotate-180 transition-transform duration-500"></i>
+                </button>
             </div>
         </div>
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border" style="background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.07);">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live</span>
-        </div>
-    </div>
 
-    <div class="flex flex-col lg:flex-row gap-5 flex-1 min-h-0">
-
-        {{-- ── MAP AREA ── --}}
-        <div class="flex-1 min-h-0 bg-[#0d1526] rounded-2xl border border-white/5 shadow-2xl overflow-hidden flex flex-col">
-            @if($area && $area->map_image_url)
-            <div class="relative flex-1 bg-[#020617] min-h-[400px]">
-                <div id="parking-map"
-                     class="absolute inset-0 z-10"
-                     data-image-url="{{ $area->map_image_url }}"
-                     data-width="{{ $area->map_width ?: 1000 }}"
-                     data-height="{{ $area->map_height ?: 800 }}"
-                     data-map-id="{{ $area->id_area }}">
-                </div>
-
-                <!-- Loading Overlay -->
-                <div id="map-loader" class="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-500">
-                    <div class="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Initializing Map Engine...</p>
-                </div>
-
-                {{-- Mini legend bottom-left --}}
-                <div class="absolute bottom-6 left-6 flex items-center gap-4 px-4 py-2.5 rounded-2xl z-20 pointer-events-none shadow-2xl"
-                     style="background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.1); backdrop-blur:md;">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Empty</span>
-                    </div>
-                    <div class="w-px h-3 bg-white/10"></div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
-                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Occupied</span>
-                    </div>
-                    <div class="w-px h-3 bg-white/10"></div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
-                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Reserved</span>
+        <div class="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
+            <!-- Main Map Canvas Area -->
+            <div class="flex-1 min-h-0 card-pro !p-0 bg-slate-950 border-white/5 shadow-2xl relative overflow-hidden group flex flex-col">
+                
+                <!-- Map Controls Overlay -->
+                <div class="absolute top-6 right-6 z-20 flex flex-col gap-2">
+                    <div class="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden flex flex-col shadow-2xl">
+                        <button onclick="zoomMap(1.2)" class="p-3 text-white hover:bg-emerald-500 hover:text-slate-950 transition-all active:scale-90 border-b border-white/5">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                        </button>
+                        <button onclick="zoomMap(0.8)" class="p-3 text-white hover:bg-emerald-500 hover:text-slate-950 transition-all active:scale-90 border-b border-white/5">
+                            <i class="fa-solid fa-minus text-xs"></i>
+                        </button>
+                        <button onclick="resetMapZoom()" class="p-3 text-white hover:bg-emerald-500 hover:text-slate-950 transition-all active:scale-90">
+                            <i class="fa-solid fa-compress text-xs"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-            @else
-            <div class="flex flex-col items-center justify-center" style="height:640px;">
-                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">
-                    <svg class="w-7 h-7 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                </div>
-                <h3 class="text-sm font-bold text-white mb-1">Peta Belum Tersedia</h3>
-                <p class="text-xs text-slate-600 max-w-xs text-center">Pilih area lain atau hubungi admin.</p>
-                @if(auth()->check() && auth()->user()->role === 'admin')
-                <a href="{{ route('area-parkir.index') }}" class="mt-5 px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-xl text-white transition-all"
-                   style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
-                    Kelola Area
-                </a>
-                @endif
-            </div>
-            @endif
-        </div>
 
-        {{-- ── SIDEBAR ── --}}
-        <div class="w-full lg:w-60 shrink-0 flex flex-col gap-4 overflow-y-auto lg:h-full lg:pr-1 custom-scrollbar">
-
-            {{-- Area selector --}}
-            <div class="rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
-                <div class="px-4 py-3 border-b" style="border-color:rgba(255,255,255,0.05);">
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Area Parkir</p>
-                </div>
-                @if(!empty($maps) && $maps->count())
-                <div class="p-3 flex flex-col gap-1">
-                    @foreach($maps as $m)
-                    <a href="{{ route('parking.map.index', ['map_id' => $m->id_area]) }}"
-                       class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors {{ $area && $area->id_area === $m->id_area ? 'text-emerald-400' : 'text-slate-400 hover:text-white' }}"
-                       style="{{ $area && $area->id_area === $m->id_area ? 'background:rgba(16,185,129,0.1);' : '' }}">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $area && $area->id_area === $m->id_area ? 'bg-emerald-400' : 'bg-slate-700' }} shrink-0"></span>
-                        {{ $m->nama_area }}
-                    </a>
-                    @endforeach
-                </div>
-                @else
-                <p class="px-4 py-3 text-xs text-slate-600 italic">Tidak ada area.</p>
-                @endif
-            </div>
-
-            {{-- Stats --}}
-            <div class="rounded-2xl overflow-hidden border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
-                <div class="px-4 py-3 border-b flex items-center justify-between" style="border-color:rgba(255,255,255,0.05);">
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Statistik</p>
-                    <button id="parking-map-refresh-btn" type="button" class="text-slate-600 hover:text-emerald-400 transition-colors" title="Refresh">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    </button>
-                </div>
-                <div id="parking-map-summary" class="p-4 flex flex-col gap-3">
-                    @foreach(['Total','Tersedia','Terisi','Reserved'] as $s)
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-slate-500">{{ $s }}</span>
-                        <div class="w-10 h-3 bg-white/5 rounded animate-pulse"></div>
+                <!-- Legend Overlay -->
+                <div class="absolute bottom-6 left-6 z-20 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex flex-wrap items-center gap-6 shadow-2xl pointer-events-none">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></div>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Available</span>
                     </div>
-                    @endforeach
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]"></div>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Occupied</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]"></div>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Reserved</span>
+                    </div>
+                </div>
+
+                <!-- Map Container -->
+                <div id="map-viewport" class="flex-1 w-full h-full cursor-grab active:cursor-grabbing overflow-hidden bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:24px_24px]">
+                    <div id="map-canvas-wrapper" class="relative origin-top-left transition-transform duration-300 ease-out"
+                         data-image="{{ $area->map_image_url }}"
+                         data-width="{{ $area->map_width ?: 1000 }}"
+                         data-height="{{ $area->map_height ?: 800 }}"
+                         data-id="{{ $area->id_area }}">
+                        
+                        <!-- Map Image -->
+                        <img id="map-bg-image" src="{{ $area->map_image_url }}" class="absolute inset-0 w-full h-full object-fill select-none pointer-events-none opacity-80" alt="Parking Map">
+                        
+                        <!-- Dynamic Layers -->
+                        <div id="slots-layer" class="absolute inset-0 pointer-events-none"></div>
+                        <div id="cameras-layer" class="absolute inset-0 pointer-events-none"></div>
+                    </div>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="map-loading-overlay" class="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center transition-all duration-500">
+                    <div class="relative w-20 h-20 mb-6">
+                        <div class="absolute inset-0 border-4 border-emerald-500/10 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
+                    </div>
+                    <p class="text-[10px] font-black text-white uppercase tracking-[0.4em]">Optimizing Vision Engine</p>
                 </div>
             </div>
 
-            {{-- Utilization bar --}}
-            <div class="rounded-2xl p-4 border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
-                <div class="flex items-center justify-between mb-2">
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Utilisasi</p>
-                    <span id="util-pct" class="text-xs font-bold text-white">—</span>
+            <!-- Stats Sidebar -->
+            <div class="w-full lg:w-80 shrink-0 flex flex-col gap-6 overflow-y-auto lg:pr-1 custom-scrollbar min-h-0">
+                
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="card-pro p-5 border-white/5 bg-white/[0.02] flex flex-col gap-3 group hover:border-emerald-500/30 transition-all">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-emerald-400 transition-colors">Available</p>
+                        <h3 id="stat-empty" class="text-3xl font-black text-white tracking-tighter">--</h3>
+                    </div>
+                    <div class="card-pro p-5 border-white/5 bg-white/[0.02] flex flex-col gap-3 group hover:border-rose-500/30 transition-all">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:text-rose-400 transition-colors">Occupied</p>
+                        <h3 id="stat-occupied" class="text-3xl font-black text-white tracking-tighter">--</h3>
+                    </div>
                 </div>
-                <div class="w-full h-1.5 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
-                    <div id="util-bar" class="h-1.5 rounded-full bg-emerald-500 transition-all duration-700" style="width:0%;"></div>
-                </div>
-            </div>
 
-            {{-- Legend detail --}}
-            <div class="rounded-2xl p-4 border" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
-                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Keterangan</p>
-                <div class="flex flex-col gap-2.5">
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                        <span class="text-xs text-white">Slot tersedia</span>
+                <!-- Utilization Card -->
+                <div class="card-pro p-6 border-white/5 bg-white/[0.02]">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Zone Utilization</p>
+                        <span id="stat-util-percent" class="text-xs font-black text-emerald-500 tracking-tighter">--%</span>
                     </div>
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-3 h-3 rounded-full bg-slate-500"></span>
-                        <span class="text-xs text-white">Slot terisi</span>
+                    <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden mb-2">
+                        <div id="stat-util-bar" class="h-full bg-emerald-500 transition-all duration-1000 ease-out" style="width: 0%"></div>
                     </div>
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-3 h-3 rounded-full bg-amber-500"></span>
-                        <span class="text-xs text-white">Reserved</span>
+                    <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Current capacity load</p>
+                </div>
+
+                <!-- Slot Detail Inspector -->
+                <div id="slot-inspector" class="card-pro flex-1 min-h-[300px] border-white/5 bg-white/[0.02] flex flex-col">
+                    <div class="flex items-center gap-3 mb-6 p-6 border-b border-white/5 bg-white/[0.01]">
+                        <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
+                        <h3 class="text-xs font-black text-white uppercase tracking-widest">Slot Inspector</h3>
                     </div>
-                    <div class="flex items-center gap-2.5 pt-1.5 border-t" style="border-color:rgba(255,255,255,0.06);">
-                        <div class="w-4 h-4 rounded-lg flex items-center justify-center" style="background:rgba(255,255,255,0.08);">
-                            <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    
+                    <div id="inspector-empty" class="flex-1 flex flex-col items-center justify-center p-10 text-center opacity-30">
+                        <i class="fa-solid fa-fingerprint text-5xl mb-6"></i>
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em]">Select a slot<br>to view details</p>
+                    </div>
+
+                    <div id="inspector-content" class="hidden flex-1 p-6 space-y-8 animate-fade-in">
+                        <div class="flex items-center justify-between">
+                            <h4 id="inspect-code" class="text-4xl font-black text-white tracking-tighter">--</h4>
+                            <span id="inspect-status" class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border">--</span>
                         </div>
-                        <span class="text-xs text-white">CCTV Cam</span>
+                        
+                        <div class="space-y-6">
+                            <div class="space-y-1">
+                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Plate Number</p>
+                                <p id="inspect-plate" class="text-lg font-black text-white tracking-tight uppercase">--</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Status Duration</p>
+                                <p id="inspect-time" class="text-sm font-bold text-slate-400">--</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Attached Hardware</p>
+                                <p id="inspect-camera" class="text-xs font-bold text-indigo-400 uppercase tracking-widest">--</p>
+                            </div>
+                        </div>
+
+                        <div id="inspect-actions" class="pt-6 border-t border-white/5 flex flex-col gap-3">
+                            <!-- Actions will be injected here -->
+                        </div>
                     </div>
                 </div>
             </div>
-
-        </div>{{-- /sidebar --}}
+        </div>
     </div>
-
-</div>
-</div>
 </div>
 
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous"/>
 <style>
-    /* Fix Leaflet Z-Index and layout */
-    .leaflet-container {
-        background: #020617 !important;
+    #map-viewport { touch-action: none; }
+    #map-canvas-wrapper { 
+        box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5);
+        background-color: #020617;
     }
-    .leaflet-pane {
-        z-index: 2 !important;
+    .slot-node {
+        position: absolute;
+        pointer-events: auto;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 10px;
+        color: white;
+        text-transform: uppercase;
     }
-    .leaflet-control-container .leaflet-top,
-    .leaflet-control-container .leaflet-bottom {
-        z-index: 3 !important;
+    .slot-node:hover {
+        transform: scale(1.05);
+        z-index: 10;
+        box-shadow: 0 0 20px rgba(255,255,255,0.1);
     }
-    .leaflet-popup-pane {
-        z-index: 4 !important;
+    .slot-node.active {
+        border-color: white !important;
+        box-shadow: 0 0 30px rgba(255,255,255,0.2) !important;
+        z-index: 11;
     }
-    .modern-popup .leaflet-popup-content-wrapper {
-        background: #0f172a !important;
-        color: #f8fafc !important;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 12px;
-        padding: 0;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    .cam-node {
+        position: absolute;
+        pointer-events: auto;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        background: rgba(99, 102, 241, 0.1);
+        border: 2px solid rgba(99, 102, 241, 0.5);
+        color: #818cf8;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
     }
-    .modern-popup .leaflet-popup-tip {
-        background: #0f172a !important;
+    .cam-node:hover {
+        background: #6366f1;
+        color: white;
+        transform: scale(1.1);
     }
-    .modern-popup .leaflet-popup-content {
-        margin: 0 !important;
-        width: auto !important;
-    }
+
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 </style>
-@endpush
+@endsection
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
-<script src="{{ asset('js/parking-map.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const refreshBtn = document.getElementById('parking-map-refresh-btn');
-        if (refreshBtn) {
-            refreshBtn.onclick = function() {
-                if (window.refreshParkingMap) window.refreshParkingMap();
-            };
-        }
-    });
+    // Configuration from PHP
+    const MAP_DATA_URL = "{{ route('api.parking.map.data') }}";
+    const CURRENT_MAP_ID = "{{ $area->id_area }}";
 </script>
+<script src="{{ asset('js/parking-map-new.js') }}"></script>
 @endpush

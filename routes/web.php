@@ -107,18 +107,8 @@ Route::middleware(['auth', 'no-cache'])->group(function () {
 
 // Protected: wajib email terverifikasi
 Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
-    // API & halaman Peta Parkir: admin, petugas, dan user (Dihapus sesuai permintaan)
+    // API & halaman Peta Parkir: admin, petugas, dan user
     Route::middleware(['role:admin,petugas,user'])->group(function () {
-        // Halaman peta parkir (Leaflet + image overlay)
-        // Route::get('/parking-map', [ParkingSlotController::class, 'view'])->name('parking.map.index');
-        // API data slot + kamera + summary (untuk Leaflet)
-        // Route::get('/api/parking-slots', [ParkingSlotController::class, 'index'])->name('api.parking-slots.index');
-        // Route::get('/api/areas/{area}/slots', [ParkingSlotController::class, 'slotsByArea'])->name('api.areas.slots');
-
-        // Endpoint lain untuk fitur bookmark lama tetap menggunakan ParkingSlotController
-        // Route::post('/api/parking-slots/{area_id}/bookmark', [ParkingSlotController::class, 'bookmark'])->name('api.parking-slots.bookmark');
-        // Route::post('/api/parking-slots/{id_transaksi}/unbookmark', [ParkingSlotController::class, 'unbookmark'])->name('api.parking-slots.unbookmark');
-
         // Plate Recognizer API
         Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
 
@@ -387,55 +377,56 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::delete('/admin/rfid/{id}/unlink', [RfidAdminController::class, 'unlink'])->name('admin.rfid.unlink');
     });
 
-    // Transaksi: index & show untuk Admin dan Petugas (lihat riwayat tanpa edit/hapus)
-    Route::middleware(['role:admin,petugas'])->group(function () {
-        Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.index');
-        Route::get('/transaksi/create-check-in', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create-check-in');
-        Route::post('/transaksi/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
-        Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
-        Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])
-            ->whereNumber('transaksi')
-            ->name('transaksi.show');
-
-        // Reservasi: Accept & Reject oleh Petugas/Admin
-        Route::post('/transaksi/{transaksi}/accept-reservation', [\App\Http\Controllers\TransaksiController::class, 'acceptReservation'])->name('transaksi.accept-reservation');
-        Route::post('/transaksi/{transaksi}/reject-reservation', [\App\Http\Controllers\TransaksiController::class, 'rejectReservation'])->name('transaksi.reject-reservation');
-
-        // RFID Parking Operation (Admin & Petugas)
-        Route::get('/parkir/scan', [RfidParkingController::class, 'index'])->name('parkir.scan');
-        Route::post('/api/parkir/rfid-scan', [RfidParkingController::class, 'processScan'])->name('api.parkir.rfid-scan');
-
-        // Kamera: daftar perangkat (read-only untuk petugas)
-        Route::get('/petugas/kamera', [\App\Http\Controllers\CameraController::class, 'index'])->name('petugas.kamera.index');
+    // Peta Parkir: Visualisasi Real-time (Public for all logged in)
+    Route::middleware(['role:admin,petugas,user'])->group(function () {
+        Route::get('/parking-map', [\App\Http\Controllers\ParkingSlotController::class, 'view'])->name('parking.map.index');
+        Route::get('/api/parking-map/data', [\App\Http\Controllers\ParkingSlotController::class, 'index'])->name('api.parking.map.data');
     });
 
-    // Transaksi: CRUD hanya untuk Admin
-    Route::middleware(['role:admin'])->group(function () {
-        Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.index');
-        Route::get('/transaksi/create', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create');
-        Route::post('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'store'])->name('transaksi.store');
-        Route::get('/transaksi/{transaksi}/edit', [\App\Http\Controllers\TransaksiController::class, 'edit'])->name('transaksi.edit');
-        Route::put('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'update'])->name('transaksi.update');
-        Route::delete('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'destroy'])->name('transaksi.destroy');
-    });
-
-    // ========== PETUGAS OPERATIONS ==========
+    // ========== OPERATIONS (Admin & Petugas) ==========
     Route::middleware(['role:admin,petugas'])->group(function () {
         // Management Unifikasi
         Route::get('/active-parking', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.active');
         Route::get('/active-bookings', [\App\Http\Controllers\TransaksiController::class, 'bookings'])->name('transaksi.bookings');
         Route::get('/parking-history', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.history');
-
-        // Tetap dukung route lama jika ada yang pakai (alias)
+        
+        // Aliases / Compatibility
+        Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.index');
         Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.parkir.index');
 
+        // Check-in & Check-out
         Route::get('/check-in', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create-check-in');
         Route::post('/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
         Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
+        
+        // Details & Printing
+        Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
+        Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])->whereNumber('transaksi')->name('transaksi.show');
 
+        // Reservasi: Accept & Reject
+        Route::post('/transaksi/{transaksi}/accept-reservation', [\App\Http\Controllers\TransaksiController::class, 'acceptReservation'])->name('transaksi.accept-reservation');
+        Route::post('/transaksi/{transaksi}/reject-reservation', [\App\Http\Controllers\TransaksiController::class, 'rejectReservation'])->name('transaksi.reject-reservation');
+
+        // RFID Parking Operation
+        Route::get('/parkir/scan', [RfidParkingController::class, 'index'])->name('parkir.scan');
+        Route::post('/api/parkir/rfid-scan', [RfidParkingController::class, 'processScan'])->name('api.parkir.rfid-scan');
+
+        // Kamera: daftar perangkat (read-only untuk petugas)
+        Route::get('/petugas/kamera', [\App\Http\Controllers\CameraController::class, 'index'])->name('petugas.kamera.index');
+
+        // Payments
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
+    });
+
+    // Transaksi: CRUD Full hanya untuk Admin
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/transaksi/create', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create');
+        Route::post('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'store'])->name('transaksi.store');
+        Route::get('/transaksi/{transaksi}/edit', [\App\Http\Controllers\TransaksiController::class, 'edit'])->name('transaksi.edit');
+        Route::put('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'update'])->name('transaksi.update');
+        Route::delete('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'destroy'])->name('transaksi.destroy');
     });
 
     // RFID: identifikasi instan (tanpa transaksi) + kontrol akses berbasis kartu

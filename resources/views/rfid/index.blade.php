@@ -45,11 +45,11 @@
                                class="block w-full pl-10 pr-3 py-2 bg-slate-900/50 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all">
                     </div>
                     
-                    <select name="status" onchange="this.form.submit()" 
+                    <select name="status" onchange="this.form.submit()"
                             class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all min-w-[120px]">
-                        <option value="">Semua Status</option>
-                        <option value="linked" {{ request('status') == 'linked' ? 'selected' : '' }}>Sudah Ada RFID</option>
-                        <option value="unlinked" {{ request('status') == 'unlinked' ? 'selected' : '' }}>Belum Ada RFID</option>
+                        <option value="" class="bg-slate-900">Semua Status</option>
+                        <option value="linked" class="bg-slate-900" {{ request('status') == 'linked' ? 'selected' : '' }}>Sudah Ada RFID</option>
+                        <option value="unlinked" class="bg-slate-900" {{ request('status') == 'unlinked' ? 'selected' : '' }}>Belum Ada RFID</option>
                     </select>
 
                     @if(request()->anyFilled(['q', 'status']))

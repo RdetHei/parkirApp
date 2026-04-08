@@ -67,9 +67,9 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Parking Zone</label>
                     <select name="id_area"
                             class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
-                        <option value="">All Areas</option>
+                        <option value="" class="bg-slate-900">All Areas</option>
                         @foreach(\App\Models\AreaParkir::all() as $area)
-                            <option value="{{ $area->id_area }}" {{ request('id_area') == $area->id_area ? 'selected' : '' }}>
+                            <option value="{{ $area->id_area }}" class="bg-slate-900" {{ request('id_area') == $area->id_area ? 'selected' : '' }}>
                                 {{ $area->nama_area }}
                             </option>
                         @endforeach

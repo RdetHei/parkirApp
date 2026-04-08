@@ -72,13 +72,13 @@
     function getSlotColor(status) {
         switch (status) {
             case 'occupied':
-                return { border: '#475569', fill: '#475569', text: '#fff' };
+                return { border: '#ef4444', fill: '#ef4444', text: '#fff' }; // Red for occupied
             case 'reserved':
             case 'reserved-by-me':
-                return { border: '#f59e0b', fill: '#f59e0b', text: '#fff' };
+                return { border: '#f59e0b', fill: '#f59e0b', text: '#fff' }; // Amber for reserved
             case 'empty':
             default:
-                return { border: '#10b981', fill: '#10b981', text: '#fff' };
+                return { border: '#10b981', fill: '#10b981', text: '#fff' }; // Green for empty
         }
     }
 

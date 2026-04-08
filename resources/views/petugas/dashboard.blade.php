@@ -201,6 +201,12 @@
                         </div>
                         <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">History</span>
                     </a>
+                    <a href="{{ route('parking.map.index') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-amber-500/50 transition-all group flex flex-col items-center text-center">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform mb-3">
+                            <i class="fa-solid fa-map-location-dot text-base"></i>
+                        </div>
+                        <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Live Map</span>
+                    </a>
                 </div>
             </div>
         </div>

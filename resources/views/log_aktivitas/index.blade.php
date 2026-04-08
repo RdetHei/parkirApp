@@ -44,9 +44,9 @@
                     <div class="space-y-2">
                         <label for="id_user" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">User</label>
                         <select name="id_user" id="id_user" class="block w-full bg-slate-900/50 border border-white/10 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all px-4 py-2.5">
-                            <option value="">All Users</option>
+                            <option value="" class="bg-slate-900">All Users</option>
                             @foreach($users as $user)
-                                <option value="{{ $user->id }}" {{ request('id_user') == $user->id ? 'selected' : '' }}>
+                                <option value="{{ $user->id }}" class="bg-slate-900" {{ request('id_user') == $user->id ? 'selected' : '' }}>
                                     {{ $user->name }}
                                 </option>
                             @endforeach
@@ -57,9 +57,9 @@
                     <div class="space-y-2">
                         <label for="tipe_aktivitas" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category</label>
                         <select name="tipe_aktivitas" id="tipe_aktivitas" class="block w-full bg-slate-900/50 border border-white/10 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all px-4 py-2.5">
-                            <option value="">All Categories</option>
+                            <option value="" class="bg-slate-900">All Categories</option>
                             @foreach($types as $type)
-                                <option value="{{ $type }}" {{ request('tipe_aktivitas') == $type ? 'selected' : '' }}>
+                                <option value="{{ $type }}" class="bg-slate-900" {{ request('tipe_aktivitas') == $type ? 'selected' : '' }}>
                                     {{ ucfirst($type) }}
                                 </option>
                             @endforeach

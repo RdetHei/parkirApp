@@ -8,24 +8,39 @@
 
 <div x-data="plateScanner('{{ $targetInputId }}', '{{ $targetInputType }}', {{ $onScanSuccess ? "'{$onScanSuccess}'" : 'null' }}, {{ json_encode($ipWebcamUrl) }}, {{ json_encode($cameras) }})" class="w-full">
     <!-- Camera Section -->
-    <div class="mb-4">
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Scan Plat Nomor
-        </label>
+    <div class="mb-6 animate-fade-in">
+        <div class="flex items-center justify-between mb-4">
+            <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                <i class="fa-solid fa-camera-viewfinder text-emerald-500"></i>
+                AI Plate Scanner
+            </label>
+            <div x-show="streamActive" class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Live Stream</span>
+            </div>
+        </div>
 
         <!-- Pilih Kamera (jika ada data kamera dari CRUD) -->
-        <div x-show="cameras.length > 0" class="mb-3">
-            <label for="plate-scanner-camera-select" class="block text-xs font-medium text-gray-600 mb-1">Kamera</label>
-            <select id="plate-scanner-camera-select" x-model="selectedCameraId" @change="onCameraChange()"
-                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
-                <template x-for="cam in cameras" :key="cam.id">
-                    <option :value="cam.id" x-text="cam.nama + (cam.is_default ? ' (default)' : '')"></option>
-                </template>
-            </select>
+        <div x-show="cameras.length > 0" class="mb-5 p-4 bg-slate-950/50 border border-white/5 rounded-2xl group transition-all hover:border-emerald-500/20">
+            <label for="plate-scanner-camera-select" class="block text-[9px] font-black text-slate-600 mb-2 uppercase tracking-widest group-hover:text-slate-400 transition-colors ml-1">Select Input Source</label>
+            <div class="relative">
+                <select id="plate-scanner-camera-select" x-model="selectedCameraId" @change="onCameraChange()"
+                        class="block w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-bold uppercase tracking-widest appearance-none cursor-pointer">
+                    <template x-for="cam in cameras" :key="cam.id">
+                        <option :value="cam.id" x-text="cam.nama + (cam.is_default ? ' (DEFAULT)' : '')" class="bg-slate-900"></option>
+                    </template>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-500">
+                    <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                </div>
+            </div>
         </div>
 
         <!-- Camera Container -->
-        <div class="relative bg-gray-900 rounded-xl overflow-hidden" style="min-height: 300px;">
+        <div class="relative bg-slate-950 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl group" style="min-height: 400px;">
             <!-- Video Preview (kamera device) -->
             <video
                 x-ref="video"
@@ -33,7 +48,7 @@
                 autoplay
                 playsinline
                 class="w-full h-full object-cover"
-                style="min-height: 300px;"
+                style="min-height: 400px;"
             ></video>
 
             <!-- IP Webcam stream (MJPEG dari HP) -->
@@ -42,7 +57,7 @@
                 x-show="useIpWebcam && !capturedImage"
                 :src="streamActive ? ipWebcamUrl : ''"
                 class="w-full h-full object-cover"
-                style="min-height: 300px;"
+                style="min-height: 400px;"
                 alt="IP Webcam"
             />
 
@@ -50,22 +65,50 @@
             <img
                 x-ref="capturedImage"
                 x-show="capturedImage"
-                class="w-full h-full object-contain bg-black"
-                style="min-height: 300px;"
+                class="w-full h-full object-contain bg-slate-950"
+                style="min-height: 400px;"
             />
 
             <!-- Loading Overlay -->
             <div
                 x-show="isLoading"
-                class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-10"
+                class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-10"
             >
                 <div class="text-center">
-                    <svg class="animate-spin h-12 w-12 text-white mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p class="text-white font-semibold">Memproses gambar...</p>
+                    <div class="relative w-16 h-16 mx-auto mb-6">
+                        <div class="absolute inset-0 border-4 border-emerald-500/20 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
+                    </div>
+                    <p class="text-[10px] font-black text-white uppercase tracking-[0.3em]">Processing Vision...</p>
+                    <p class="text-[9px] text-slate-500 mt-2 uppercase tracking-widest">AI sedang menganalisa plat nomor</p>
                 </div>
+            </div>
+
+            <!-- Scanner Controls Overlay -->
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
+                <!-- Snap Button -->
+                <button
+                    @click="captureImage()"
+                    x-show="!capturedImage && !isLoading"
+                    type="button"
+                    class="group relative flex items-center justify-center"
+                >
+                    <div class="absolute inset-0 bg-emerald-500 rounded-full blur-xl opacity-0 group-hover:opacity-40 transition-opacity"></div>
+                    <div class="relative w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-90 group-hover:scale-110">
+                        <div class="w-12 h-12 border-4 border-slate-950 rounded-full"></div>
+                    </div>
+                </button>
+
+                <!-- Reset Button -->
+                <button
+                    @click="resetScanner()"
+                    x-show="capturedImage && !isLoading"
+                    type="button"
+                    class="px-8 py-3 bg-rose-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-rose-500/20 hover:bg-rose-400 transition-all active:scale-95 flex items-center gap-3"
+                >
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Reset Scanner
+                </button>
             </div>
 
             <!-- Error Message -->
@@ -102,17 +145,15 @@
         </div>
 
         <!-- Camera Controls -->
-        <div class="mt-4 flex gap-2 justify-center">
+        <div class="mt-8 flex flex-wrap gap-4 justify-center animate-fade-in-up" style="animation-delay: 0.3s">
             <!-- Start Camera Button -->
             <button
                 x-show="!streamActive && !capturedImage"
                 @click="startCamera()"
                 type="button"
-                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                class="px-8 py-3 bg-indigo-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-indigo-500/20 hover:bg-indigo-400 transition-all active:scale-95 flex items-center gap-3"
             >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                </svg>
+                <i class="fa-solid fa-video"></i>
                 Buka Kamera
             </button>
 
@@ -121,12 +162,9 @@
                 x-show="streamActive && !capturedImage"
                 @click="captureImage()"
                 type="button"
-                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                class="px-8 py-3 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 transition-all active:scale-95 flex items-center gap-3"
             >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
+                <i class="fa-solid fa-camera"></i>
                 Ambil Foto
             </button>
 
@@ -136,12 +174,10 @@
                 @click="scanPlate()"
                 type="button"
                 :disabled="isLoading"
-                class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-8 py-3 bg-indigo-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-indigo-500/20 hover:bg-indigo-400 transition-all active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                Scan Plat
+                <i class="fa-solid fa-microchip"></i>
+                AI Analisa Plat
             </button>
 
             <!-- Retake Button -->
@@ -149,11 +185,9 @@
                 x-show="capturedImage"
                 @click="retakePhoto()"
                 type="button"
-                class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                class="px-8 py-3 bg-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-white/5 hover:bg-slate-700 hover:text-white transition-all active:scale-95 flex items-center gap-3"
             >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
+                <i class="fa-solid fa-rotate-left"></i>
                 Ambil Ulang
             </button>
 
@@ -162,30 +196,37 @@
                 x-show="streamActive"
                 @click="stopCamera()"
                 type="button"
-                class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                class="px-8 py-3 bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-rose-500/20 hover:bg-rose-500 hover:text-slate-950 transition-all active:scale-95 flex items-center gap-3"
             >
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
-                </svg>
+                <i class="fa-solid fa-power-off"></i>
                 Tutup Kamera
             </button>
         </div>
 
         <!-- Scan Result Display -->
-        <div x-show="scanResult" x-cloak class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div class="flex items-center justify-between mb-2">
-                <h4 class="text-sm font-semibold text-gray-700">Hasil Scan:</h4>
+        <div x-show="scanResult" x-cloak class="mt-8 p-6 bg-slate-950/50 border border-white/5 rounded-[2rem] animate-fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                        <i class="fa-solid fa-magnifying-glass-chart text-sm"></i>
+                    </div>
+                    <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">AI Vision Result</h4>
+                </div>
                 <span
-                    :class="scanResult.valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                    class="px-2 py-1 rounded text-xs font-semibold"
-                    x-text="scanResult.valid ? 'Valid' : 'Tidak Valid'"
+                    :class="scanResult.valid ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'"
+                    class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                    x-text="scanResult.valid ? 'Verified' : 'Unverified'"
                 ></span>
             </div>
-            <p class="text-lg font-bold text-gray-900" x-text="scanResult.plate_number || 'Tidak terdeteksi'"></p>
-            <p class="text-xs text-gray-500 mt-1">
-                Confidence: <span x-text="(scanResult.confidence * 100).toFixed(1) + '%'"></span>
-            </p>
+            <div class="flex flex-col gap-1">
+                <p class="text-3xl font-black text-white tracking-tighter uppercase" x-text="scanResult.plate_number || 'UNKNOWN'"></p>
+                <div class="flex items-center gap-2 mt-2">
+                    <div class="flex-1 h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500" :style="'width: ' + (scanResult.confidence * 100) + '%'"></div>
+                    </div>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest" x-text="(scanResult.confidence * 100).toFixed(1) + '%'"></span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

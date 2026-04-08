@@ -31,72 +31,84 @@
     --}}
 
     {{-- Filter bar --}}
-    <div class="bg-slate-900/80 border border-white/[0.07] rounded-2xl p-5 mb-5">
+    <div class="card-pro mb-8 border-white/5 bg-white/[0.02]">
         <form action="{{ route('report.transaksi') }}" method="GET">
-            <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-col gap-1.5 min-w-[200px]">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Cari Plat</label>
+            <div class="flex flex-wrap items-end gap-4">
+                <div class="flex flex-col gap-2 min-w-[200px]">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Cari Plat</label>
                     <input type="text" name="q" value="{{ request('q') }}" placeholder="Plat nomor..."
-                           class="px-3 py-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition-all placeholder:text-slate-700">
+                           class="px-4 py-3 bg-slate-950/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-slate-700 font-semibold">
                 </div>
-                <div class="flex flex-col gap-1.5 min-w-[140px]">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tanggal Dari</label>
+                <div class="flex flex-col gap-2 min-w-[160px]">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tanggal Dari</label>
                     <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
-                           class="px-3 py-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition-all [color-scheme:dark]">
+                           class="px-4 py-3 bg-slate-950/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all [color-scheme:dark] font-semibold">
                 </div>
-                <div class="flex flex-col gap-1.5 min-w-[140px]">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tanggal Sampai</label>
+                <div class="flex flex-col gap-2 min-w-[160px]">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tanggal Sampai</label>
                     <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
-                           class="px-3 py-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition-all [color-scheme:dark]">
+                           class="px-4 py-3 bg-slate-950/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all [color-scheme:dark] font-semibold">
                 </div>
-                <div class="flex flex-col gap-1.5 min-w-[120px]">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</label>
-                    <select name="status"
-                            class="px-3 py-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition-all appearance-none">
-                        <option value="" class="bg-slate-900">— Semua —</option>
-                        <option value="masuk"  class="bg-slate-900" {{ request('status')==='masuk'  ? 'selected':'' }}>Masuk</option>
-                        <option value="keluar" class="bg-slate-900" {{ request('status')==='keluar' ? 'selected':'' }}>Keluar</option>
-                    </select>
+                <div class="flex flex-col gap-2 min-w-[140px]">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Status</label>
+                    <div class="relative">
+                        <select name="status"
+                                class="w-full px-4 py-3 bg-slate-950/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all appearance-none font-semibold cursor-pointer">
+                            <option value="" class="bg-slate-900">— Semua —</option>
+                            <option value="masuk"  class="bg-slate-900" {{ request('status')==='masuk'  ? 'selected':'' }}>Masuk</option>
+                            <option value="keluar" class="bg-slate-900" {{ request('status')==='keluar' ? 'selected':'' }}>Keluar</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex flex-col gap-1.5 flex-1 min-w-[180px]">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Area Parkir</label>
-                    <select name="id_area"
-                            class="px-3 py-2.5 bg-white/[0.05] border border-white/[0.08] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/50 transition-all appearance-none">
-                        <option value="" class="bg-slate-900">— Semua Area —</option>
-                        @foreach(\App\Models\AreaParkir::all() as $area)
-                        <option value="{{ $area->id_area }}" class="bg-slate-900" {{ request('id_area')==$area->id_area ? 'selected':'' }}>
-                            {{ $area->nama_area }}
-                        </option>
-                        @endforeach
-                    </select>
+                <div class="flex flex-col gap-2 flex-1 min-w-[200px]">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Area Parkir</label>
+                    <div class="relative">
+                        <select name="id_area"
+                                class="w-full px-4 py-3 bg-slate-950/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all appearance-none font-semibold cursor-pointer">
+                            <option value="" class="bg-slate-900">— Semua Area —</option>
+                            @foreach(\App\Models\AreaParkir::all() as $area)
+                            <option value="{{ $area->id_area }}" class="bg-slate-900" {{ request('id_area')==$area->id_area ? 'selected':'' }}>
+                                {{ $area->nama_area }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit"
-                        class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shrink-0">
-                    Terapkan Filter
-                </button>
-                @if(request()->hasAny(['q','tanggal_dari','tanggal_sampai','status','id_area']))
-                <a href="{{ route('report.transaksi') }}"
-                   class="px-4 py-2.5 bg-white/[0.05] border border-white/[0.08] text-slate-400 hover:text-white text-sm font-medium rounded-xl transition-colors shrink-0">
-                    Reset
-                </a>
-                @endif
+                <div class="flex items-center gap-3">
+                    <button type="submit"
+                            class="px-8 py-3 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20 shrink-0">
+                        Filter
+                    </button>
+                    @if(request()->hasAny(['q','tanggal_dari','tanggal_sampai','status','id_area']))
+                    <a href="{{ route('report.transaksi') }}"
+                       class="px-6 py-3 bg-slate-900 border border-white/5 text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all shrink-0">
+                        Reset
+                    </a>
+                    @endif
+                </div>
             </div>
         </form>
     </div>
 
     {{-- Stat cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        <div class="bg-slate-900/80 border border-white/[0.07] rounded-2xl p-5">
-            <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Total Transaksi</p>
-            <p class="text-2xl font-bold text-white">{{ $total_transaksi }}</p>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="card-pro border-white/5 bg-white/[0.02] p-6 group hover:border-indigo-500/30 transition-all">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 group-hover:text-indigo-400 transition-colors">Total Transaksi</p>
+            <p class="text-3xl font-black text-white tracking-tighter">{{ $total_transaksi }}</p>
         </div>
-        <div class="bg-slate-900/80 border border-white/[0.07] rounded-2xl p-5">
-            <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Total Biaya</p>
-            <p class="text-2xl font-bold text-white">Rp {{ number_format($total_biaya, 0, ',', '.') }}</p>
+        <div class="card-pro border-white/5 bg-white/[0.02] p-6 group hover:border-emerald-500/30 transition-all">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 group-hover:text-emerald-400 transition-colors">Total Biaya</p>
+            <p class="text-3xl font-black text-white tracking-tighter">Rp {{ number_format($total_biaya, 0, ',', '.') }}</p>
         </div>
-        <div class="bg-slate-900/80 border border-white/[0.07] rounded-2xl p-5">
-            <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">Rata-rata Durasi</p>
-            <p class="text-2xl font-bold text-white">{{ number_format($durasi_rata, 1, ',', '.') }} <span class="text-base font-medium text-slate-500">jam</span></p>
+        <div class="card-pro border-white/5 bg-white/[0.02] p-6 group hover:border-blue-500/30 transition-all">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-3 group-hover:text-blue-400 transition-colors">Rata-rata Durasi</p>
+            <p class="text-3xl font-black text-white tracking-tighter">{{ number_format($durasi_rata, 1, ',', '.') }} <span class="text-xs font-bold text-slate-600 uppercase ml-1">Jam</span></p>
         </div>
         <div class="bg-slate-900/80 border border-white/[0.07] rounded-2xl p-5">
             <p class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-2">Periode</p>

@@ -131,8 +131,8 @@
                         <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{{ __('Live Sync') }}</span>
                     </div>
                     <select class="bg-slate-950 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer">
-                        <option>{{ __('Last 7 Days') }}</option>
-                        <option>{{ __('Last 30 Days') }}</option>
+                        <option class="bg-slate-900">{{ __('Last 7 Days') }}</option>
+                        <option class="bg-slate-900">{{ __('Last 30 Days') }}</option>
                     </select>
                 </div>
             </div>
@@ -188,7 +188,10 @@
         <div class="card-pro !p-0 overflow-hidden">
             <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
                 <h2 class="text-sm font-black text-white uppercase tracking-widest">{{ __('Area Monitoring') }}</h2>
-                <a href="{{ route('area-parkir.index') }}" class="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-[0.2em] transition-all">{{ __('Manage') }} <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('parking.map.index') }}" class="text-[10px] font-black text-amber-500 hover:text-amber-400 uppercase tracking-[0.2em] transition-all">{{ __('View Map') }} <i class="fa-solid fa-map-location-dot ml-1"></i></a>
+                    <a href="{{ route('area-parkir.index') }}" class="text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-[0.2em] transition-all">{{ __('Manage') }} <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                </div>
             </div>
             <div class="p-8 space-y-8">
                 @foreach($areaParkir as $area)

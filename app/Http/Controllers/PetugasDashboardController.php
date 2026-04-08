@@ -7,6 +7,7 @@ use App\Models\Transaksi;
 use App\Models\AreaParkir;
 use App\Models\Pembayaran;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class PetugasDashboardController extends Controller
 {
@@ -14,28 +15,29 @@ class PetugasDashboardController extends Controller
     {
         try {
             \Illuminate\Support\Facades\Log::info('PetugasDashboardController@index hit');
-            // Transaksi aktif (sudah masuk)
-            $transaksiAktif = Transaksi::where('status', 'masuk')->count();
+            
+            // Non-live stats cached for 1 minute
+            $stats = Cache::remember('petugas_dashboard_stats', 60, function() {
+                return [
+                    'transaksiHariIni' => Transaksi::whereDate('waktu_masuk', Carbon::today())->count(),
+                    'pendapatanHariIni' => Pembayaran::where('status', 'berhasil')
+                        ->whereDate('waktu_pembayaran', Carbon::today())
+                        ->sum('nominal'),
+                ];
+            });
 
-            // Booking aktif (belum masuk)
+            // Live counts
+            $transaksiAktif = Transaksi::where('status', 'masuk')->count();
             $bookingAktif = Transaksi::where('status', 'bookmarked')
                 ->where('bookmarked_at', '>', Carbon::now()->subMinutes(10))
                 ->count();
 
-            // Transaksi hari ini (masuk hari ini)
-            $transaksiHariIni = Transaksi::whereDate('waktu_masuk', Carbon::today())->count();
-
-            // Pendapatan hari ini
-            $pendapatanHariIni = Pembayaran::where('status', 'berhasil')
-                ->whereDate('waktu_pembayaran', Carbon::today())
-                ->sum('nominal');
-
-            // Kapasitas parkir
+            // Kapasitas parkir - Optimized to one query
             $areaParkir = AreaParkir::all();
             $totalKapasitas = $areaParkir->sum('kapasitas');
             $totalTerisi = $areaParkir->sum('terisi');
 
-            // Aktivitas terbaru (5 transaksi terakhir: masuk, keluar, atau booking)
+            // Aktivitas terbaru
             $aktivitasTerbaru = Transaksi::with(['kendaraan', 'area'])
                 ->whereIn('status', ['masuk', 'keluar', 'bookmarked'])
                 ->orderBy('created_at', 'desc')
@@ -44,17 +46,17 @@ class PetugasDashboardController extends Controller
 
             $title = 'Dashboard Petugas';
 
-            return view('petugas.dashboard', compact(
-                'title',
-                'transaksiAktif',
-                'bookingAktif',
-                'transaksiHariIni',
-                'pendapatanHariIni',
-                'totalKapasitas',
-                'totalTerisi',
-                'aktivitasTerbaru',
-                'areaParkir'
-            ));
+            return view('petugas.dashboard', [
+                'title' => $title,
+                'transaksiAktif' => $transaksiAktif,
+                'bookingAktif' => $bookingAktif,
+                'transaksiHariIni' => $stats['transaksiHariIni'],
+                'pendapatanHariIni' => $stats['pendapatanHariIni'],
+                'totalKapasitas' => $totalKapasitas,
+                'totalTerisi' => $totalTerisi,
+                'aktivitasTerbaru' => $aktivitasTerbaru,
+                'areaParkir' => $areaParkir
+            ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('PetugasDashboardController@index error: ' . $e->getMessage());
             \Illuminate\Support\Facades\Log::error($e->getTraceAsString());

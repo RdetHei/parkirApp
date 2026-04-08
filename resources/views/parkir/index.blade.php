@@ -64,9 +64,9 @@
 
                     <select name="area" onchange="this.form.submit()"
                             class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
-                        <option value="">All Areas</option>
+                        <option value="" class="bg-slate-900">All Areas</option>
                         @foreach($areas as $area)
-                            <option value="{{ $area->id_area }}" {{ request('area') == $area->id_area ? 'selected' : '' }}>{{ $area->nama_area }}</option>
+                            <option value="{{ $area->id_area }}" class="bg-slate-900" {{ request('area') == $area->id_area ? 'selected' : '' }}>{{ $area->nama_area }}</option>
                         @endforeach
                     </select>
 

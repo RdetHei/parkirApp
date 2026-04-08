@@ -47,13 +47,13 @@
                            class="block w-full pl-10 pr-3 py-2 bg-slate-900/50 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all">
                 </div>
                 
-                <select name="role" onchange="this.form.submit()" 
+                <select name="role" onchange="this.form.submit()"
                         class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
-                    <option value="">All Roles</option>
-                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                    <option value="petugas" {{ request('role') == 'petugas' ? 'selected' : '' }}>Petugas</option>
-                    <option value="owner" {{ request('role') == 'owner' ? 'selected' : '' }}>Owner</option>
-                    <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>User</option>
+                    <option value="" class="bg-slate-900">All Roles</option>
+                    <option value="admin" class="bg-slate-900" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="petugas" class="bg-slate-900" {{ request('role') == 'petugas' ? 'selected' : '' }}>Petugas</option>
+                    <option value="owner" class="bg-slate-900" {{ request('role') == 'owner' ? 'selected' : '' }}>Owner</option>
+                    <option value="user" class="bg-slate-900" {{ request('role') == 'user' ? 'selected' : '' }}>User</option>
                 </select>
 
                 @if(request()->anyFilled(['q', 'role']))

@@ -206,10 +206,10 @@
                         </div>
                         <div class="space-y-3">
                             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sensor/Camera Link</label>
-                            <select id="prop-slot-camera" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none">
-                                <option value="">No Camera Attached</option>
+                            <select id="prop-slot-camera" class="w-full px-5 py-4 bg-slate-950 border border-white/10 rounded-2xl text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
+                                <option value="" class="bg-slate-900 text-slate-400">No Camera Attached</option>
                                 @foreach($cameras as $cam)
-                                <option value="{{ $cam->id }}">{{ $cam->nama }}</option>
+                                <option value="{{ $cam->id }}" class="bg-slate-900 text-white">{{ $cam->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -223,9 +223,9 @@
                     <div id="camera-properties" class="hidden space-y-8 animate-fade-in">
                         <div class="space-y-3">
                             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Select Hardware</label>
-                            <select id="prop-camera-id" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none">
+                            <select id="prop-camera-id" class="w-full px-5 py-4 bg-slate-950 border border-white/10 rounded-2xl text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none cursor-pointer">
                                 @foreach($cameras as $cam)
-                                <option value="{{ $cam->id }}">{{ $cam->nama }}</option>
+                                <option value="{{ $cam->id }}" class="bg-slate-900 text-white">{{ $cam->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -248,6 +248,36 @@
 
     .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Dark theme dropdown styling */
+    select {
+        background-color: #020617 !important;
+        color: #fff !important;
+    }
+    select option {
+        background-color: #0f172a !important;
+        color: #fff !important;
+        padding: 8px 12px;
+    }
+    select option:hover,
+    select option:focus,
+    select option:active,
+    select option:checked {
+        background-color: #1e293b !important;
+        color: #fff !important;
+    }
+    select:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: -2px;
+    }
+    /* Custom dropdown arrow */
+    select.appearance-none {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1.25rem;
+        padding-right: 3rem;
+    }
 </style>
 
 @push('scripts')

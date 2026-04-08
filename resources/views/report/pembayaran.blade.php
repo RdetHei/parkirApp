@@ -61,19 +61,19 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Status</label>
                     <select name="status"
                             class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
-                        <option value="">All Statuses</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="berhasil" {{ request('status') === 'berhasil' ? 'selected' : '' }}>Success</option>
-                        <option value="gagal" {{ request('status') === 'gagal' ? 'selected' : '' }}>Failed</option>
+                        <option value="" class="bg-slate-900">All Statuses</option>
+                        <option value="pending" class="bg-slate-900" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="berhasil" class="bg-slate-900" {{ request('status') === 'berhasil' ? 'selected' : '' }}>Success</option>
+                        <option value="gagal" class="bg-slate-900" {{ request('status') === 'gagal' ? 'selected' : '' }}>Failed</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Method</label>
                     <select name="metode"
                             class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
-                        <option value="">All Methods</option>
-                        <option value="midtrans" {{ request('metode') === 'midtrans' ? 'selected' : '' }}>Midtrans</option>
-                        <option value="saldo" {{ request('metode') === 'saldo' ? 'selected' : '' }}>Saldo User</option>
+                        <option value="" class="bg-slate-900">All Methods</option>
+                        <option value="midtrans" class="bg-slate-900" {{ request('metode') === 'midtrans' ? 'selected' : '' }}>Midtrans</option>
+                        <option value="saldo" class="bg-slate-900" {{ request('metode') === 'saldo' ? 'selected' : '' }}>Saldo User</option>
                     </select>
                 </div>
             </div>

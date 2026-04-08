@@ -89,7 +89,9 @@
             <div class="h-24 relative overflow-hidden bg-slate-900">
                 @if($area->map_image_url)
                     <img src="{{ $area->map_image_url }}"
-                         class="w-full h-full object-cover opacity-40">
+                         class="w-full h-full object-cover opacity-40"
+                         loading="lazy"
+                         alt="{{ $area->nama_area }}">
                 @endif
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/80"></div>
 

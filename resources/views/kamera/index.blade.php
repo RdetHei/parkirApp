@@ -37,7 +37,9 @@
 
     <!-- Filter Console -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <h2 class="text-sm font-bold text-white uppercase tracking-widest">Connected Devices <span class="text-slate-500 ml-2 font-medium">({{ $items->total() }} total)</span></h2>
+        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Connected Devices — <span class="text-white">{{ $items->total() }}</span> total
+        </p>
 
         <form action="{{ request()->routeIs('petugas.kamera.index') ? route('petugas.kamera.index') : route('kamera.index') }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div class="relative min-w-[240px]">
@@ -49,10 +51,10 @@
             </div>
 
             <select name="tipe" onchange="this.form.submit()"
-                    class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
-                <option value="">All Types</option>
-                <option value="scanner" {{ request('tipe') == 'scanner' ? 'selected' : '' }}>Scanner</option>
-                <option value="viewer" {{ request('tipe') == 'viewer' ? 'selected' : '' }}>Viewer</option>
+                    class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
+                <option value="" class="bg-slate-900">All Types</option>
+                <option value="scanner" class="bg-slate-900" {{ request('tipe') == 'scanner' ? 'selected' : '' }}>Scanner</option>
+                <option value="viewer" class="bg-slate-900" {{ request('tipe') == 'viewer' ? 'selected' : '' }}>Viewer</option>
             </select>
 
             @if(request()->anyFilled(['q', 'tipe']))
@@ -64,44 +66,85 @@
     </div>
 
     <!-- Main Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         @forelse($items as $item)
             <div class="card-pro !p-0 overflow-hidden group hover:border-white/10 transition-colors">
-                <div class="p-6">
-                    <div class="flex items-start justify-between mb-6">
-                        <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-slate-500 group-hover:bg-emerald-500/10 group-hover:text-emerald-500 border border-white/5 transition-colors">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            @if($item->is_default)
-                                <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase tracking-widest rounded-lg border border-emerald-500/20">Default</span>
-                            @endif
-                            @php
-                                $tipeStyle = $item->tipe === \App\Models\Camera::TIPE_SCANNER ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' : 'bg-purple-500/10 text-purple-500 border-purple-500/20';
-                            @endphp
-                            <span class="px-2.5 py-1 {{ $tipeStyle }} text-[9px] font-black uppercase tracking-widest rounded-lg border">
-                                {{ $item->tipe }}
-                            </span>
+                {{-- Card top header --}}
+                <div class="h-24 relative overflow-hidden bg-slate-900">
+                    <div class="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 opacity-50"></div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity">
+                        <svg class="w-20 h-20 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-950/80"></div>
+
+                    {{-- ID/Type badge --}}
+                    <div class="absolute top-3 left-4">
+                        <span class="text-[9px] font-mono font-bold text-emerald-400/80 uppercase tracking-widest">
+                            #CAM-{{ str_pad($item->id_kamera, 3, '0', STR_PAD_LEFT) }}
+                        </span>
+                    </div>
+
+                    {{-- Status badge --}}
+                    <div class="absolute top-3 right-4">
+                        <div class="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg shadow-lg shadow-emerald-500/5">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                            <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest leading-none">Online</span>
                         </div>
                     </div>
 
-                    <div class="mb-6">
-                        <h3 class="text-sm font-bold text-white tracking-tight mb-1 group-hover:text-emerald-500 transition-colors">{{ $item->nama }}</h3>
-                        <div class="flex items-center gap-2 text-slate-500">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                            <code class="text-[10px] font-mono font-bold truncate max-w-[200px]">{{ $item->url }}</code>
+                    {{-- Device name overlay --}}
+                    <div class="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+                        <h3 class="text-sm font-bold text-white tracking-tight truncate mr-2">{{ $item->nama }}</h3>
+                        @php
+                            $tipeStyle = $item->tipe === \App\Models\Camera::TIPE_SCANNER ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+                        @endphp
+                        <span class="px-2 py-0.5 {{ $tipeStyle }} text-[8px] font-black uppercase tracking-widest rounded border leading-none">
+                            {{ $item->tipe }}
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Card body --}}
+                <div class="p-5">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Stream Source URL</p>
+                            <div class="flex items-center gap-2 p-2 bg-slate-950/50 rounded-lg border border-white/5 group/url">
+                                <svg class="w-3 h-3 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                <code class="text-[10px] font-mono font-bold text-slate-400 truncate group-hover/url:text-emerald-400 transition-colors">{{ $item->url }}</code>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-3 bg-slate-900/40 rounded-xl border border-white/5">
+                                <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Configuration</p>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold text-white">
+                                        @if($item->is_default)
+                                            <span class="text-emerald-400">Primary</span> Device
+                                        @else
+                                            Auxiliary
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-slate-900/40 rounded-xl border border-white/5">
+                                <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Assigned to</p>
+                                <p class="text-[10px] font-bold text-white">Neston Park <span class="text-slate-500 font-medium">#1</span></p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="pt-6 border-t border-white/5 flex items-center justify-between">
+                    {{-- Actions --}}
+                    <div class="pt-5 mt-5 border-t border-white/5 flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             @if((auth()->user()->role ?? null) === 'admin')
                                 <a href="{{ route('kamera.edit', $item) }}"
-                                   class="p-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 rounded-lg border border-amber-500/20 transition-all"
-                                   title="Modify Camera">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                   class="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-emerald-500/20 transition-all flex items-center gap-2">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit
                                 </a>
                                 <form action="{{ route('kamera.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Archive this camera? All associated parking maps will be updated.')">
                                     @csrf
@@ -112,10 +155,13 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </form>
+                            @else
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Device Secured</span>
                             @endif
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                            <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Status</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i class="fa-solid fa-signal text-[8px] text-emerald-500"></i>
+                            <span class="text-[8px] font-black text-slate-500 uppercase tracking-widest">Stable</span>
                         </div>
                     </div>
                 </div>
