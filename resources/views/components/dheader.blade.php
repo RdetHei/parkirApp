@@ -97,7 +97,7 @@
     <div class="h-full w-full flex items-center justify-between px-4 lg:px-8">
         <div class="flex items-center gap-3 lg:gap-4 min-w-0">
             <!-- Mobile Toggle -->
-            <button @click="sidebarOpen = true" type="button"
+            <button @click="sidebarOpen = !sidebarOpen" type="button"
                     class="lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-all active:scale-95 border border-white/5">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>

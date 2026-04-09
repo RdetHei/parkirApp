@@ -17,6 +17,7 @@ use App\Http\Controllers\RfidIdentifyController;
 use App\Http\Controllers\RfidAccessController;
 use App\Http\Controllers\RfidLoginController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RevenueReconciliationController;
 use App\Support\UserPhoto;
 use App\Http\Controllers\RfidAdminController;
 use App\Http\Controllers\KendaraanController;
@@ -283,6 +284,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
 
         $kendaraans = \App\Models\Kendaraan::where('id_user', $user->id)->orderBy('plat_nomor')->get();
         $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
+        $activeBookingInfo = null;
 
         // Hitung status per area (kosong / terisi / dibookmark)
         $now = \Carbon\Carbon::now();
@@ -334,7 +336,40 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
             $statusPerArea[$area->id_area] = 'empty';
         }
 
-        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs', 'daerahs', 'selectedDaerah', 'selectedAreaId'));
+        $activeReservation = \App\Models\ParkingSlotReservation::active()
+            ->with(['area:id_area,nama_area', 'slot:id,code'])
+            ->where('id_user', $user->id)
+            ->latest('expires_at')
+            ->first();
+
+        if ($activeReservation) {
+            $activeBookingInfo = [
+                'id' => (int) $activeReservation->id,
+                'kind' => 'reservation',
+                'area_name' => $activeReservation->area?->nama_area ?? '-',
+                'slot_code' => $activeReservation->slot?->code ?? '-',
+                'expires_at' => optional($activeReservation->expires_at)->toIso8601String(),
+            ];
+        } else {
+            $legacyBooking = \App\Models\Transaksi::where('id_user', $user->id)
+                ->where('status', 'bookmarked')
+                ->where('bookmarked_at', '>', $now->copy()->subMinutes(10))
+                ->with(['area:id_area,nama_area', 'parkingMapSlot:id,code'])
+                ->latest('bookmarked_at')
+                ->first();
+
+            if ($legacyBooking) {
+                $activeBookingInfo = [
+                    'id' => (int) $legacyBooking->id_parkir,
+                    'kind' => 'transaksi',
+                    'area_name' => $legacyBooking->area?->nama_area ?? '-',
+                    'slot_code' => $legacyBooking->parkingMapSlot?->code ?? '-',
+                    'expires_at' => optional($legacyBooking->bookmarked_at)->addMinutes(10)->toIso8601String(),
+                ];
+            }
+        }
+
+        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs', 'daerahs', 'selectedDaerah', 'selectedAreaId', 'activeBookingInfo'));
     })->name('user.bookings');
 
     Route::post('/user/bookings/areas/{area}', [\App\Http\Controllers\ParkingSlotController::class, 'bookmark'])->name('user.bookings.book');
@@ -354,6 +389,9 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
     // ========== ADMIN ONLY (sesuai Tabel Fitur SPK) ==========
     // Admin: CRUD User, CRUD Tarif, CRUD Area Parkir, CRUD Kendaraan, CRUD Layout Peta, Akses Log Aktifitas, Cetak struk parkir
     Route::middleware(['role:admin'])->group(function () {
+        Route::get('/admin/reconciliation/revenue', [RevenueReconciliationController::class, 'index'])->name('admin.reconciliation.revenue');
+        Route::post('/admin/reconciliation/revenue/sync', [RevenueReconciliationController::class, 'syncMissingPayments'])->name('admin.reconciliation.revenue.sync');
+
         Route::resource('users', \App\Http\Controllers\UserController::class);
         Route::post('/users/{id}/topup', [\App\Http\Controllers\UserController::class, 'topup'])->name('users.topup');
 
@@ -389,7 +427,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::get('/active-parking', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.active');
         Route::get('/active-bookings', [\App\Http\Controllers\TransaksiController::class, 'bookings'])->name('transaksi.bookings');
         Route::get('/parking-history', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.history');
-        
+
         // Aliases / Compatibility
         Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.index');
         Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.parkir.index');
@@ -398,7 +436,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::get('/check-in', [\App\Http\Controllers\TransaksiController::class, 'create'])->name('transaksi.create-check-in');
         Route::post('/check-in', [\App\Http\Controllers\TransaksiController::class, 'checkIn'])->name('transaksi.checkIn');
         Route::put('/transaksi/{id}/check-out', [\App\Http\Controllers\TransaksiController::class, 'checkOut'])->name('transaksi.checkOut');
-        
+
         // Details & Printing
         Route::get('/transaksi/{id}/print', [\App\Http\Controllers\TransaksiController::class, 'print'])->name('transaksi.print');
         Route::get('/transaksi/{transaksi}', [\App\Http\Controllers\TransaksiController::class, 'show'])->whereNumber('transaksi')->name('transaksi.show');
@@ -409,7 +447,8 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
 
         // RFID Parking Operation
         Route::get('/parkir/scan', [RfidParkingController::class, 'index'])->name('parkir.scan');
-        Route::post('/api/parkir/rfid-scan', [RfidParkingController::class, 'processScan'])->name('api.parkir.rfid-scan');
+        Route::post('/api/parkir/rfid-scan', [RfidParkingController::class, 'processScan'])->name('api.parkir.rfid-scan')->middleware('throttle:40,1');
+        Route::get('/rfid/history', [RfidParkingController::class, 'history'])->name('rfid.history');
 
         // Kamera: daftar perangkat (read-only untuk petugas)
         Route::get('/petugas/kamera', [\App\Http\Controllers\CameraController::class, 'index'])->name('petugas.kamera.index');

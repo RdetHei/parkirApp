@@ -16,7 +16,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    {{-- Satu @vite saja: hindari load ganda app.js (Alpine.start 2x) yang membuat sidebar/toggle rusak di production --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://kit.fontawesome.com/60907a9761.js" crossorigin="anonymous"></script>
+
     <style>
         [x-cloak] { display: none !important; }
     </style>
@@ -34,8 +39,8 @@
              localStorage.setItem('parkirapp.sidebar', val ? 'collapsed' : 'expanded');
          });
          window.addEventListener('resize', () => {
-             isMobile = window.innerWidth < 1024;
-             if (!isMobile) sidebarOpen = false;
+             $data.isMobile = window.innerWidth < 1024;
+             if (!$data.isMobile) $data.sidebarOpen = false;
          });
       "
       :data-sidebar="desktopCollapsed ? 'collapsed' : 'expanded'">
@@ -84,7 +89,7 @@
         [x-cloak] { display: none !important; }
     </style>
         {{-- Layout wrapper: sidebar + main content --}}
-        <div class="h-screen flex relative overflow-hidden bg-[#020617]">
+        <div class="h-screen flex relative bg-[#020617]">
             <!-- Mobile Sidebar Backdrop -->
             <div x-cloak
                  x-show="sidebarOpen"
@@ -108,21 +113,19 @@
             </div>
         </div>
 
-        <script>
-            // No need for the Vanilla JS toggle anymore, we use Alpine in sidebar component
-        </script>
-
         @stack('scripts')
 
     <script>
         // Check for notifications
         async function checkNotifications() {
+            if (!window.Notification) return;
+
             try {
                 const response = await fetch('{{ route('api.notifications.check') }}');
                 const data = await response.json();
-                
+
                 if (data.has_new) {
-                    if (window.Notification && Notification.permission === "granted") {
+                    if (Notification.permission === "granted") {
                         new Notification("Neston Update", {
                             body: data.message || "Ada aktivitas parkir baru pada akun Anda.",
                             icon: "/favicon.ico"
@@ -134,11 +137,11 @@
             }
         }
 
-        if (window.Notification && Notification.permission !== "granted") {
+        if (window.Notification && Notification.permission !== "granted" && Notification.permission !== "denied") {
             Notification.requestPermission();
         }
 
-        setInterval(checkNotifications, 10000);
+        setInterval(checkNotifications, 15000);
     </script>
 </body>
 </html>

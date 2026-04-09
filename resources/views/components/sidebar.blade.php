@@ -7,11 +7,13 @@
        x-transition:leave="transition ease-in duration-300"
        x-transition:leave-start="translate-x-0"
        x-transition:leave-end="-translate-x-full"
-       :class="[
-           sidebarOpen ? 'translate-x-0 shadow-2xl' : (isMobile ? '-translate-x-full' : 'translate-x-0'),
-           desktopCollapsed ? 'lg:w-[4.5rem]' : 'lg:w-64'
-       ]"
-       class="sidebar-animate w-64 max-w-[85vw] h-screen fixed lg:sticky top-0 left-0 bg-[#020617] border-r border-white/5 shrink-0 flex flex-col z-[100] overflow-hidden transition-all duration-300 ease-in-out pointer-events-auto">
+       @click.stop="true"
+       :class="{
+           'translate-x-0 shadow-2xl': sidebarOpen,
+           '-translate-x-full': isMobile && !sidebarOpen,
+           'translate-x-0': !isMobile
+       }"
+       class="sidebar-animate h-screen fixed lg:sticky top-0 left-0 bg-[#020617] border-r border-white/5 shrink-0 flex flex-col z-100 transition-all duration-300 ease-in-out pointer-events-auto">
     <div class="sidebar-header h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 relative z-10">
         <div class="flex items-center gap-3 min-w-0 sidebar-header-brand">
             <img src="{{ asset('images/neston.svg') }}" alt="NESTON" class="h-8 w-auto shrink-0">
@@ -100,11 +102,6 @@
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             <span class="sidebar-label">{{ __('Active Parking') }}</span>
         </a>
-        <a href="{{ route('parking.map.index') }}"
-           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('parking.map.index') ? 'active' : '' }}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-            <span class="sidebar-label">{{ __('Live Map') }}</span>
-        </a>
         <a href="{{ route('transaksi.bookings') }}"
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.bookings') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
@@ -120,6 +117,9 @@
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
             <span class="sidebar-label">AI Scanner</span>
         </a>
+        <div class="pt-4 pb-2 px-3">
+            <p class="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] sidebar-label">RFID</p>
+        </div>
         <a href="{{ route('parkir.scan') }}"
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('parkir.scan', 'rfid.identify.page', 'rfid.access.scan-page') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
@@ -129,11 +129,6 @@
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('payment.select-transaction', 'payment.create') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span class="sidebar-label">{{ __('Payments') }}</span>
-        </a>
-        <a href="{{ route('petugas.kamera.index') }}"
-           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('petugas.kamera.index') ? 'active' : '' }}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-            <span class="sidebar-label">{{ __('Kamera') }}</span>
         </a>
         @endif
 
@@ -150,10 +145,6 @@
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="sidebar-label">{{ __('Tariff Rules') }}</span>
         </a>
-        <a href="{{ route('kendaraan.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('kendaraan.*') ? 'active' : '' }}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V9a3 3 0 013-3h0a3 3 0 013 3v8m-9 0h9m-9 0a2 2 0 01-2-2v-3a2 2 0 012-2h9a2 2 0 012 2v3a2 2 0 01-2 2m-9 0v2m9-2v2"></path></svg>
-            <span class="sidebar-label">{{ __('Vehicles') }}</span>
-        </a>
         <a href="{{ route('transaksi.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.index') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="sidebar-label">{{ __('Transactions') }}</span>
@@ -162,9 +153,24 @@
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
             <span class="sidebar-label">{{ __('Zones & Areas') }}</span>
         </a>
-        <a href="{{ route('parkir.scan') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('parkir.scan', 'rfid.identify.page', 'rfid.access.scan-page', 'admin.rfid.*') ? 'active' : '' }}">
+        <div class="pt-4 pb-2 px-3">
+            <p class="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] sidebar-label">RFID</p>
+        </div>
+        <a href="{{ route('parkir.scan') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('parkir.scan', 'rfid.identify.page', 'rfid.access.scan-page') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
             <span class="sidebar-label">{{ __('RFID Terminal') }}</span>
+        </a>
+        <a href="{{ route('admin.rfid.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('admin.rfid.*') ? 'active' : '' }}">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm5 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
+            <span class="sidebar-label">{{ __('RFID Management') }}</span>
+        </a>
+        <a href="{{ route('rfid.history') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('rfid.history') ? 'active' : '' }}">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span class="sidebar-label">RFID History</span>
+        </a>
+        <a href="{{ route('admin.reconciliation.revenue') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('admin.reconciliation.revenue*') ? 'active' : '' }}">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17l6-6 4 4 8-8M14 7h7v7" /></svg>
+            <span class="sidebar-label">Revenue Sync</span>
         </a>
         <a href="{{ route('kamera.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('kamera.*') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>

@@ -42,7 +42,10 @@
                     <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-xl">
                         <i class="fa-solid fa-plus text-sm"></i>
                     </div>
-                    <h2 class="text-[10px] lg:text-[11px] font-black text-white uppercase tracking-[0.2em]">Tambah Kendaraan Baru</h2>
+                    <div>
+                        <h2 class="text-[10px] lg:text-[11px] font-black text-white uppercase tracking-[0.2em]">Tambah Kendaraan Baru</h2>
+                        <p class="text-[10px] text-slate-500 font-bold mt-1">Gunakan plat valid agar terdeteksi otomatis saat check-in RFID.</p>
+                    </div>
                 </div>
 
                 <form method="POST" action="{{ route('user.vehicles.store') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
@@ -73,7 +76,7 @@
                     <div>
                         <button type="submit"
                                 class="w-full group relative flex items-center justify-center gap-3 py-4 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20 active:scale-[0.98] overflow-hidden">
-                            <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                            <div class="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                             <i class="fa-solid fa-floppy-disk text-sm"></i>
                             Simpan Data
                         </button>
@@ -82,49 +85,88 @@
             </div>
 
             <!-- List Vehicles -->
-            <div class="card-pro !p-0 overflow-hidden border-white/5 backdrop-blur-xl bg-slate-900/40 shadow-2xl">
-                <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <div class="card-pro p-0! overflow-hidden border-white/5 backdrop-blur-xl bg-slate-900/40 shadow-2xl">
+                <div class="px-5 sm:px-8 py-5 sm:py-6 border-b border-white/5 bg-white/2 flex flex-wrap items-center justify-between gap-3">
                     <h2 class="text-[11px] font-black text-white uppercase tracking-[0.2em]">Daftar Kendaraan Terdaftar</h2>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-car-side text-[10px] text-slate-600"></i>
-                        <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Total: {{ $kendaraans->count() }}</span>
+                        <span class="px-2.5 py-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-[9px] font-black text-emerald-400 uppercase tracking-widest">
+                            {{ $kendaraans->count() }} kendaraan
+                        </span>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-white/[0.01] border-b border-white/5">
-                                <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Identitas Visual</th>
-                                <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Plat Nomor</th>
-                                <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Jenis & Warna</th>
-                                <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Pemilik</th>
-                                <th class="px-8 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5">
-                            @forelse($kendaraans as $k)
-                                <tr class="group hover:bg-white/[0.02] transition-all">
-                                    <td class="px-8 py-6">
-                                        <div class="w-16 h-16 rounded-[1.25rem] bg-slate-950 border border-white/5 flex flex-col items-center justify-center font-black text-white group-hover:border-emerald-500/30 transition-all shadow-xl">
-                                            <span class="text-[8px] text-slate-600 leading-none mb-1.5 uppercase tracking-tighter">{{ substr($k->plat_nomor ?? '-', 0, 2) }}</span>
-                                            <span class="text-xl leading-none tracking-tight">{{ substr($k->plat_nomor ?? '-', 2, 4) }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-8 py-6">
-                                        <p class="text-base font-black text-white tracking-widest uppercase group-hover:text-emerald-400 transition-colors">{{ $k->plat_nomor }}</p>
-                                    </td>
-                                    <td class="px-8 py-6">
-                                        <div class="flex items-center gap-2 mb-1">
+                @if($kendaraans->isEmpty())
+                    <div class="px-8 py-24 text-center">
+                        <div class="w-24 h-24 bg-slate-950 border border-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 text-slate-800 shadow-2xl">
+                            <i class="fa-solid fa-car-side text-4xl opacity-10"></i>
+                        </div>
+                        <p class="text-[10px] text-slate-600 font-black uppercase tracking-[0.3em] italic">Belum ada kendaraan terdaftar</p>
+                    </div>
+                @else
+                    {{-- Mobile cards --}}
+                    <div class="grid grid-cols-1 gap-4 p-4 sm:p-6 lg:hidden">
+                        @foreach($kendaraans as $k)
+                            <div class="rounded-2xl border border-white/5 bg-slate-950/40 p-4">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-black text-white uppercase tracking-widest truncate">{{ $k->plat_nomor }}</p>
+                                        <div class="flex items-center gap-2 mt-2">
                                             <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[9px] font-black uppercase rounded border border-blue-500/20 tracking-widest">{{ $k->jenis_kendaraan }}</span>
+                                            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{{ $k->warna ?: 'Tanpa Warna' }}</span>
                                         </div>
-                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{{ $k->warna ?: 'Tanpa Warna' }}</p>
-                                    </td>
-                                    <td class="px-8 py-6">
-                                        <p class="text-xs font-bold text-slate-300">{{ $k->pemilik ?: $user->name }}</p>
-                                    </td>
-                                    <td class="px-8 py-6 text-right">
-                                        <div class="flex items-center justify-end gap-3">
+                                        <p class="mt-2 text-[10px] text-slate-400 font-semibold">Pemilik: {{ $k->pemilik ?: $user->name }}</p>
+                                    </div>
+                                    <form action="{{ route('user.vehicles.destroy', $k) }}"
+                                          method="POST"
+                                          onsubmit="return confirm('Hapus kendaraan ini dari akun Anda?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="w-9 h-9 rounded-xl bg-rose-500/5 border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Desktop table --}}
+                    <div class="hidden lg:block overflow-x-auto max-h-120">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 z-10">
+                                <tr class="bg-slate-900/95 border-b border-white/5 backdrop-blur-xl">
+                                    <th class="px-6 py-4 w-16 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">No</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Plat Nomor</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Jenis</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Warna</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Pemilik</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                @foreach($kendaraans as $index => $k)
+                                    <tr class="group hover:bg-white/2 transition-all">
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex w-8 h-8 items-center justify-center rounded-lg bg-slate-950 border border-white/5 text-[11px] font-black text-slate-400">
+                                                {{ $index + 1 }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm font-black text-white tracking-widest uppercase group-hover:text-emerald-400 transition-colors">{{ $k->plat_nomor }}</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[9px] font-black uppercase rounded-lg border border-blue-500/20 tracking-widest">
+                                                {{ $k->jenis_kendaraan }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{{ $k->warna ?: 'Tanpa Warna' }}</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-xs font-bold text-slate-300">{{ $k->pemilik ?: $user->name }}</p>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
                                             <form action="{{ route('user.vehicles.destroy', $k) }}"
                                                   method="POST"
                                                   class="inline"
@@ -136,22 +178,13 @@
                                                     <i class="fa-solid fa-trash-can text-sm"></i>
                                                 </button>
                                             </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-8 py-24 text-center">
-                                        <div class="w-24 h-24 bg-slate-950 border border-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 text-slate-800 shadow-2xl">
-                                            <i class="fa-solid fa-car-side text-4xl opacity-10"></i>
-                                        </div>
-                                        <p class="text-[10px] text-slate-600 font-black uppercase tracking-[0.3em] italic">Belum ada kendaraan terdaftar</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

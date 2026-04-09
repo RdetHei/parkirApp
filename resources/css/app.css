@@ -280,6 +280,13 @@ table tbody tr:hover {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
     overflow-x: hidden;
     overflow-y: visible;
+    width: var(--sidebar-width-mobile);
+}
+
+@media (min-width: 1024px) {
+    #app-sidebar.sidebar-animate {
+        width: var(--sidebar-width-expanded);
+    }
 }
 
 /* Backdrop mobile: di bawah drawer; gelap + blur tetap dari CSS */

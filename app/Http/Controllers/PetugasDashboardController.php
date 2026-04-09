@@ -15,14 +15,15 @@ class PetugasDashboardController extends Controller
     {
         try {
             \Illuminate\Support\Facades\Log::info('PetugasDashboardController@index hit');
-            
+
             // Non-live stats cached for 1 minute
             $stats = Cache::remember('petugas_dashboard_stats', 60, function() {
                 return [
                     'transaksiHariIni' => Transaksi::whereDate('waktu_masuk', Carbon::today())->count(),
-                    'pendapatanHariIni' => Pembayaran::where('status', 'berhasil')
-                        ->whereDate('waktu_pembayaran', Carbon::today())
-                        ->sum('nominal'),
+                    'pendapatanHariIni' => Transaksi::where('status', 'keluar')
+                        ->where('status_pembayaran', 'berhasil')
+                        ->whereDate('waktu_keluar', Carbon::today())
+                        ->sum('biaya_total'),
                 ];
             });
 

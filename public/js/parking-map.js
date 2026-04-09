@@ -3,6 +3,8 @@
     const container = document.getElementById('parking-map');
     if (!container) return;
 
+    console.log('Parking Map Initializing...', container.dataset);
+
     const imageUrl = container.dataset.imageUrl || '';
     const mapWidthStr = container.dataset.width || '1000';
     const mapHeightStr = container.dataset.height || '800';
@@ -85,6 +87,8 @@
     function buildSlotPopup(slot) {
         const statusLabel = slot.status === 'reserved-by-me' ? 'Milik Anda' : (slot.status.charAt(0).toUpperCase() + slot.status.slice(1));
         const color = getSlotColor(slot.status).border;
+        const isMine = slot.status === 'reserved-by-me' || (slot.status === 'occupied' && slot.is_mine);
+        const canCancel = !!slot.transaksi_id && slot.status === 'reserved-by-me';
 
         return `
             <div style="min-width:180px; padding: 12px; background: #0f172a; border-radius: 12px; color: #fff;">
@@ -106,6 +110,18 @@
                 ${bookingEnabled && slot.status === 'empty' ? `
                 <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
                     <p style="font-size:10px; color: #10b981; font-weight:bold; text-align:center; margin:0;">Klik slot untuk booking</p>
+                </div>` : ''}
+                ${bookingEnabled && canCancel ? `
+                <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
+                    <button type="button"
+                            onclick="window.cancelMySlotBooking && window.cancelMySlotBooking('${slot.transaksi_id}')"
+                            style="width:100%; border:1px solid rgba(239,68,68,0.35); background:rgba(239,68,68,0.1); color:#f87171; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; padding:8px 10px; border-radius:10px; cursor:pointer;">
+                        Batalkan Slot Saya
+                    </button>
+                </div>` : ''}
+                ${bookingEnabled && isMine && !canCancel ? `
+                <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
+                    <p style="font-size:10px; color:#60a5fa; font-weight:700; text-align:center; margin:0;">Slot ini sedang dipakai, tidak bisa dibatalkan dari peta.</p>
                 </div>` : ''}
             </div>
         `;
@@ -242,6 +258,12 @@
         }
     }
 
+    // Expose cancel action for popup button
+    window.cancelMySlotBooking = function(transId) {
+        if (!transId) return;
+        handleUnbooking(transId);
+    };
+
     function renderCameras(cameras) {
         if (!camerasLayer) return;
         camerasLayer.clearLayers();
@@ -299,7 +321,7 @@
 
     async function fetchData() {
         try {
-            const url = `/api/parking-slots?map_id=${encodeURIComponent(mapId)}`;
+            const url = `/api/parking-map/data?map_id=${encodeURIComponent(mapId)}`;
             const response = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
             if (!response.ok) return;
             const data = await response.json();

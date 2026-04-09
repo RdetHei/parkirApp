@@ -20,10 +20,13 @@ class DashboardController extends Controller
             $totalKendaraan = Kendaraan::count();
         $totalTransaksi = Transaksi::count();
         $transaksiAktif = Transaksi::where('status', 'masuk')->count();
-        $totalPendapatan = Pembayaran::where('status', 'berhasil')->sum('nominal');
-        $pendapatanHariIni = Pembayaran::where('status', 'berhasil')
-            ->whereDate('waktu_pembayaran', Carbon::today())
-            ->sum('nominal');
+        $totalPendapatan = Transaksi::where('status', 'keluar')
+            ->where('status_pembayaran', 'berhasil')
+            ->sum('biaya_total');
+        $pendapatanHariIni = Transaksi::where('status', 'keluar')
+            ->where('status_pembayaran', 'berhasil')
+            ->whereDate('waktu_keluar', Carbon::today())
+            ->sum('biaya_total');
 
         $pembayaranPending = Pembayaran::where('status', 'pending')->count();
         $totalUser = User::count();
@@ -39,9 +42,10 @@ class DashboardController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $label = $date->translatedFormat('d M');
-            $value = Pembayaran::where('status', 'berhasil')
-                ->whereDate('waktu_pembayaran', $date)
-                ->sum('nominal');
+            $value = Transaksi::where('status', 'keluar')
+                ->where('status_pembayaran', 'berhasil')
+                ->whereDate('waktu_keluar', $date)
+                ->sum('biaya_total');
             $grafikPendapatan['labels'][] = $label;
             $grafikPendapatan['data'][] = $value;
         }
@@ -49,9 +53,10 @@ class DashboardController extends Controller
         // Analisis Pendapatan Per Jam (Heatmap Data)
         $revenueByHour = [];
         for ($h = 0; $h < 24; $h++) {
-            $revenueByHour[$h] = Pembayaran::where('status', 'berhasil')
-                ->whereRaw('HOUR(waktu_pembayaran) = ?', [$h])
-                ->sum('nominal');
+            $revenueByHour[$h] = Transaksi::where('status', 'keluar')
+                ->where('status_pembayaran', 'berhasil')
+                ->whereRaw('HOUR(waktu_keluar) = ?', [$h])
+                ->sum('biaya_total');
         }
 
         // Analisis Area Terfavorit (Berdasarkan jumlah transaksi)

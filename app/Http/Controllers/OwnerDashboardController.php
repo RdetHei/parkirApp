@@ -12,8 +12,13 @@ class OwnerDashboardController extends Controller
 {
     public function index()
     {
-        $totalPendapatan = Pembayaran::berhasil()->sum('nominal');
-        $pendapatanHariIni = Pembayaran::berhasil()->whereDate('created_at', Carbon::today())->sum('nominal');
+        $totalPendapatan = Transaksi::where('status', 'keluar')
+            ->where('status_pembayaran', 'berhasil')
+            ->sum('biaya_total');
+        $pendapatanHariIni = Transaksi::where('status', 'keluar')
+            ->where('status_pembayaran', 'berhasil')
+            ->whereDate('waktu_keluar', Carbon::today())
+            ->sum('biaya_total');
         $transaksiBerhasil = Transaksi::where('status', 'keluar')->where('status_pembayaran', 'berhasil')->count();
         $pembayaranPending = Pembayaran::pending()->count();
         $areaParkir = AreaParkir::all();
@@ -25,7 +30,10 @@ class OwnerDashboardController extends Controller
             $tanggal = Carbon::today()->subDays($i);
             $harian[] = [
                 'label' => $tanggal->format('d/m'),
-                'nominal' => Pembayaran::berhasil()->whereDate('created_at', $tanggal)->sum('nominal'),
+                'nominal' => Transaksi::where('status', 'keluar')
+                    ->where('status_pembayaran', 'berhasil')
+                    ->whereDate('waktu_keluar', $tanggal)
+                    ->sum('biaya_total'),
                 'transaksi' => Transaksi::where('status', 'keluar')->where('status_pembayaran', 'berhasil')->whereDate('waktu_keluar', $tanggal)->count(),
             ];
         }

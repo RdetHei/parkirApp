@@ -12,6 +12,7 @@
     $kendaraans = $kendaraans ?? collect();
     $tarifs = $tarifs ?? collect();
     $selectedAreaId = $selectedAreaId ?? ($map->id_area ?? null);
+    $activeBookingInfo = $activeBookingInfo ?? null;
 @endphp
 <div class="p-8 relative z-10 animate-fade-in" style="background:#020617;min-height:100vh;">
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
@@ -119,6 +120,35 @@
                     </div>
                 </div>
 
+                {{-- Booking aktif saya --}}
+                @if($activeBookingInfo)
+                <div id="active-booking-card" class="rounded-2xl border overflow-hidden" style="background:#0d1526;border-color:rgba(59,130,246,0.22);">
+                    <div class="px-5 py-3.5 border-b" style="border-color:rgba(255,255,255,0.05);">
+                        <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest">Booking Aktif Saya</p>
+                    </div>
+                    <div class="p-5 flex flex-col gap-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <p class="text-[10px] font-black text-white uppercase tracking-widest">{{ $activeBookingInfo['area_name'] ?? '-' }}</p>
+                                <p class="text-[10px] text-slate-400 font-semibold mt-1">Slot: {{ $activeBookingInfo['slot_code'] ?? '-' }}</p>
+                            </div>
+                            <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20">Aktif</span>
+                        </div>
+                        <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Sisa Waktu Booking</p>
+                            <p id="booking-countdown" class="text-sm text-white font-black mt-1">--:--</p>
+                        </div>
+                        <form method="POST" action="{{ route('user.bookings.unbook', $activeBookingInfo['id']) }}" onsubmit="return confirm('Batalkan booking aktif Anda sekarang?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 text-[10px] font-black uppercase tracking-widest transition-all">
+                                Batalkan Booking Aktif
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endif
+
                 {{-- Slot summary --}}
                 <div class="rounded-2xl border overflow-hidden" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
                     <div class="px-5 py-3.5 border-b" style="border-color:rgba(255,255,255,0.05);">
@@ -173,81 +203,154 @@
             {{-- ── MAIN CONTENT ── --}}
             <div class="flex-1 min-w-0 flex flex-col gap-6">
 
-                {{-- Area cards --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @forelse($areas as $area)
-                    @php
-                        $status      = $statusPerArea[$area->id_area] ?? 'empty';
-                        $isAvailable = $status === 'empty';
-                        $isMine      = $status === 'bookmarked-by-me';
-                        $borderCls   = $isAvailable ? 'rgba(16,185,129,0.2)' : ($isMine ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.06)');
-                        $bgCls       = $isAvailable ? 'rgba(16,185,129,0.04)' : ($isMine ? 'rgba(59,130,246,0.04)' : 'rgba(255,255,255,0.02)');
-                        $pct         = $area->kapasitas > 0 ? ($area->terisi / $area->kapasitas * 100) : 0;
-                    @endphp
-                    <div class="rounded-2xl overflow-hidden flex flex-col {{ !$isAvailable && !$isMine ? 'opacity-60' : '' }}"
-                         style="background:{{ $bgCls }};border:1px solid {{ $borderCls }};">
-
-                        <div class="px-5 pt-5 pb-1 flex items-start justify-between">
-                            <h2 class="text-sm font-black text-white uppercase tracking-tight">{{ $area->nama_area }}</h2>
-                            <span class="px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border
-                                {{ $isAvailable ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                   ($isMine ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-white/5 text-slate-500 border-white/10') }}">
-                                {{ $isAvailable ? 'Tersedia' : ($isMine ? 'Milik Anda' : 'Terisi') }}
-                            </span>
+                {{-- Daftar area: kompak + scroll (banyak area tidak memenuhi layar) --}}
+                <div class="rounded-2xl border overflow-hidden" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
+                    <div class="px-4 sm:px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center gap-3 justify-between" style="border-color:rgba(255,255,255,0.05);">
+                        <div>
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Semua Area</p>
+                            <p class="text-xs text-slate-400 mt-0.5">{{ $areas->count() }} lokasi — klik nama untuk buka peta, atau pakai dropdown di panel kiri</p>
                         </div>
-                        <div class="px-5 pb-4">
-                            <div class="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-full border border-white/5 w-fit">
-                                <i class="fa-solid fa-location-dot text-[8px] text-emerald-500"></i>
-                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ $area->daerah ?? 'Unknown' }}</span>
-                            </div>
-                        </div>
-
-                        <div class="px-5 pb-4 flex flex-col gap-1.5 flex-1">
-                            <div class="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest">
-                                <span class="text-slate-500">{{ $area->terisi }}/{{ $area->kapasitas }} slot terisi</span>
-                                <span class="text-slate-400">{{ number_format($pct, 0) }}%</span>
-                            </div>
-                            <div class="h-1 w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
-                                <div class="h-full rounded-full {{ $isAvailable ? 'bg-emerald-500' : ($isMine ? 'bg-blue-500' : 'bg-slate-600') }}"
-                                     style="width:{{ $pct }}%"></div>
-                            </div>
-                        </div>
-
-                        <div class="px-5 pb-5">
-                            @if($isAvailable)
-                            <form method="POST" action="{{ route('user.bookings.book', $area->id_area) }}" class="booking-area-form">
-                                @csrf
-                                <input type="hidden" name="id_kendaraan" value="">
-                                <input type="hidden" name="id_tarif" value="">
-                                <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98]">
-                                    Booking Sekarang
-                                </button>
-                            </form>
-                            @elseif($isMine)
-                                @php $transId = $myBookingIds[$area->id_area] ?? null; @endphp
-                                @if($transId)
-                                <form method="POST" action="{{ route('user.bookings.unbook', $transId) }}" onsubmit="return confirm('Batalkan booking?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="w-full py-3 bg-blue-500 hover:bg-blue-400 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98]">
-                                        Batalkan Booking
-                                    </button>
-                                </form>
-                                @endif
-                            @else
-                            <button disabled class="w-full py-3 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl border cursor-not-allowed" style="background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06);">
-                                Tidak Tersedia
-                            </button>
-                            @endif
+                        <div class="relative w-full sm:w-56 shrink-0">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 pointer-events-none"></i>
+                            <input type="search" id="area-list-search" autocomplete="off" placeholder="Cari nama / daerah…"
+                                   class="w-full rounded-xl border pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 focus:outline-none font-bold"
+                                   style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);">
                         </div>
                     </div>
-                    @empty
-                    <div class="col-span-full py-20 text-center rounded-2xl border border-dashed" style="border-color:rgba(255,255,255,0.08);">
+
+                    @if($areas->isEmpty())
+                    <div class="py-16 text-center">
                         <p class="text-[10px] text-slate-600 font-black uppercase tracking-[0.3em]">Belum ada area parkir</p>
                     </div>
-                    @endforelse
+                    @else
+                    <div id="area-list-scroll" class="max-h-[min(52vh,26rem)] overflow-y-auto overscroll-contain">
+                        <ul class="divide-y" style="border-color:rgba(255,255,255,0.06);">
+                            @foreach($areas as $area)
+                            @php
+                                $status      = $statusPerArea[$area->id_area] ?? 'empty';
+                                $isAvailable = $status === 'empty';
+                                $isMine      = $status === 'bookmarked-by-me';
+                                $isSelected  = (string) $selectedAreaId === (string) $area->id_area;
+                                $pct         = $area->kapasitas > 0 ? min(100, (int) round($area->terisi / $area->kapasitas * 100)) : 0;
+                                $searchBlob  = strtolower(($area->nama_area ?? '') . ' ' . ($area->daerah ?? ''));
+                            @endphp
+                            <li class="area-list-row transition-colors hover:bg-white/3 {{ $isSelected ? 'bg-emerald-500/6' : '' }} {{ !$isAvailable && !$isMine ? 'opacity-70' : '' }}"
+                                data-area-search="{{ e($searchBlob) }}"
+                                data-area-id="{{ $area->id_area }}"
+                                data-selected="{{ $isSelected ? '1' : '0' }}">
+                                <div class="px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+
+                                    <button type="button"
+                                            class="area-row-open text-left min-w-0 flex-1 flex items-start gap-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 -m-1 p-1"
+                                            title="Buka peta area ini">
+                                        <span class="mt-1 w-2 h-2 rounded-full shrink-0 {{ $isAvailable ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : ($isMine ? 'bg-blue-500' : 'bg-slate-600') }}"></span>
+                                        <span class="min-w-0">
+                                            <span class="flex flex-wrap items-center gap-2">
+                                                <span class="text-sm font-black text-white truncate tracking-tight">{{ $area->nama_area }}</span>
+                                                @if($isSelected)
+                                                <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">Peta aktif</span>
+                                                @endif
+                                            </span>
+                                            <span class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+                                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ $area->daerah ?? '—' }}</span>
+                                                <span class="text-slate-700 hidden sm:inline">·</span>
+                                                <span class="text-[10px] font-black uppercase tracking-widest
+                                                    {{ $isAvailable ? 'text-emerald-400' : ($isMine ? 'text-blue-400' : 'text-slate-500') }}">
+                                                    {{ $isAvailable ? 'Tersedia' : ($isMine ? 'Milik Anda' : 'Terisi / Direservasi') }}
+                                                </span>
+                                            </span>
+                                            <span class="flex items-center gap-2 mt-2 max-w-md">
+                                                <span class="text-[9px] font-bold text-slate-600 tabular-nums">{{ $area->terisi }}/{{ $area->kapasitas }}</span>
+                                                <span class="flex-1 h-1 rounded-full overflow-hidden min-w-16 max-w-28" style="background:rgba(255,255,255,0.06);">
+                                                    <span class="h-full rounded-full block {{ $isAvailable ? 'bg-emerald-500' : ($isMine ? 'bg-blue-500' : 'bg-slate-600') }}" style="width:{{ $pct }}%"></span>
+                                                </span>
+                                                <span class="text-[9px] text-slate-600 tabular-nums w-8">{{ $pct }}%</span>
+                                            </span>
+                                        </span>
+                                    </button>
+
+                                    <div class="shrink-0 flex sm:flex-col sm:items-end gap-2 sm:min-w-36">
+                                        @if($isAvailable)
+                                        <form method="POST" action="{{ route('user.bookings.book', $area->id_area) }}" class="booking-area-form w-full sm:w-auto">
+                                            @csrf
+                                            <input type="hidden" name="id_kendaraan" value="">
+                                            <input type="hidden" name="id_tarif" value="">
+                                            <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98]">
+                                                Booking
+                                            </button>
+                                        </form>
+                                        @elseif($isMine)
+                                            @php $transId = $myBookingIds[$area->id_area] ?? null; @endphp
+                                            @if($transId)
+                                            <form method="POST" action="{{ route('user.bookings.unbook', $transId) }}" class="w-full sm:w-auto" onsubmit="return confirm('Batalkan booking?');">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-[0.98]">
+                                                    Batal
+                                                </button>
+                                            </form>
+                                            @endif
+                                        @else
+                                        <span class="inline-flex px-3 py-2 text-[9px] font-black uppercase tracking-widest text-slate-600 border rounded-xl cursor-default" style="background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06);">
+                                            Penuh
+                                        </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
                 </div>
 
-                {{-- Interactive map (Dihapus sesuai permintaan) --}}
+                {{-- Interactive map --}}
+                @if($map && $map->map_image)
+                <div class="mt-8 animate-fade-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <h3 class="text-sm font-black text-white uppercase tracking-widest">Pilih Slot di {{ $map->nama_area }}</h3>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div id="util-pct" class="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">0%</div>
+                            <button onclick="if(window.refreshParkingMap) window.refreshParkingMap()" class="p-2 bg-white/5 border border-white/5 rounded-xl text-slate-400 hover:text-white transition-all active:scale-95" title="Refresh Map">
+                                <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative rounded-3xl overflow-hidden border border-white/5 bg-slate-950 shadow-2xl" style="height: 600px; min-height: 400px;">
+                        <div id="parking-map"
+                             class="w-full h-full"
+                             style="z-index: 10;"
+                             data-image-url="{{ $map->map_image_url }}"
+                             data-width="{{ $map->map_width ?: 1000 }}"
+                             data-height="{{ $map->map_height ?: 800 }}"
+                             data-map-id="{{ $map->id_area }}"
+                             data-book-url-template="{{ route('user.bookings.book', 'AREA_ID_PLACEHOLDER') }}"
+                             data-unbook-url-template="{{ route('user.bookings.unbook', 'TRANS_ID_PLACEHOLDER') }}"
+                             data-csrf-token="{{ csrf_token() }}">
+                        </div>
+
+                        <div id="map-loader" class="absolute inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center transition-opacity duration-500">
+                            <div class="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4"></div>
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Memuat Peta...</p>
+                        </div>
+
+                        {{-- Summary overlay --}}
+                        <div class="absolute bottom-6 right-6 z-20 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 min-w-[140px] shadow-2xl pointer-events-none">
+                            <div id="parking-map-summary" class="flex flex-col gap-2">
+                                {{-- JS will inject here --}}
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-white/5">
+                                <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                                    <div id="util-bar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>{{-- /main --}}
         </div>
     </div>
@@ -255,7 +358,22 @@
 
 <style>@keyframes shimmer { 100% { transform: translateX(100%); } }</style>
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .leaflet-container { background: #020617 !important; outline: none; }
+    .modern-popup .leaflet-popup-content-wrapper { background: #0f172a; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .modern-popup .leaflet-popup-tip { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); }
+    .modern-popup .leaflet-popup-content { margin: 0; }
+</style>
+@endpush
+
 @push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="{{ asset('js/parking-map.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const kendaraanSelect = document.getElementById('booking_kendaraan_id');
@@ -299,6 +417,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const areaSearch = document.getElementById('area-list-search');
+    if (areaSearch) {
+        areaSearch.addEventListener('input', function () {
+            const q = (areaSearch.value || '').trim().toLowerCase();
+            document.querySelectorAll('.area-list-row').forEach(function (row) {
+                const blob = (row.dataset.areaSearch || '').toLowerCase();
+                row.classList.toggle('hidden', q.length > 0 && blob.indexOf(q) === -1);
+            });
+        });
+    }
+
+    document.querySelectorAll('.area-row-open').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const li = btn.closest('.area-list-row');
+            const id = li && li.dataset ? li.dataset.areaId : '';
+            if (!id) return;
+            goToBookings(id, daerahSelect ? daerahSelect.value : '');
+        });
+    });
+
+    var activeAreaRow = document.querySelector('.area-list-row[data-selected="1"]');
+    var areaListEl = document.getElementById('area-list-scroll');
+    if (activeAreaRow && areaListEl) {
+        activeAreaRow.scrollIntoView({ block: 'nearest' });
+    }
+
     document.querySelectorAll('form.booking-area-form').forEach(function(form) {
         form.addEventListener('submit', function(e) {
             const kendaraanId = kendaraanSelect ? kendaraanSelect.value : '';
@@ -313,6 +457,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if (ti) ti.value = tarifSelect ? tarifSelect.value : '';
         });
     });
+
+    const bookingCountdown = document.getElementById('booking-countdown');
+    const bookingExpiresAt = @json($activeBookingInfo['expires_at'] ?? null);
+    const activeBookingCard = document.getElementById('active-booking-card');
+    if (bookingCountdown && bookingExpiresAt) {
+        const expires = new Date(bookingExpiresAt).getTime();
+        const tick = () => {
+            const now = Date.now();
+            let remain = Math.max(0, Math.floor((expires - now) / 1000));
+            const mm = String(Math.floor(remain / 60)).padStart(2, '0');
+            const ss = String(remain % 60).padStart(2, '0');
+            bookingCountdown.textContent = `${mm}:${ss}`;
+            if (remain <= 0) {
+                bookingCountdown.textContent = '00:00';
+                if (activeBookingCard) activeBookingCard.classList.add('opacity-60');
+                clearInterval(timerCountdown);
+            }
+        };
+        tick();
+        var timerCountdown = setInterval(tick, 1000);
+    }
 });
 </script>
 @endpush

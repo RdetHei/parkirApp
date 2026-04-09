@@ -69,6 +69,8 @@
                         <i class="fa-solid fa-id-card text-3xl"></i>
                     </div>
                     <h3 class="text-xs font-black text-slate-600 uppercase tracking-[0.3em]">Menunggu Data...</h3>
+                    <p class="mt-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Scan 1: Check-In</p>
+                    <p class="mt-1 text-[10px] font-black text-slate-600 uppercase tracking-widest">Scan 2: Check-Out</p>
                 </div>
 
                 {{-- Result Content --}}
@@ -120,6 +122,12 @@
                     <!-- Action Message -->
                     <div id="message-container" class="mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all">
                         --
+                    </div>
+
+                    <!-- Workflow Hint -->
+                    <div id="workflow-hint"
+                         class="mt-3 w-full py-3 px-4 rounded-2xl border border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                        Siap scan kartu
                     </div>
 
                     <!-- Payment Actions (only when transaction needs payment) -->
@@ -197,6 +205,7 @@
     const vehicleContainer = document.getElementById('vehicle-info-container');
     const statusBadge      = document.getElementById('status-badge');
     const messageContainer = document.getElementById('message-container');
+    const workflowHint = document.getElementById('workflow-hint');
     const countdownBar     = document.getElementById('countdown-bar');
     const lastScanTime     = document.getElementById('last-scan-time');
     const indicator        = document.getElementById('processing-indicator');
@@ -215,16 +224,27 @@
 
     let isProcessing = false;
     let resetTimer;
+    let hideUiTimer;
     let timer;
     let keepResult = false;
+    let lastUid = '';
+    let lastUidAt = 0;
+
+    function cancelHideUiAnimation() {
+        if (hideUiTimer) {
+            clearTimeout(hideUiTimer);
+            hideUiTimer = null;
+        }
+    }
 
     rfidInput.addEventListener('input', function(e) {
         if (isProcessing) return;
         clearTimeout(timer);
         const uid = e.target.value.trim();
+        // Debounce pendek: wedge RFID biasanya mengirim UID cepat; 300ms terasa “ngelag”.
         timer = setTimeout(() => {
             if (uid.length >= 4) { processScan(uid); e.target.value = ''; }
-        }, 300);
+        }, 80);
     });
 
     rfidInput.addEventListener('keypress', function(e) {
@@ -238,6 +258,14 @@
     });
 
     async function processScan(uid) {
+        const nowMs = Date.now();
+        if (uid === lastUid && (nowMs - lastUidAt) < 1500) {
+            showResult({ success: false, message: 'Scan terdeteksi ganda. Tunggu sebentar lalu scan ulang.', user: { name: 'Scanner', status: 'Anti double-scan' } }, false);
+            return;
+        }
+        lastUid = uid;
+        lastUidAt = nowMs;
+
         isProcessing = true;
         rfidInput.disabled = true;
         indicator.classList.remove('hidden');
@@ -256,9 +284,13 @@
                 body: JSON.stringify({ rfid_uid: uid })
             });
 
-            const ct = response.headers.get('content-type');
-            if (!ct || !ct.includes('application/json')) throw new Error('Sistem bermasalah (Server Error)');
-            const data = await response.json();
+            const raw = await response.text();
+            let data;
+            try {
+                data = raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                throw new Error('Sistem bermasalah (Server Error: respons tidak valid)');
+            }
 
             // Best-effort: set session akses RFID (tanpa mengganggu alur check-in/out).
             fetch(accessScanUrl, {
@@ -296,14 +328,13 @@
     }
 
     function showResult(data, isOk) {
+        cancelHideUiAnimation();
+
         resultEmpty.classList.add('hidden');
         resultFilled.classList.remove('hidden');
-
-        // Animation
-        setTimeout(() => {
-            resultFilled.classList.remove('opacity-0', 'scale-95');
-            countdownBar.style.width = '0%';
-        }, 50);
+        // Tampilkan langsung: timer hideResult yang tertunda tidak boleh mengalahkan scan baru.
+        resultFilled.classList.remove('opacity-0', 'scale-95');
+        countdownBar.style.width = '0%';
 
         keepResult = !!data.payment_required;
         if (paymentActions) paymentActions.classList.toggle('hidden', !keepResult);
@@ -332,16 +363,25 @@
                 statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-emerald-500 text-slate-950';
                 resultTopbar.className = 'h-1.5 w-full bg-emerald-500 transition-all duration-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]';
                 messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                if (workflowHint) {
+                    workflowHint.innerText = 'Check-in sukses. Scan berikutnya untuk check-out.';
+                }
             } else if (data.user?.type === 'OUT') {
                 statusBadge.innerText = 'OUT';
                 statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-blue-500 text-white';
                 resultTopbar.className = 'h-1.5 w-full bg-blue-500 transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]';
                 messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                if (workflowHint) {
+                    workflowHint.innerText = 'Check-out selesai. Scan berikutnya untuk check-in baru.';
+                }
             } else {
                 statusBadge.innerText = 'ERR';
                 statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-rose-500 text-white';
                 resultTopbar.className = 'h-1.5 w-full bg-rose-500 transition-all duration-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]';
                 messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
+                if (workflowHint) {
+                    workflowHint.innerText = 'Periksa kartu atau data kendaraan user.';
+                }
             }
 
             if (data.payment_required) {
@@ -371,12 +411,28 @@
                 statusBadge.className = 'absolute -bottom-2 -right-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl z-20 border border-white/10 bg-amber-500 text-slate-950';
                 resultTopbar.className = 'h-1.5 w-full bg-amber-500 transition-all duration-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]';
                 messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                if (workflowHint) {
+                    workflowHint.innerText = 'Check-out pending pembayaran. Selesaikan pembayaran dulu.';
+                }
+
+                // Notifikasi instan untuk operator/user agar pembayaran tidak terlewat.
+                if (window.Notification && Notification.permission === 'granted') {
+                    new Notification('Pembayaran Parkir Dibutuhkan', {
+                        body: `Tagihan: ${amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })}`,
+                        icon: '{{ asset('images/neston.png') }}'
+                    });
+                } else if (window.Notification && Notification.permission !== 'denied') {
+                    Notification.requestPermission();
+                }
             }
         } else {
             resultTopbar.className = 'h-1.5 w-full bg-rose-500 transition-all duration-500';
             messageContainer.className = 'mt-6 w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest text-center shadow-xl transition-all bg-rose-500/10 text-rose-400 border border-rose-500/20';
             userName.innerText = 'Unknown';
             userStatus.innerText = 'Error';
+            if (workflowHint) {
+                workflowHint.innerText = 'Scan ulang kartu untuk melanjutkan.';
+            }
         }
 
         messageContainer.innerText = data.message;
@@ -384,9 +440,12 @@
 
     function hideResult() {
         keepResult = false;
+        cancelHideUiAnimation();
         if (paymentActions) paymentActions.classList.add('hidden');
+        if (workflowHint) workflowHint.innerText = 'Siap scan kartu';
         resultFilled.classList.add('opacity-0', 'scale-95');
-        setTimeout(() => {
+        hideUiTimer = setTimeout(() => {
+            hideUiTimer = null;
             resultFilled.classList.add('hidden');
             resultEmpty.classList.remove('hidden');
             resultTopbar.className = 'h-1.5 w-full bg-white/5 transition-all duration-500';

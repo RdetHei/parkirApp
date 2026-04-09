@@ -8,8 +8,12 @@ use App\Models\User;
 use App\Models\Kendaraan;
 use App\Models\Transaksi;
 use App\Models\AreaParkir;
+use App\Models\Pembayaran;
+use App\Models\RfidTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class RfidParkingController extends Controller
@@ -38,105 +42,23 @@ class RfidParkingController extends Controller
             ], 404);
         }
 
-        // Ambil kendaraan default user (yang pertama didaftarkan)
-        $kendaraan = Kendaraan::where('id_user', $user->id)->first();
-
-        // --- FITUR BARU: AUTO-PAYMENT TAGIHAN TERTUNDA ---
-        // Cek apakah user memiliki tagihan yang belum dibayar (status 'keluar' dan status_pembayaran != 'berhasil')
-        $unpaidTransaksi = Transaksi::where('id_user', $user->id)
-            ->where('status', 'keluar')
-            ->where(function($q) {
-                $q->whereNull('status_pembayaran')
-                  ->orWhere('status_pembayaran', '!=', 'berhasil');
-            })
-            ->first();
-
-        if ($unpaidTransaksi && $unpaidTransaksi->biaya_total > 0) {
-            $totalTagihan = (float) $unpaidTransaksi->biaya_total;
-            $currentSaldo = (float) ($user->balance ?? $user->saldo ?? 0);
-
-            if ($currentSaldo >= $totalTagihan) {
-                DB::transaction(function () use ($user, $unpaidTransaksi, $totalTagihan) {
-                    // Potong Saldo
-                    $user->decrement('balance', $totalTagihan);
-                    $user->decrement('saldo', $totalTagihan);
-
-                    // Update Transaksi
-                    $unpaidTransaksi->update([
-                        'status' => 'keluar',
-                        'status_pembayaran' => 'berhasil'
-                    ]);
-
-                    // Catat riwayat saldo
-                    \App\Models\SaldoHistory::create([
-                        'user_id' => $user->id,
-                        'amount' => -$totalTagihan,
-                        'type' => 'payment',
-                        'description' => 'Pelunasan Otomatis RFID - ' . ($unpaidTransaksi->kendaraan?->plat_nomor ?? 'Parkir'),
-                        'reference_id' => (string) $unpaidTransaksi->id_parkir,
-                    ]);
-
-                    // Legacy Transaction log
-                    Transaction::create([
-                        'user_id' => $user->id,
-                        'type' => 'PAYMENT',
-                        'amount' => $totalTagihan,
-                        'created_at' => now(),
-                    ]);
-                });
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Tagihan Rp ' . number_format($totalTagihan, 0, ',', '.') . ' berhasil dilunasi otomatis via Saldo NestonPay!',
-                    'amount' => (float) $totalTagihan,
-                    'user' => [
-                        'name' => $user->name,
-                        'photo' => $user->profile_photo_url,
-                        'balance' => $currentSaldo - $totalTagihan,
-                        'status' => 'Tagihan Dilunasi',
-                        'vehicle' => $unpaidTransaksi->kendaraan?->plat_nomor ?? null,
-                        'type' => 'OUT',
-                    ]
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda memiliki tagihan Rp ' . number_format($totalTagihan, 0, ',', '.') . ' yang belum dibayar. Saldo tidak mencukupi untuk pelunasan otomatis.',
-                    'user' => [
-                        'name' => $user->name,
-                        'photo' => $user->profile_photo_url,
-                        'balance' => $currentSaldo,
-                        'status' => 'Tagihan Tertunda',
-                        'vehicle' => $unpaidTransaksi->kendaraan?->plat_nomor ?? null,
-                        'type' => 'OUT'
-                    ],
-                    'payment_required' => [
-                        'id_parkir' => (int) $unpaidTransaksi->id_parkir,
-                        'amount' => (float) $totalTagihan,
-                        'methods' => [
-                            // Sedang tidak mencukupi, jadi NestonPay (saldo) tidak bisa langsung dipakai
-                            'nestonpay' => false,
-                            'midtrans' => true,
-                        ],
-                    ],
-                    'amount' => (float) $totalTagihan,
-                ], 402);
-            }
-        }
-        // --- END AUTO-PAYMENT ---
-
-        if (!$kendaraan) {
+        // Rate limit per UID untuk menghindari scan dobel super cepat.
+        $scanCooldownSeconds = 2;
+        $scanKey = 'rfid:scan:last:' . sha1($uid);
+        $lastScanAt = Cache::get($scanKey);
+        if ($lastScanAt && now()->diffInSeconds(Carbon::parse($lastScanAt)) < $scanCooldownSeconds) {
             return response()->json([
                 'success' => false,
-                'message' => 'User belum memiliki kendaraan terdaftar!',
+                'message' => 'Kartu baru saja discan. Mohon tunggu sebentar sebelum scan ulang.',
                 'user' => [
                     'name' => $user->name,
                     'photo' => $user->profile_photo_url,
                     'balance' => $user->balance ?? $user->saldo ?? 0,
-                    'status' => 'Data Kendaraan Kosong'
-                ]
-            ], 400);
+                    'status' => 'Scan Terlalu Cepat',
+                ],
+            ], 429);
         }
+        Cache::put($scanKey, now()->toDateTimeString(), now()->addSeconds($scanCooldownSeconds));
 
         // Cek apakah sedang parkir (transaksi dengan status 'masuk')
         $activeTransaksi = Transaksi::where('id_user', $user->id)
@@ -144,8 +66,24 @@ class RfidParkingController extends Controller
             ->latest('waktu_masuk')
             ->first();
 
+        // Kendaraan default user dipakai saat check-in baru.
+        $kendaraan = Kendaraan::where('id_user', $user->id)->first();
+
         if (!$activeTransaksi) {
-            // Check-in (ENTRY)
+            // Scan pertama: Check-in (wajib ada kendaraan terdaftar).
+            if (!$kendaraan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Check-in gagal: user belum memiliki kendaraan terdaftar.',
+                    'user' => [
+                        'name' => $user->name,
+                        'photo' => $user->profile_photo_url,
+                        'balance' => $user->balance ?? $user->saldo ?? 0,
+                        'status' => 'Data Kendaraan Kosong'
+                    ]
+                ], 400);
+            }
+
             $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
             $tarif = Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->first() ?? Tarif::first();
 
@@ -194,6 +132,12 @@ class RfidParkingController extends Controller
                 'amount' => null,
                 'created_at' => now(),
             ]);
+            RfidTransaction::create([
+                'user_id' => $user->id,
+                'type' => 'IN',
+                'amount' => null,
+                'created_at' => now(),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -208,91 +152,162 @@ class RfidParkingController extends Controller
                 ]
             ]);
         } else {
-            // Check-out (EXIT + PAYMENT)
+            // Scan berikutnya: jika user sudah punya status "masuk", maka check-out.
+            $user->refresh();
             $tarif = $activeTransaksi->tarif ?? Tarif::first();
             $rate = $tarif ? $tarif->tarif_perjam : 2000;
+            $activeKendaraan = $activeTransaksi->kendaraan ?? $kendaraan;
 
             $startTime = Carbon::parse($activeTransaksi->waktu_masuk);
             $endTime = now();
             $durationHours = max(1, ceil($startTime->diffInMinutes($endTime) / 60));
             $totalAmount = $durationHours * $rate;
 
-            $currentBalance = $user->balance ?? $user->saldo ?? 0;
+            $checkout = DB::transaction(function () use ($user, $activeTransaksi, $rate, $totalAmount) {
+                $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+                $bal = (float) ($lockedUser->balance ?? $lockedUser->saldo ?? 0);
 
-            if ($currentBalance < $totalAmount) {
-                // Saat saldo kurang, tetap selesaikan check-out dan set status pembayaran menjadi pending
-                // agar operator bisa langsung lanjutkan pembayaran (NestonPay/Midtrans).
-                DB::transaction(function () use ($activeTransaksi, $totalAmount, $durationHours, $user) {
-                    $activeTransaksi->update([
+                // Kunci baris transaksi agar scan dobel tidak memproses ulang.
+                $lockedTransaksi = Transaksi::query()
+                    ->where('id_parkir', $activeTransaksi->id_parkir)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $lockedTransaksi) {
+                    return ['mode' => 'error', 'message' => 'Transaksi tidak ditemukan.'];
+                }
+
+                // Kalau ternyata transaksi sudah diproses (status sudah bukan "masuk"),
+                // jangan bikin transaksi legacy dobel.
+                if ($lockedTransaksi->status !== 'masuk') {
+                    $amountFromDb = (float) ($lockedTransaksi->biaya_total ?? $totalAmount);
+                    if ($lockedTransaksi->status_pembayaran === 'pending') {
+                        return ['mode' => 'pending', 'balance' => $bal, 'amount' => $amountFromDb];
+                    }
+                    return [
+                        'mode' => 'paid',
+                        'balance' => (float) ($lockedUser->balance ?? $lockedUser->saldo ?? 0),
+                        'amount' => $amountFromDb,
+                    ];
+                }
+
+                // Hitung ulang durasi/biaya berdasarkan waktu masuk transaksi yang terkunci.
+                $startTime2 = Carbon::parse($lockedTransaksi->waktu_masuk);
+                $durationHours2 = max(1, ceil($startTime2->diffInMinutes(now()) / 60));
+                $totalAmount2 = $durationHours2 * $rate;
+
+                if ($bal < $totalAmount2) {
+                    $lockedTransaksi->update([
                         'waktu_keluar' => now(),
-                        'durasi_jam' => $durationHours,
-                        'biaya_total' => $totalAmount,
+                        'durasi_jam' => $durationHours2,
+                        'biaya_total' => $totalAmount2,
                         'status' => 'keluar',
                         'status_pembayaran' => 'pending',
                     ]);
 
-                    // Legacy OUT transaction for history
                     Transaction::create([
                         'user_id' => $user->id,
                         'type' => 'OUT',
-                        'amount' => $totalAmount,
+                        'amount' => $totalAmount2,
                         'created_at' => now(),
                     ]);
-                });
+
+                    return ['mode' => 'pending', 'balance' => $bal, 'amount' => (float) $totalAmount2];
+                }
+
+                $newBal = round($bal - $totalAmount2, 2);
+                $lockedUser->update([
+                    'balance' => $newBal,
+                    'saldo' => $newBal,
+                ]);
+
+                $lockedTransaksi->update([
+                    'waktu_keluar' => now(),
+                    'durasi_jam' => $durationHours2,
+                    'biaya_total' => $totalAmount2,
+                    'status' => 'keluar',
+                    'status_pembayaran' => 'berhasil',
+                ]);
+
+                // Penting untuk akumulasi pendapatan dashboard/report:
+                // setiap pembayaran sukses via scan otomatis harus tercatat di tabel pembayaran.
+                $pembayaran = Pembayaran::create([
+                    'id_parkir' => $lockedTransaksi->id_parkir,
+                    'nominal' => $totalAmount2,
+                    'metode' => 'nestonpay',
+                    'status' => 'berhasil',
+                    'id_user' => Auth::id(),
+                    'waktu_pembayaran' => now(),
+                ]);
+
+                $lockedTransaksi->update([
+                    'id_pembayaran' => $pembayaran->id_pembayaran,
+                ]);
+
+                Transaction::create([
+                    'user_id' => $user->id,
+                    'type' => 'OUT',
+                    'amount' => $totalAmount2,
+                    'created_at' => now(),
+                ]);
+
+                Transaction::create([
+                    'user_id' => $user->id,
+                    'type' => 'PAYMENT',
+                    'amount' => $totalAmount2,
+                    'created_at' => now(),
+                ]);
+
+                return ['mode' => 'paid', 'balance' => (float) $newBal, 'amount' => (float) $totalAmount2];
+            });
+
+            $checkoutMode = $checkout['mode'] ?? null;
+            $checkoutAmount = (float) ($checkout['amount'] ?? $totalAmount);
+
+            if ($checkoutMode === 'error') {
+                return response()->json([
+                    'success' => false,
+                    'message' => $checkout['message'] ?? 'Sistem bermasalah (Transaksi tidak valid).',
+                ], 500);
+            }
+
+            if ($checkoutMode === 'pending') {
+                RfidTransaction::create([
+                    'user_id' => $user->id,
+                    'type' => 'OUT_PENDING',
+                    'amount' => $checkoutAmount,
+                    'created_at' => now(),
+                ]);
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Saldo tidak cukup! Check-out selesai, silakan bayar Rp ' . number_format($totalAmount, 0, ',', '.'),
+                    'message' => 'Saldo tidak cukup! Check-out selesai, silakan bayar Rp ' . number_format($checkoutAmount, 0, ',', '.'),
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
-                        'balance' => $currentBalance,
+                        'balance' => $checkout['balance'],
                         'status' => 'Menunggu Pembayaran',
-                        'vehicle' => $kendaraan->plat_nomor,
+                        'vehicle' => $activeKendaraan->plat_nomor ?? '-',
                         'type' => 'OUT',
                     ],
-                    'amount' => (float) $totalAmount,
+                    'amount' => $checkoutAmount,
                     'payment_required' => [
                         'id_parkir' => (int) $activeTransaksi->id_parkir,
-                        'amount' => (float) $totalAmount,
+                        'amount' => $checkoutAmount,
                         'methods' => [
-                            'nestonpay' => false,
+                            'nestonpay' => true,
                             'midtrans' => true,
                         ],
                     ],
                 ], 402);
             }
 
-            DB::transaction(function () use ($user, $activeTransaksi, $totalAmount, $durationHours) {
-                // Update User Balance (Sync both columns)
-                $user->decrement('balance', $totalAmount);
-                $user->decrement('saldo', $totalAmount);
-
-                // Update Transaksi record
-                $activeTransaksi->update([
-                    'waktu_keluar' => now(),
-                    'durasi_jam' => $durationHours,
-                    'biaya_total' => $totalAmount,
-                    'status' => 'keluar',
-                    'status_pembayaran' => 'berhasil'
-                ]);
-
-                // Create legacy OUT transaction for history
-                Transaction::create([
-                    'user_id' => $user->id,
-                    'type' => 'OUT',
-                    'amount' => $totalAmount,
-                    'created_at' => now(),
-                ]);
-
-                // Create legacy PAYMENT transaction
-                Transaction::create([
-                    'user_id' => $user->id,
-                    'type' => 'PAYMENT',
-                    'amount' => $totalAmount,
-                    'created_at' => now(),
-                ]);
-            });
+            RfidTransaction::create([
+                'user_id' => $user->id,
+                'type' => 'OUT',
+                'amount' => $checkoutAmount,
+                'created_at' => now(),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -300,14 +315,26 @@ class RfidParkingController extends Controller
                 'user' => [
                     'name' => $user->name,
                     'photo' => $user->profile_photo_url,
-                    'balance' => ($user->balance ?? $user->saldo ?? 0) - $totalAmount,
+                    'balance' => $checkout['balance'],
                     'status' => 'Parkir Keluar',
-                    'vehicle' => $kendaraan->plat_nomor,
-                    'type' => 'OUT'
+                    'vehicle' => $activeKendaraan->plat_nomor ?? '-',
+                    'type' => 'OUT',
                 ],
-                'amount' => $totalAmount
+                'amount' => $checkoutAmount,
             ]);
         }
+    }
+
+    public function history()
+    {
+        $items = RfidTransaction::with('user')
+            ->orderByDesc('created_at')
+            ->paginate(30);
+
+        return view('rfid.history', [
+            'title' => 'Riwayat Scan RFID',
+            'items' => $items,
+        ]);
     }
 }
 
