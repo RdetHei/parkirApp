@@ -82,7 +82,7 @@ class RfidParkingController extends Controller
                 ], 400);
             }
 
-            // Refactor: Gunakan id_area dari petugas yang sedang login
+            // Enforce id_area from the current petugas
             $currentUser = Auth::user();
             $area = null;
 
@@ -90,26 +90,21 @@ class RfidParkingController extends Controller
                 $area = AreaParkir::find($currentUser->id_area);
             }
 
-            // Fallback jika petugas tidak punya area atau tidak sedang login (scan via terminal mandiri)
-            if (!$area) {
-                $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
-            }
-
-            $tarif = Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->first() ?? Tarif::first();
-
             if (!$area) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal check-in: Area parkir tidak tersedia.',
+                    'message' => 'Gagal check-in: Anda belum ditugaskan ke area parkir manapun. Silakan hubungi admin.',
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
                         'balance' => $user->balance ?? 0,
-                        'status' => 'Area Tidak Tersedia',
+                        'status' => 'Petugas Belum Ada Area',
                         'vehicle' => $kendaraan->plat_nomor,
                     ]
-                ], 400);
+                ], 403);
             }
+
+            $tarif = Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->first() ?? Tarif::first();
 
             if (!$tarif) {
                 return response()->json([

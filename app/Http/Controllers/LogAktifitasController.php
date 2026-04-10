@@ -33,7 +33,8 @@ class LogAktifitasController extends Controller
         }
 
         $items = $query->orderBy('waktu_aktivitas', 'desc')->paginate(15)->withQueryString();
-        $users = User::orderBy('name')->get();
+        // Limit users to top 50 for selection to keep it light
+        $users = User::orderBy('name')->limit(50)->get();
         $types = LogAktifitas::whereNotNull('tipe_aktivitas')->distinct()->pluck('tipe_aktivitas');
         
         $title = 'Data Log Aktivitas';
@@ -42,7 +43,7 @@ class LogAktifitasController extends Controller
 
     public function create()
     {
-        $users = User::orderBy('name')->get();
+        $users = User::orderBy('name')->limit(50)->get();
         $title = 'Tambah Log Aktivitas';
         return view('log_aktivitas.create', compact('users', 'title'));
     }

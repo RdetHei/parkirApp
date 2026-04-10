@@ -58,6 +58,11 @@ class ReportController extends Controller
     {
         $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area']);
 
+        // Zoning: Filter by petugas area if role is petugas
+        if (auth()->user()->role === 'petugas') {
+            $query->where('id_area', auth()->user()->id_area);
+        }
+
         // Filter by date range
         if ($request->filled('tanggal_dari')) {
             $query->whereDate('waktu_masuk', '>=', $request->tanggal_dari);

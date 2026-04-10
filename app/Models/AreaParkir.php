@@ -82,6 +82,7 @@ class AreaParkir extends Model
             ->whereDoesntHave('reservations', function ($query) {
                 $query->where('expires_at', '>', now());
             })
+            ->lockForUpdate()
             ->orderBy('code', 'asc')
             ->first();
     }

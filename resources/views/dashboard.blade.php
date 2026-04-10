@@ -9,6 +9,11 @@
                 <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
                     Enterprise Console
                 </span>
+                @if(Auth::user()->role === 'petugas')
+                    <span class="px-3 py-1 bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-blue-500/20">
+                        {{ $areaName }}
+                    </span>
+                @endif
             </div>
             <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{{ __('System') }} <span class="text-emerald-500">{{ __('Overview') }}</span></h1>
             <p class="text-slate-400 text-sm mt-2">{{ __('Monitoring operational performance and real-time analytics.') }}</p>
@@ -137,6 +142,12 @@
                         <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                         <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{{ __('Live Sync') }}</span>
                     </div>
+                    @if(Auth::user()->role !== 'petugas')
+                    <select class="bg-slate-950 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer">
+                        <option class="bg-slate-900">{{ __('Last 7 Days') }}</option>
+                        <option class="bg-slate-900">{{ __('Last 30 Days') }}</option>
+                    </select>
+                    @endif
                 </div>
             </div>
             <div class="p-8">

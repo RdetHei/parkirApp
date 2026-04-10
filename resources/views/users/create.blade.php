@@ -58,7 +58,8 @@
                         <i class="fa-solid fa-shield-halved text-xs"></i>
                     </div>
                     <select name="role" id="role" required
-                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('role') border-rose-500 @enderror">
+                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('role') border-rose-500 @enderror"
+                            x-model="userRole">
                         <option value="user" {{ old('role') == 'user' ? 'selected' : '' }} class="bg-slate-900">User / Member</option>
                         <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }} class="bg-slate-900">Administrator</option>
                         <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }} class="bg-slate-900">Petugas Lapangan</option>
@@ -67,14 +68,38 @@
                 @error('role')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>
 
-            <div class="space-y-2">
+            <!-- New: Kode Peta input, visible only for 'petugas' role -->
+            <div class="space-y-2" x-data="{ userRole: '{{ old('role', 'user') }}' }" x-init="$watch('userRole', value => {
+                if (value !== 'petugas') {
+                    document.getElementById('kode_peta').value = '';
+                    document.getElementById('id_area').value = '';
+                }
+            })">
+                <label for="kode_peta" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Kode Peta <span class="text-slate-700">(Khusus Petugas)</span></label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
+                        <i class="fa-solid fa-map-pin text-xs"></i>
+                    </div>
+                    <input type="text" name="kode_peta" id="kode_peta" value="{{ old('kode_peta') }}" placeholder="Contoh: S, Y, A"
+                           class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm @error('kode_peta') border-rose-500 @enderror"
+                           x-bind:disabled="userRole !== 'petugas'">
+                </div>
+                @error('kode_peta')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="space-y-2" x-data="{ userRole: '{{ old('role', 'user') }}' }" x-init="$watch('userRole', value => {
+                if (value !== 'petugas') {
+                    document.getElementById('id_area').value = '';
+                }
+            })">
                 <label for="id_area" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Area Tugas <span class="text-slate-700">(Khusus Petugas)</span></label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
                         <i class="fa-solid fa-location-dot text-xs"></i>
                     </div>
                     <select name="id_area" id="id_area"
-                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('id_area') border-rose-500 @enderror">
+                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('id_area') border-rose-500 @enderror"
+                            x-bind:disabled="userRole !== 'petugas'">
                         <option value="" class="bg-slate-900">-- Pilih Area Tugas --</option>
                         @foreach($areas as $area)
                             <option value="{{ $area->id_area }}" {{ old('id_area') == $area->id_area ? 'selected' : '' }} class="bg-slate-900">{{ $area->nama_area }}</option>

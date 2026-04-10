@@ -82,9 +82,22 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
-            'id_area' => 'nullable|exists:tb_area_parkir,id_area',
+            'id_area' => 'nullable|exists:tb_area_parkir,id_area', // Dari dropdown
+            'kode_peta' => 'nullable|string|max:10', // Dari input teks
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
+
+        // Handle kode_peta to id_area conversion, overriding dropdown if valid
+        if ($request->filled('kode_peta')) {
+            $areaByPrefix = AreaParkir::where('map_prefix', $request->kode_peta)->first();
+            if (!$areaByPrefix) {
+                return back()->withErrors(['kode_peta' => 'Kode Peta tidak valid.'])->withInput();
+            }
+            $data['id_area'] = $areaByPrefix->id_area;
+        } else {
+            // If kode_peta is empty, use id_area from dropdown (which is already in $data)
+            // No need to explicitly set $data['id_area'] = null here, as it's nullable in validation
+        }
 
         $data['password'] = Hash::make($data['password']);
         $photoFile = $request->file('photo');
@@ -157,9 +170,21 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
-            'id_area' => 'nullable|exists:tb_area_parkir,id_area',
+            'id_area' => 'nullable|exists:tb_area_parkir,id_area', // Dari dropdown
+            'kode_peta' => 'nullable|string|max:10', // Dari input teks
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
+
+        // Handle kode_peta to id_area conversion, overriding dropdown if valid
+        if ($request->filled('kode_peta')) {
+            $areaByPrefix = AreaParkir::where('map_prefix', $request->kode_peta)->first();
+            if (!$areaByPrefix) {
+                return back()->withErrors(['kode_peta' => 'Kode Peta tidak valid.'])->withInput();
+            }
+            $data['id_area'] = $areaByPrefix->id_area;
+        } else {
+            // If kode_peta is empty, use id_area from dropdown (which is already in $data)
+        }
 
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);

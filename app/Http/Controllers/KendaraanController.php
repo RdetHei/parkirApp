@@ -35,7 +35,7 @@ class KendaraanController extends Controller
 
     public function create()
     {
-        $users = User::orderBy('name')->get();
+        $users = User::orderBy('name')->limit(50)->get();
         return view('kendaraan.create', compact('users'));
     }
 
@@ -73,7 +73,7 @@ class KendaraanController extends Controller
     public function edit($id)
     {
         $item = Kendaraan::findOrFail($id);
-        $users = User::orderBy('name')->get();
+        $users = User::orderBy('name')->limit(50)->get();
         return view('kendaraan.edit', compact('item','users'));
     }
 

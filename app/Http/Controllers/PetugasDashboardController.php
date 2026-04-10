@@ -14,32 +14,45 @@ class PetugasDashboardController extends Controller
     public function index()
     {
         try {
-            \Illuminate\Support\Facades\Log::info('PetugasDashboardController@index hit');
+            $user = auth()->user();
+            $idArea = $user->id_area;
 
-            // Non-live stats cached for 1 minute
-            $stats = Cache::remember('petugas_dashboard_stats', 60, function() {
+            if (!$idArea && $user->role === 'petugas') {
+                return view('petugas.dashboard', [
+                    'title' => 'Dashboard Petugas',
+                    'error' => 'Anda belum ditugaskan ke area manapun. Silakan hubungi Admin.'
+                ]);
+            }
+
+            // Stats cached per area
+            $cacheKey = "petugas_dashboard_stats_{$idArea}";
+            $stats = Cache::remember($cacheKey, 60, function() use ($idArea) {
+                $query = Transaksi::where('id_area', $idArea);
+                
                 return [
-                    'transaksiHariIni' => Transaksi::whereDate('waktu_masuk', Carbon::today())->count(),
-                    'pendapatanHariIni' => Transaksi::where('status', 'keluar')
+                    'transaksiHariIni' => (clone $query)->whereDate('waktu_masuk', Carbon::today())->count(),
+                    'pendapatanHariIni' => (clone $query)->where('status', 'keluar')
                         ->where('status_pembayaran', 'berhasil')
                         ->whereDate('waktu_keluar', Carbon::today())
                         ->sum('biaya_total'),
                 ];
             });
 
-            // Live counts
-            $transaksiAktif = Transaksi::where('status', 'masuk')->count();
-            $bookingAktif = Transaksi::where('status', 'bookmarked')
+            // Live counts filtered by area
+            $transaksiAktif = Transaksi::where('id_area', $idArea)->where('status', 'masuk')->count();
+            $bookingAktif = Transaksi::where('id_area', $idArea)
+                ->where('status', 'bookmarked')
                 ->where('bookmarked_at', '>', Carbon::now()->subMinutes(10))
                 ->count();
 
-            // Kapasitas parkir - Optimized to one query
-            $areaParkir = AreaParkir::all();
-            $totalKapasitas = $areaParkir->sum('kapasitas');
-            $totalTerisi = $areaParkir->sum('terisi');
+            // Kapasitas parkir - Optimized direct DB aggregation
+            $area = AreaParkir::find($idArea);
+            $totalKapasitas = $area->kapasitas ?? 0;
+            $totalTerisi = $area->terisi ?? 0;
 
-            // Aktivitas terbaru
+            // Aktivitas terbaru - Eager Loading & Limit
             $aktivitasTerbaru = Transaksi::with(['kendaraan', 'area'])
+                ->where('id_area', $idArea)
                 ->whereIn('status', ['masuk', 'keluar', 'bookmarked'])
                 ->orderBy('created_at', 'desc')
                 ->limit(5)
@@ -56,11 +69,10 @@ class PetugasDashboardController extends Controller
                 'totalKapasitas' => $totalKapasitas,
                 'totalTerisi' => $totalTerisi,
                 'aktivitasTerbaru' => $aktivitasTerbaru,
-                'areaParkir' => $areaParkir
+                'area' => $area
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('PetugasDashboardController@index error: ' . $e->getMessage());
-            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
             return response()->json(['error' => 'Internal Server Error', 'message' => $e->getMessage()], 500);
         }
     }

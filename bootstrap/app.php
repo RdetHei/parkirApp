@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'no-cache' => \App\Http\Middleware\NoCacheMiddleware::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+            'check.petugas.area' => \App\Http\Middleware\CheckPetugasArea::class, // Tambahkan ini
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
