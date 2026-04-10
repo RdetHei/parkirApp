@@ -7,51 +7,40 @@ use Illuminate\Database\Seeder;
 
 class AreaParkirSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        AreaParkir::insert([
+        $areas = [
             [
-                'nama_area' => 'Neston Garut Center',
-                'daerah' => 'Garut',
+                'nama_area' => 'Lantai 1 Utama',
+                'map_prefix' => 'LT1',
+                'daerah' => 'Indoor',
                 'kapasitas' => 50,
                 'terisi' => 0,
-                'map_code' => 'GRT-01',
-                'map_image' => 'https://res.cloudinary.com/demo/image/upload/v1/neston/maps/default.png',
-                'map_width' => 1000,
-                'map_height' => 800,
                 'is_default_map' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'map_code' => 'area-lt1',
             ],
             [
-                'nama_area' => 'Neston Bandung Mall',
-                'daerah' => 'Bandung',
+                'nama_area' => 'Lantai 2 VIP',
+                'map_prefix' => 'LT2',
+                'daerah' => 'Indoor',
+                'kapasitas' => 30,
+                'terisi' => 0,
+                'is_default_map' => false,
+                'map_code' => 'area-lt2',
+            ],
+            [
+                'nama_area' => 'Area Terbuka Utara',
+                'map_prefix' => 'ATU',
+                'daerah' => 'Outdoor',
                 'kapasitas' => 100,
                 'terisi' => 0,
-                'map_code' => 'BDG-01',
-                'map_image' => 'https://res.cloudinary.com/demo/image/upload/v1/neston/maps/default.png',
-                'map_width' => 1200,
-                'map_height' => 900,
                 'is_default_map' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'map_code' => 'area-atu',
             ],
-            [
-                'nama_area' => 'Neston Jakarta Plaza',
-                'daerah' => 'Jakarta',
-                'kapasitas' => 200,
-                'terisi' => 0,
-                'map_code' => 'JKT-01',
-                'map_image' => 'https://res.cloudinary.com/demo/image/upload/v1/neston/maps/default.png',
-                'map_width' => 1500,
-                'map_height' => 1000,
-                'is_default_map' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        ];
+
+        foreach ($areas as $area) {
+            AreaParkir::updateOrCreate(['map_prefix' => $area['map_prefix']], $area);
+        }
     }
 }
