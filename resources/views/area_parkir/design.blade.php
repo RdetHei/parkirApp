@@ -81,6 +81,7 @@
                                      onclick="handleCanvasClick(event)"
                                      data-base-width="{{ $area->map_width ?: 1000 }}"
                                      data-base-height="{{ $area->map_height ?: 800 }}"
+                                     data-prefix="{{ $area->map_prefix ?: 'S' }}"
                                      style="width: {{ $area->map_width ?: 1000 }}px; height: {{ $area->map_height ?: 800 }}px; background-image: url('{{ $area->map_image_url }}'); background-size: 100% 100%; background-position: 0 0; transform-origin: top left;">
 
                                 <!-- Slots -->
@@ -461,7 +462,9 @@
         slot.style.top = y + 'px';
         slot.style.width = '60px';
         slot.style.height = '40px';
-        slot.dataset.code = 'S-' + (canvas.querySelectorAll('.parking-slot').length + 1);
+
+        const prefix = canvas.dataset.prefix || 'S';
+        slot.dataset.code = prefix + '-' + (canvas.querySelectorAll('.parking-slot').length + 1);
         slot.innerHTML = `<span class="pointer-events-none opacity-50 group-hover:opacity-100">${slot.dataset.code}</span><div class="absolute -top-3 -right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="removeElement(this, event)" class="w-6 h-6 bg-rose-500 text-white rounded-lg flex items-center justify-center shadow-xl hover:bg-rose-600">×</button></div>`;
         canvas.appendChild(slot);
         setMode('select');

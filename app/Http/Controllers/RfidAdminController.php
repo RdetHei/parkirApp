@@ -48,7 +48,6 @@ class RfidAdminController extends Controller
 
         $user = User::findOrFail((int) $data['user_id']);
         $user->rfid_uid = $data['rfid_uid'];
-        $user->nfc_uid = $data['rfid_uid']; // Sync for compatibility
         $user->save();
 
         return back()->with('success', 'RFID berhasil didaftarkan untuk ' . $user->name);
@@ -58,7 +57,6 @@ class RfidAdminController extends Controller
     {
         $user = User::findOrFail($id);
         $user->rfid_uid = null;
-        $user->nfc_uid = null;
         $user->save();
 
         return back()->with('success', 'RFID berhasil dihapus dari akun ' . $user->name);

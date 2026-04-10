@@ -20,7 +20,7 @@
                     </div>
                 </div>
                 <h1 class="text-4xl font-black tracking-tight text-white uppercase">PARKING <span class="text-emerald-500">TERMINAL</span></h1>
-                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Sistem otomatis masuk & keluar menggunakan teknologi RFID/NFC.</p>
+                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Sistem otomatis masuk & keluar menggunakan teknologi RFID.</p>
             </div>
 
             <div class="flex items-center gap-4">
@@ -46,7 +46,7 @@
                 </div>
 
                 <h2 class="text-2xl font-black text-white tracking-tight mb-3">TAP YOUR CARD</h2>
-                <p class="text-slate-500 text-xs leading-relaxed max-w-[200px] mx-auto font-medium">Dekatkan kartu RFID/NFC Anda pada area scanner terminal.</p>
+                <p class="text-slate-500 text-xs leading-relaxed max-w-[200px] mx-auto font-medium">Dekatkan kartu RFID Anda pada area scanner terminal.</p>
 
                 <div class="w-full mt-10 space-y-4">
                     <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">

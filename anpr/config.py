@@ -1,9 +1,14 @@
 import os
+from dotenv import load_dotenv
+
+# Load .env from project root
+# Assuming config.py is in /anpr/ and .env is in /
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 # API Settings
-PLATE_RECOGNIZER_TOKEN = "4adc37a587c417106221ce821d6c3dad3aca1d04"
-LARAVEL_API_URL = "http://localhost/api/anpr-detection"
-LARAVEL_API_TOKEN = "" # Add if needed
+PLATE_RECOGNIZER_TOKEN = os.getenv("PLATE_RECOGNIZER_KEY", "4adc37a587c417106221ce821d6c3dad3aca1d04")
+LARAVEL_API_URL = os.getenv("APP_URL", "http://localhost").rstrip('/') + "/api/anpr-detection"
+LARAVEL_API_TOKEN = os.getenv("ANPR_API_TOKEN", "")
 
 # YOLO Settings
 # Use 'yolov8n.pt' for better CPU performance (Nano model)

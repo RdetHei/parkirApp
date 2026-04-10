@@ -121,24 +121,30 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
         <div class="lg:col-span-2 card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.5s">
             <div class="p-8 flex items-center justify-between border-b border-white/5 bg-white/[0.01]">
-                <div>
-                    <h2 class="text-xl font-bold text-white tracking-tight">{{ __('Revenue Analytics') }}</h2>
-                    <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Income performance for the last 7 days') }}</p>
+                <div class="flex items-center gap-4">
+                    <button id="btnShowRevenue" class="text-left group outline-none">
+                        <h2 class="text-xl font-bold text-white tracking-tight group-hover:text-emerald-500 transition-colors">{{ __('Revenue Analytics') }}</h2>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Income performance for the last 7 days') }}</p>
+                    </button>
+                    <div class="h-8 w-px bg-white/10 mx-2"></div>
+                    <button id="btnShowTraffic" class="text-left group outline-none opacity-40 hover:opacity-100 transition-all">
+                        <h2 class="text-xl font-bold text-white tracking-tight group-hover:text-blue-500 transition-colors">{{ __('Peak Hours') }}</h2>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Daily average vehicle entries by hour') }}</p>
+                    </button>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                         <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                         <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{{ __('Live Sync') }}</span>
                     </div>
-                    <select class="bg-slate-950 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer">
-                        <option class="bg-slate-900">{{ __('Last 7 Days') }}</option>
-                        <option class="bg-slate-900">{{ __('Last 30 Days') }}</option>
-                    </select>
                 </div>
             </div>
             <div class="p-8">
-                <div class="h-[380px]">
+                <div id="revenueChartContainer" class="h-[380px]">
                     <canvas id="revenueChart"></canvas>
+                </div>
+                <div id="trafficChartContainer" class="h-[380px] hidden">
+                    <canvas id="trafficChart"></canvas>
                 </div>
             </div>
         </div>
@@ -312,7 +318,7 @@
             revenueGradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
             revenueGradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
 
-            new Chart(ctxRevenue, {
+            const revenueChart = new Chart(ctxRevenue, {
                 type: 'line',
                 data: {
                     labels: @json($grafikPendapatan['labels']),
@@ -352,6 +358,64 @@
                         }
                     }
                 }
+            });
+
+            // Traffic Chart (Peak Hours)
+            const ctxTraffic = document.getElementById('trafficChart').getContext('2d');
+            const trafficGradient = ctxTraffic.createLinearGradient(0, 0, 0, 400);
+            trafficGradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+            trafficGradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+            const trafficChart = new Chart(ctxTraffic, {
+                type: 'bar',
+                data: {
+                    labels: @json($grafikJamSibuk['labels']),
+                    datasets: [{
+                        label: 'Avg Entries',
+                        data: @json($grafikJamSibuk['data']),
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                            title: { display: true, text: 'Avg Vehicles/Hour' }
+                        },
+                        x: {
+                            grid: { display: false, drawBorder: false }
+                        }
+                    }
+                }
+            });
+
+            // Toggle Logic
+            const btnRevenue = document.getElementById('btnShowRevenue');
+            const btnTraffic = document.getElementById('btnShowTraffic');
+            const contRevenue = document.getElementById('revenueChartContainer');
+            const contTraffic = document.getElementById('trafficChartContainer');
+
+            btnRevenue.addEventListener('click', () => {
+                btnRevenue.classList.remove('opacity-40');
+                btnTraffic.classList.add('opacity-40');
+                contRevenue.classList.remove('hidden');
+                contTraffic.classList.add('hidden');
+            });
+
+            btnTraffic.addEventListener('click', () => {
+                btnTraffic.classList.remove('opacity-40');
+                btnRevenue.classList.add('opacity-40');
+                contTraffic.classList.remove('hidden');
+                contRevenue.classList.add('hidden');
             });
 
             // Vehicle Distribution Chart

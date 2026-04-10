@@ -44,16 +44,6 @@ Route::post('/api/rfid/login', [RfidLoginController::class, 'login'])
     ->name('api.rfid.login')
     ->middleware('throttle:20,1');
 
-// NFC APIs (buat Web NFC)
-Route::post('/api/encrypt-id', [NfcController::class, 'encryptId'])
-    ->middleware(['auth', 'role:admin']);
-Route::post('/api/nfc-write', [NfcController::class, 'nfcWrite'])
-    ->middleware(['auth', 'role:admin']);
-Route::post('/api/nfc-scan', [NfcController::class, 'nfcScan']);
-Route::post('/api/parkir/masuk', [NfcController::class, 'parkirMasuk']);
-Route::post('/api/parkir/keluar', [NfcController::class, 'parkirKeluar']);
-
-
 // Midtrans notification callbacks (public, rate-limited; verifikasi signature di controller)
 Route::post('/payment/midtrans/notification', [\App\Http\Controllers\PaymentController::class, 'midtransNotification'])
     ->name('payment.midtrans.notification')

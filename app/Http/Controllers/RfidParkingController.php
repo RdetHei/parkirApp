@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
 use App\Models\Tarif;
 use App\Models\User;
 use App\Models\Kendaraan;
@@ -32,7 +31,6 @@ class RfidParkingController extends Controller
 
         $uid = trim($request->rfid_uid);
         $user = User::where('rfid_uid', $uid)
-                    ->orWhere('nfc_uid', $uid)
                     ->first();
 
         if (!$user) {
@@ -53,7 +51,7 @@ class RfidParkingController extends Controller
                 'user' => [
                     'name' => $user->name,
                     'photo' => $user->profile_photo_url,
-                    'balance' => $user->balance ?? $user->saldo ?? 0,
+                    'balance' => $user->balance ?? 0,
                     'status' => 'Scan Terlalu Cepat',
                 ],
             ], 429);
@@ -78,13 +76,25 @@ class RfidParkingController extends Controller
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
-                        'balance' => $user->balance ?? $user->saldo ?? 0,
+                        'balance' => $user->balance ?? 0,
                         'status' => 'Data Kendaraan Kosong'
                     ]
                 ], 400);
             }
 
-            $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
+            // Refactor: Gunakan id_area dari petugas yang sedang login
+            $currentUser = Auth::user();
+            $area = null;
+
+            if ($currentUser && $currentUser->id_area) {
+                $area = AreaParkir::find($currentUser->id_area);
+            }
+
+            // Fallback jika petugas tidak punya area atau tidak sedang login (scan via terminal mandiri)
+            if (!$area) {
+                $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
+            }
+
             $tarif = Tarif::where('jenis_kendaraan', $kendaraan->jenis_kendaraan)->first() ?? Tarif::first();
 
             if (!$area) {
@@ -94,7 +104,7 @@ class RfidParkingController extends Controller
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
-                        'balance' => $user->balance ?? $user->saldo ?? 0,
+                        'balance' => $user->balance ?? 0,
                         'status' => 'Area Tidak Tersedia',
                         'vehicle' => $kendaraan->plat_nomor,
                     ]
@@ -108,30 +118,34 @@ class RfidParkingController extends Controller
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
-                        'balance' => $user->balance ?? $user->saldo ?? 0,
+                        'balance' => $user->balance ?? 0,
                         'status' => 'Tarif Tidak Ditemukan',
                         'vehicle' => $kendaraan->plat_nomor,
                     ]
                 ], 400);
             }
 
-            $transaksi = Transaksi::create([
-                'id_user' => $user->id,
-                'id_kendaraan' => $kendaraan->id_kendaraan,
-                'id_area' => $area->id_area,
-                'id_tarif' => $tarif->id_tarif,
-                'waktu_masuk' => now(),
-                'status' => 'masuk',
-                'status_pembayaran' => 'pending',
-            ]);
+            // Gunakan Database Transaction untuk menjaga integritas data saat assign slot.
+            $transaksi = DB::transaction(function () use ($user, $kendaraan, $area, $tarif) {
+                // Cari slot tersedia secara otomatis
+                $slot = $area->findNextAvailableSlot();
 
-            // Create legacy Transaction for backward compatibility if needed
-            Transaction::create([
-                'user_id' => $user->id,
-                'type' => 'IN',
-                'amount' => null,
-                'created_at' => now(),
-            ]);
+                if (!$slot) {
+                    throw new \Exception("Area " . $area->nama_area . " sudah penuh! Tidak ada slot tersedia.");
+                }
+
+                return Transaksi::create([
+                    'id_user' => $user->id,
+                    'id_kendaraan' => $kendaraan->id_kendaraan,
+                    'id_area' => $area->id_area,
+                    'id_tarif' => $tarif->id_tarif,
+                    'parking_map_slot_id' => $slot->id, // Assign slot otomatis
+                    'waktu_masuk' => now(),
+                    'status' => 'masuk',
+                    'status_pembayaran' => 'pending',
+                ]);
+            });
+
             RfidTransaction::create([
                 'user_id' => $user->id,
                 'type' => 'IN',
@@ -145,7 +159,7 @@ class RfidParkingController extends Controller
                 'user' => [
                     'name' => $user->name,
                     'photo' => $user->profile_photo_url,
-                    'balance' => $user->balance ?? $user->saldo ?? 0,
+                    'balance' => $user->balance ?? 0,
                     'status' => 'Parkir Masuk',
                     'vehicle' => $kendaraan->plat_nomor . ' (' . $kendaraan->jenis_kendaraan . ')',
                     'type' => 'IN'
@@ -165,7 +179,7 @@ class RfidParkingController extends Controller
 
             $checkout = DB::transaction(function () use ($user, $activeTransaksi, $rate, $totalAmount) {
                 $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
-                $bal = (float) ($lockedUser->balance ?? $lockedUser->saldo ?? 0);
+                $bal = (float) ($lockedUser->balance ?? 0);
 
                 // Kunci baris transaksi agar scan dobel tidak memproses ulang.
                 $lockedTransaksi = Transaksi::query()
@@ -186,7 +200,7 @@ class RfidParkingController extends Controller
                     }
                     return [
                         'mode' => 'paid',
-                        'balance' => (float) ($lockedUser->balance ?? $lockedUser->saldo ?? 0),
+                        'balance' => (float) ($lockedUser->balance ?? 0),
                         'amount' => $amountFromDb,
                     ];
                 }
@@ -205,20 +219,12 @@ class RfidParkingController extends Controller
                         'status_pembayaran' => 'pending',
                     ]);
 
-                    Transaction::create([
-                        'user_id' => $user->id,
-                        'type' => 'OUT',
-                        'amount' => $totalAmount2,
-                        'created_at' => now(),
-                    ]);
-
                     return ['mode' => 'pending', 'balance' => $bal, 'amount' => (float) $totalAmount2];
                 }
 
                 $newBal = round($bal - $totalAmount2, 2);
                 $lockedUser->update([
                     'balance' => $newBal,
-                    'saldo' => $newBal,
                 ]);
 
                 $lockedTransaksi->update([
@@ -242,20 +248,6 @@ class RfidParkingController extends Controller
 
                 $lockedTransaksi->update([
                     'id_pembayaran' => $pembayaran->id_pembayaran,
-                ]);
-
-                Transaction::create([
-                    'user_id' => $user->id,
-                    'type' => 'OUT',
-                    'amount' => $totalAmount2,
-                    'created_at' => now(),
-                ]);
-
-                Transaction::create([
-                    'user_id' => $user->id,
-                    'type' => 'PAYMENT',
-                    'amount' => $totalAmount2,
-                    'created_at' => now(),
                 ]);
 
                 return ['mode' => 'paid', 'balance' => (float) $newBal, 'amount' => (float) $totalAmount2];

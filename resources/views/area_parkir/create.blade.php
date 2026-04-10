@@ -30,6 +30,13 @@
                 </div>
 
                 <div class="space-y-2">
+                    <label for="map_prefix" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Prefix Slot <span class="text-slate-700 font-medium lowercase ml-1">(contoh: S, Y, A)</span></label>
+                    <input type="text" name="map_prefix" id="map_prefix" value="{{ old('map_prefix') }}" maxlength="10" placeholder="Contoh: S"
+                           class="block w-full px-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm">
+                    <p class="mt-1 text-[9px] text-slate-600 font-medium ml-1 italic lowercase uppercase tracking-widest">Digunakan untuk format UID slot (Prefix-1, Prefix-2, dst)</p>
+                </div>
+
+                <div class="space-y-2">
                     <label for="daerah" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Daerah/Kota <span class="text-rose-500">*</span></label>
                     <input type="text" name="daerah" id="daerah" value="{{ old('daerah') }}" required placeholder="Contoh: Garut, Bandung, Jakarta"
                            class="block w-full px-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm @error('daerah') border-rose-500 @enderror">

@@ -21,7 +21,6 @@ class RfidAccessController extends Controller
 
         $user = User::query()
             ->where('rfid_uid', $data['rfid_uid'])
-            ->orWhere('nfc_uid', $data['rfid_uid'])
             ->first();
 
         if (! $user) {

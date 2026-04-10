@@ -12,6 +12,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 use App\Traits\LogsActivity;
 use App\Support\PlatNomorNormalizer;
@@ -88,20 +90,44 @@ class ANPRController extends Controller
             if (!$activeTransaksi) {
                 // ENTRY LOGIC
                 $statusAction = 'entry';
-                $defaultArea = AreaParkir::first();
+                
+                // Refactor: Gunakan id_area dari petugas yang sedang login
+                $currentUser = Auth::user();
+                $area = null;
+                
+                if ($currentUser && $currentUser->id_area) {
+                    $area = AreaParkir::find($currentUser->id_area);
+                }
+
+                // Fallback jika petugas tidak punya area atau tidak sedang login (scan via terminal mandiri)
+                if (!$area) {
+                    $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
+                }
+
                 $defaultTarif = Tarif::where('jenis_kendaraan', $vehicleType)->first() ?? Tarif::first();
                 $adminUser = User::where('role', 'admin')->first() ?? User::first();
 
-                $transaksi = Transaksi::create([
-                    'id_kendaraan' => $kendaraan->id_kendaraan,
-                    'waktu_masuk' => now(),
-                    'id_tarif' => $defaultTarif->id_tarif,
-                    'status' => 'masuk',
-                    'id_user' => $adminUser->id,
-                    'id_area' => $defaultArea->id_area,
-                ]);
+                // Gunakan Database Transaction untuk menjaga integritas data saat assign slot.
+                $transaksi = DB::transaction(function () use ($kendaraan, $area, $defaultTarif, $adminUser) {
+                    // Cari slot tersedia secara otomatis
+                    $slot = $area->findNextAvailableSlot();
 
-                $defaultArea->increment('terisi');
+                    if (!$slot) {
+                        // Jika area penuh, kita tetap catat transaksi tapi beri peringatan di log
+                        Log::warning("Area " . $area->nama_area . " penuh saat deteksi ANPR untuk plat: " . $kendaraan->plat_nomor);
+                    }
+
+                    return Transaksi::create([
+                        'id_kendaraan' => $kendaraan->id_kendaraan,
+                        'waktu_masuk' => now(),
+                        'id_tarif' => $defaultTarif->id_tarif,
+                        'id_area' => $area->id_area,
+                        'parking_map_slot_id' => $slot ? $slot->id : null, // Assign slot otomatis jika tersedia
+                        'status' => 'masuk',
+                        'id_user' => $adminUser->id,
+                        'status_pembayaran' => 'pending',
+                    ]);
+                });
 
                 $this->logActivity(
                     "ANPR Detection (Entry): Kendaraan {$plateNumber} masuk",

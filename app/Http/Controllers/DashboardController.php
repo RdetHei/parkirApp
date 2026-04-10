@@ -50,6 +50,18 @@ class DashboardController extends Controller
             $grafikPendapatan['data'][] = $value;
         }
 
+        // Analisis Jam Sibuk (Kapan kendaraan paling banyak masuk)
+        $grafikJamSibuk = [
+            'labels' => [],
+            'data' => []
+        ];
+        for ($h = 0; $h < 24; $h++) {
+            $grafikJamSibuk['labels'][] = sprintf('%02d:00', $h);
+            $grafikJamSibuk['data'][] = Transaksi::whereRaw('HOUR(waktu_masuk) = ?', [$h])
+                ->whereDate('waktu_masuk', '>=', Carbon::today()->subDays(30)) // Rata-rata 30 hari terakhir
+                ->count() / 30; // Rata-rata per hari
+        }
+
         // Analisis Pendapatan Per Jam (Heatmap Data)
         $revenueByHour = [];
         for ($h = 0; $h < 24; $h++) {
@@ -98,6 +110,7 @@ class DashboardController extends Controller
                 'totalUser',
                 'areaParkir',
                 'grafikPendapatan',
+                'grafikJamSibuk',
                 'grafikKendaraan',
                 'aktivitasTerbaru',
                 'revenueByHour',

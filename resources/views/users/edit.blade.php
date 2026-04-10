@@ -67,6 +67,23 @@
                 @error('role')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>
 
+            <div class="space-y-2">
+                <label for="id_area" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Area Tugas <span class="text-slate-700">(Khusus Petugas)</span></label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
+                        <i class="fa-solid fa-location-dot text-xs"></i>
+                    </div>
+                    <select name="id_area" id="id_area"
+                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('id_area') border-rose-500 @enderror">
+                        <option value="" class="bg-slate-900">-- Pilih Area Tugas --</option>
+                        @foreach($areas as $area)
+                            <option value="{{ $area->id_area }}" {{ old('id_area', $user->id_area) == $area->id_area ? 'selected' : '' }} class="bg-slate-900">{{ $area->nama_area }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @error('id_area')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
+            </div>
+
             <div class="md:col-span-2 space-y-4">
                 <label for="photo" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Foto Profil</label>
                 <div class="flex items-center gap-6 p-4 bg-slate-950/50 rounded-2xl border border-white/5 group transition-all">

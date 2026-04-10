@@ -294,10 +294,14 @@ class PaymentController extends Controller
         try {
             \Midtrans\Config::$serverKey = $serverKey;
             \Midtrans\Config::$isProduction = $isProduction;
-            $statusResponse = \Midtrans\Transaction::status($order_id);
+
+            // Verifikasi Signature Key (Keamanan)
+            $notification = new \Midtrans\Notification();
+            $statusResponse = \Midtrans\Transaction::status($notification->order_id);
+            $order_id = $notification->order_id;
         } catch (\Exception $e) {
-            Log::warning('Midtrans notification: gagal fetch status', ['order_id' => $order_id, 'error' => $e->getMessage()]);
-            return response()->json(['message' => 'Invalid or unreachable transaction'], 400);
+            Log::warning('Midtrans notification: verifikasi gagal', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Invalid notification signature'], 403);
         }
 
         $transaction_status = $statusResponse->transaction_status ?? null;
@@ -342,10 +346,7 @@ class PaymentController extends Controller
             if ($existing) return;
 
             $user = \App\Models\User::lockForUpdate()->findOrFail($user_id);
-            $user->saldo = (float) $user->saldo + $gross_amount;
-            if (array_key_exists('balance', $user->getAttributes())) {
-                $user->balance = (float) ($user->balance ?? 0) + $gross_amount;
-            }
+            $user->increment('balance', $gross_amount);
             $user->save();
 
             \App\Models\SaldoHistory::create([

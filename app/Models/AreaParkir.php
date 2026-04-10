@@ -10,6 +10,7 @@ class AreaParkir extends Model
     protected $primaryKey = 'id_area';
     protected $fillable = [
         'nama_area',
+        'map_prefix',
         'daerah',
         'kapasitas',
         'terisi',
@@ -65,5 +66,23 @@ class AreaParkir extends Model
         }
 
         return asset('storage/' . ltrim($value, '/'));
+    }
+
+    /**
+     * Mencari satu slot pertama yang tersedia di area tersebut.
+     * Kriterianya: slot tidak memiliki transaksi aktif (status 'masuk')
+     * dan tidak sedang dalam reservasi aktif.
+     */
+    public function findNextAvailableSlot(): ?ParkingMapSlot
+    {
+        return $this->slots()
+            ->whereDoesntHave('transaksis', function ($query) {
+                $query->where('status', 'masuk');
+            })
+            ->whereDoesntHave('reservations', function ($query) {
+                $query->where('expires_at', '>', now());
+            })
+            ->orderBy('code', 'asc')
+            ->first();
     }
 }

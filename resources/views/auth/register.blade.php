@@ -145,27 +145,27 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <!-- NFC -->
+                    <!-- RFID -->
                     <div class="space-y-2">
-                        <label for="nfc_uid" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
-                            NFC UID <span class="text-slate-700">(opsional)</span>
+                        <label for="rfid_uid" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
+                            RFID UID <span class="text-slate-700">(opsional)</span>
                         </label>
                         <div class="relative group">
                             <input
-                                id="nfc_uid"
+                                id="rfid_uid"
                                 type="text"
-                                name="nfc_uid"
-                                value="{{ old('nfc_uid') }}"
-                                placeholder="Scan Kartu"
+                                name="rfid_uid"
+                                value="{{ old('rfid_uid') }}"
+                                placeholder="Scan Kartu RFID"
                                 class="w-full px-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 text-sm input-glow"
                             >
                             <button type="button"
-                                    id="btnScanNfcRegister"
+                                    id="btnScanRfidRegister"
                                     class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black text-slate-400 hover:text-white hover:bg-emerald-500 hover:border-emerald-500 hover:text-slate-950 transition-all uppercase tracking-widest">
                                 Scan
                             </button>
                         </div>
-                        @error('nfc_uid')
+                        @error('rfid_uid')
                             <p class="mt-2 text-[11px] text-red-400 font-medium ml-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -288,39 +288,29 @@
             });
         }
 
-        // NFC Scanning Logic (Placeholder/Integration)
-        const btnScanNfc = document.getElementById('btnScanNfcRegister');
-        const nfcInput = document.getElementById('nfc_uid');
+        // RFID Scanning Logic (Placeholder/Integration)
+        const btnScanRfid = document.getElementById('btnScanRfidRegister');
+        const rfidInput = document.getElementById('rfid_uid');
 
-        if (btnScanNfc) {
-            btnScanNfc.addEventListener('click', async () => {
+        if (btnScanRfid) {
+            btnScanRfid.addEventListener('click', async () => {
                 try {
-                    btnScanNfc.textContent = 'Scanning...';
-                    btnScanNfc.classList.add('animate-pulse');
+                    btnScanRfid.textContent = 'Scanning...';
+                    btnScanRfid.classList.add('animate-pulse');
 
-                    if ('NDEFReader' in window) {
-                        const ndef = new NDEFReader();
-                        await ndef.scan();
-                        ndef.onreading = event => {
-                            nfcInput.value = event.serialNumber;
-                            btnScanNfc.textContent = 'Berhasil!';
-                            btnScanNfc.classList.remove('animate-pulse');
-                            setTimeout(() => btnScanNfc.textContent = 'Scan', 2000);
-                        };
-                    } else {
-                        // Simulation for non-NFC devices
-                        setTimeout(() => {
-                            const mockUid = 'NFC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-                            nfcInput.value = mockUid;
-                            btnScanNfc.textContent = 'Simulated!';
-                            btnScanNfc.classList.remove('animate-pulse');
-                            setTimeout(() => btnScanNfc.textContent = 'Scan', 2000);
-                        }, 1500);
-                    }
+                    // Check for Web RFID or other hardware integration
+                    // For browser demo, we simulate the RFID input
+                    setTimeout(() => {
+                        const mockUid = 'RFID-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                        rfidInput.value = mockUid;
+                        btnScanRfid.textContent = 'Berhasil!';
+                        btnScanRfid.classList.remove('animate-pulse');
+                        setTimeout(() => btnScanRfid.textContent = 'Scan', 2000);
+                    }, 1000);
                 } catch (error) {
                     console.error(error);
-                    btnScanNfc.textContent = 'Gagal';
-                    btnScanNfc.classList.remove('animate-pulse');
+                    btnScanRfid.textContent = 'Gagal';
+                    btnScanRfid.classList.remove('animate-pulse');
                 }
             });
         }

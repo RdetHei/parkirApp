@@ -35,16 +35,36 @@
                 <label for="plat_nomor" class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">
                     License Plate <span class="text-rose-500">*</span>
                 </label>
-                <div class="relative group">
+                <div class="relative group" x-data="{ suggestions: [], showSuggestions: false }">
                     <input type="text"
                            name="plat_nomor"
                            id="plat_nomor"
                            x-model="platNomor"
-                           @input.debounce.400ms="searchVehicle()"
+                           @input.debounce.400ms="searchVehicle(); fetchSuggestions()"
+                           @focus="if(suggestions.length > 0) showSuggestions = true"
+                           @click.away="showSuggestions = false"
                            placeholder="B 1234 XYZ"
                            class="block w-full px-6 py-5 bg-slate-900/80 border-2 border-white/5 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all uppercase font-bold text-3xl tracking-widest text-white placeholder:text-slate-800 placeholder:font-bold"
                            autocomplete="off"
                            required>
+
+                    <!-- Autocomplete Suggestions -->
+                    <div x-show="showSuggestions && suggestions.length > 0"
+                         x-cloak
+                         class="absolute z-50 w-full mt-2 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+                        <template x-for="s in suggestions" :key="s.id_kendaraan">
+                            <button type="button"
+                                    @click="platNomor = s.plat_nomor; showSuggestions = false; searchVehicle()"
+                                    class="w-full px-6 py-4 text-left hover:bg-white/5 border-b border-white/5 last:border-0 flex items-center justify-between group transition-colors">
+                                <div>
+                                    <p class="text-lg font-black text-white group-hover:text-emerald-500 transition-colors" x-text="s.plat_nomor"></p>
+                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" x-text="s.jenis_kendaraan + ' • ' + (s.pemilik || 'General Public')"></p>
+                                </div>
+                                <i class="fa-solid fa-chevron-right text-slate-700 group-hover:text-emerald-500 transition-all group-hover:translate-x-1"></i>
+                            </button>
+                        </template>
+                    </div>
+
                     <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
                         <template x-if="isSearching">
                             <svg class="animate-spin h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -56,7 +76,7 @@
                         </template>
                     </div>
                 </div>
-                
+
                 <!-- Status Indicators -->
                 <div class="min-h-[48px]">
                     <template x-if="vehicleFound">
@@ -93,9 +113,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Type <span class="text-rose-500">*</span></label>
-                        <select name="jenis_kendaraan" 
-                                x-model="jenisKendaraan" 
-                                @change="syncTarifByJenis()" 
+                        <select name="jenis_kendaraan"
+                                x-model="jenisKendaraan"
+                                @change="syncTarifByJenis()"
                                 class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
                             <option value="">Select Type</option>
                             @foreach($tarifs->pluck('jenis_kendaraan')->unique() as $jk)
@@ -119,9 +139,9 @@
                 <!-- Tariff -->
                 <div class="space-y-2">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Tariff Plan <span class="text-rose-500">*</span></label>
-                    <select name="id_tarif" 
-                            x-model="idTarif" 
-                            required 
+                    <select name="id_tarif"
+                            x-model="idTarif"
+                            required
                             class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
                         <option value="">Select Plan</option>
                         @foreach($tarifs as $t)
@@ -135,10 +155,10 @@
                 <!-- Area -->
                 <div class="space-y-2">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Parking Area <span class="text-rose-500">*</span></label>
-                    <select name="id_area" 
-                            x-model="idArea" 
-                            @change="filterSlots()" 
-                            required 
+                    <select name="id_area"
+                            x-model="idArea"
+                            @change="filterSlots()"
+                            required
                             class="block w-full px-4 py-3 bg-slate-900/50 border border-white/5 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all">
                         <option value="">Select Area</option>
                         @foreach($areas as $a)
@@ -200,12 +220,12 @@
             isSearching: false,
             vehicleFound: false,
             selectedVehicle: null,
-            
+
             jenisKendaraan: '',
             idTarif: '{{ old('id_tarif', '') }}',
             idArea: '{{ old('id_area', '') }}',
             idSlot: '{{ old('parking_map_slot_id', '') }}',
-            
+
             allSlots: @json($slots ?? []),
             filteredSlots: [],
             errorMessage: '',
@@ -221,7 +241,7 @@
                     this.resetVehicleState();
                     return;
                 }
-                
+
                 this.isSearching = true;
                 try {
                     const response = await fetch('/api/kendaraan/check-plat?plat=' + encodeURIComponent(plat), {
@@ -229,7 +249,7 @@
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     });
                     const data = await response.json();
-                    
+
                     if (data.found && data.kendaraan) {
                         this.vehicleFound = true;
                         this.selectedVehicle = data.kendaraan;
@@ -248,6 +268,26 @@
             resetVehicleState() {
                 this.vehicleFound = false;
                 this.selectedVehicle = null;
+            },
+
+            async fetchSuggestions() {
+                const plat = this.platNomor.trim();
+                if (plat.length < 2) {
+                    this.$data.suggestions = [];
+                    this.$data.showSuggestions = false;
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/kendaraan/search?q=' + encodeURIComponent(plat), {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const data = await response.json();
+                    this.$data.suggestions = data.results || [];
+                    this.$data.showSuggestions = this.$data.suggestions.length > 0;
+                } catch (e) {
+                    console.error('Suggestions error:', e);
+                }
             },
 
             syncTarifByJenis() {
@@ -274,10 +314,10 @@
                     this.syncSlotSelectOptions();
                     return;
                 }
-                
+
                 // Debug: Periksa data allSlots yang diterima dari server
                 console.log('[checkin] Filtering slots for aid:', aid, 'from total slots:', (this.allSlots || []).length);
-                
+
                 this.filteredSlots = (this.allSlots || []).filter((s) => {
                     const sid = s.id_area != null ? parseInt(String(s.id_area), 10) : NaN;
                     const match = !Number.isNaN(sid) && sid === aid;

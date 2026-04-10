@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Support\UserPhoto;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\AreaParkir;
 use App\Models\SaldoHistory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -23,10 +24,8 @@ class UserController extends Controller
 
         DB::transaction(function () use ($user, $request) {
             $amount = $request->amount;
-            
-            // Update both columns for consistency
+
             $user->increment('balance', $amount);
-            $user->increment('saldo', $amount);
 
             SaldoHistory::create([
                 'user_id' => $user->id,
@@ -65,7 +64,8 @@ class UserController extends Controller
     public function create()
     {
         $title = 'Tambah User';
-        return view('users.create', compact('title'));
+        $areas = AreaParkir::all();
+        return view('users.create', compact('title', 'areas'));
     }
 
     public function store(Request $request)
@@ -82,6 +82,7 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
+            'id_area' => 'nullable|exists:tb_area_parkir,id_area',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
@@ -116,8 +117,6 @@ class UserController extends Controller
         ]);
 
         $user->rfid_uid = $request->rfid_uid;
-        // Sync ke nfc_uid agar kompatibel dengan fitur lama jika ada
-        $user->nfc_uid = $request->rfid_uid;
         $user->save();
 
         if ($request->ajax()) {
@@ -144,7 +143,8 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $title = 'Edit User';
-        return view('users.edit', compact('user', 'title'));
+        $areas = AreaParkir::all();
+        return view('users.edit', compact('user', 'title', 'areas'));
     }
 
     public function update(Request $request, $id)
@@ -157,6 +157,7 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
+            'id_area' => 'nullable|exists:tb_area_parkir,id_area',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
@@ -181,11 +182,11 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        
+
         // Gunakan forceDelete() untuk menghapus secara permanen dari database
         // karena model User menggunakan trait SoftDeletes
         $user->forceDelete();
-        
+
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus secara permanen.');
     }
 }

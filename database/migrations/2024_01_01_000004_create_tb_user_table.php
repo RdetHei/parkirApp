@@ -23,7 +23,6 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
-            $table->string('nfc_uid', 128)->nullable()->unique();
             $table->string('rfid_uid', 128)->nullable()->unique();
         });
     }

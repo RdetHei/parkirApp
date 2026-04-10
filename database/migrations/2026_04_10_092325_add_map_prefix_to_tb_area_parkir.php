@@ -6,22 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('pembayarans', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('tb_area_parkir', function (Blueprint $table) {
+            $table->string('map_prefix', 10)->nullable()->after('nama_area');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('pembayarans');
+        Schema::table('tb_area_parkir', function (Blueprint $table) {
+            $table->dropColumn('map_prefix');
+        });
     }
 };

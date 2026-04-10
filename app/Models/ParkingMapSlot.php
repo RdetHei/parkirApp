@@ -34,6 +34,16 @@ class ParkingMapSlot extends Model
         return $this->belongsTo(Camera::class, 'camera_id', 'id');
     }
 
+    public function transaksis()
+    {
+        return $this->hasMany(Transaksi::class, 'parking_map_slot_id', 'id');
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(ParkingSlotReservation::class, 'parking_map_slot_id', 'id');
+    }
+
     /**
      * Slot yang terikat ke area.
      */

@@ -33,9 +33,8 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
-        'saldo',
+        'id_area',
         'rfid_uid',
-        'nfc_uid',
         'balance',
         'photo',
         'photo_cloudinary_path',
@@ -46,24 +45,17 @@ class User extends Authenticatable
      */
     protected static function booted()
     {
-        static::saving(function ($user) {
-            // Keep 'saldo' and 'balance' in sync
-            if ($user->isDirty('saldo') && !$user->isDirty('balance')) {
-                $user->balance = $user->saldo;
-            } elseif ($user->isDirty('balance') && !$user->isDirty('saldo')) {
-                $user->saldo = $user->balance;
-            }
-        });
+        // Redundant sync logic removed
+    }
+
+    public function area()
+    {
+        return $this->belongsTo(AreaParkir::class, 'id_area', 'id_area');
     }
 
     public function saldoHistories()
     {
         return $this->hasMany(SaldoHistory::class, 'user_id');
-    }
-
-    public function transactions()
-    {
-        return $this->hasMany(Transaction::class, 'user_id');
     }
 
     /**

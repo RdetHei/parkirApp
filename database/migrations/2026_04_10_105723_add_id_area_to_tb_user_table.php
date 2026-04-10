@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tb_user', function (Blueprint $table) {
-            if (!Schema::hasColumn('tb_user', 'phone')) {
-                $table->string('phone')->nullable()->after('email');
-            }
+            $table->foreignId('id_area')
+                  ->nullable()
+                  ->after('role')
+                  ->constrained('tb_area_parkir', 'id_area')
+                  ->nullOnDelete();
         });
     }
 
@@ -24,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tb_user', function (Blueprint $table) {
-            $table->dropColumn('phone');
+            $table->dropConstrainedForeignId('id_area');
         });
     }
 };
