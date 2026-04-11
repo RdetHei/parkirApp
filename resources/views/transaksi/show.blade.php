@@ -82,11 +82,12 @@
                                     <i class="fa-regular fa-clock text-blue-500/50"></i>
                                     @if($item->waktu_masuk)
                                         @php
-                                            $end = $item->waktu_keluar ?? now();
-                                            $diff = $item->waktu_masuk->diff($end);
-                                            $hours = ($diff->days * 24) + $diff->h;
+                                            $end = $item->waktu_keluar ?? \Illuminate\Support\Carbon::now();
+                                            $durasiMenit = $item->waktu_masuk->diffInMinutes($end, true);
+                                            $hours = (int) floor($durasiMenit / 60);
+                                            $minutes = (int) ($durasiMenit % 60);
                                         @endphp
-                                        {{ $hours }} Jam {{ $diff->i }} Menit
+                                        {{ $hours }} Jam {{ $minutes }} Menit
                                     @else
                                         -
                                     @endif

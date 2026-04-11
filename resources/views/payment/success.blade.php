@@ -9,6 +9,12 @@
     <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
     <div class="max-w-4xl mx-auto relative z-10">
+        @if(session('success'))
+            <div class="mb-8 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-center text-sm font-bold text-emerald-400">{{ session('success') }}</div>
+        @endif
+        @if(session('info'))
+            <div class="mb-8 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-center text-sm font-medium text-amber-200">{{ session('info') }}</div>
+        @endif
         <!-- Success Header -->
         <div class="text-center mb-12">
             <div class="w-24 h-24 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-emerald-500/40 animate-bounce">

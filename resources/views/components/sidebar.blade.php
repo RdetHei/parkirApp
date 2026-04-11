@@ -97,20 +97,10 @@
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             <span class="sidebar-label">Check-in</span>
         </a>
-        <a href="{{ route('transaksi.active') }}"
-           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.active') ? 'active' : '' }}">
+        <a href="{{ route('transaksi.index') }}"
+           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.index', 'transaksi.active', 'transaksi.bookings', 'transaksi.history') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            <span class="sidebar-label">{{ __('Active Parking') }}</span>
-        </a>
-        <a href="{{ route('transaksi.bookings') }}"
-           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.bookings') ? 'active' : '' }}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-            <span class="sidebar-label">{{ __('Bookings') }}</span>
-        </a>
-        <a href="{{ route('transaksi.history') }}"
-           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('transaksi.history') ? 'active' : '' }}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="sidebar-label">{{ __('History') }}</span>
+            <span class="sidebar-label">Management Parkir</span>
         </a>
         <a href="{{ route('anpr.index') }}"
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('anpr.index') ? 'active' : '' }}">
@@ -129,6 +119,11 @@
            class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('payment.select-transaction', 'payment.create') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span class="sidebar-label">{{ __('Payments') }}</span>
+        </a>
+        <a href="{{ route('payment.index') }}"
+           class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('payment.index') ? 'active' : '' }}">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            <span class="sidebar-label">{{ __('Payment history') }}</span>
         </a>
         @endif
 

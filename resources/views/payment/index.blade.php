@@ -26,6 +26,56 @@
         </div>
     @endif
 
+    <!-- Filter Console -->
+    <div class="card-pro mb-8 border-white/5 bg-white/[0.02]">
+        <form action="{{ route('payment.index') }}" method="GET" id="filterForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Cari Transaksi</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-700 group-focus-within:text-emerald-500">
+                            <i class="fa-solid fa-search text-xs"></i>
+                        </div>
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Plat / Order ID / Nama"
+                               oninput="debounceSearch(this)"
+                               class="block w-full pl-11 pr-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white placeholder:text-slate-700 focus:outline-none focus:border-emerald-500/50 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Status</label>
+                    <select name="status" onchange="this.form.submit()"
+                            class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
+                        <option value="" class="bg-slate-900">Semua Status</option>
+                        <option value="berhasil" class="bg-slate-900" {{ request('status') == 'berhasil' ? 'selected' : '' }}>Berhasil</option>
+                        <option value="pending" class="bg-slate-900" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="gagal" class="bg-slate-900" {{ request('status') == 'gagal' ? 'selected' : '' }}>Gagal</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Dari Tanggal</label>
+                    <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" onchange="this.form.submit()"
+                           class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Sampai Tanggal</label>
+                    <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" onchange="this.form.submit()"
+                           class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
+                </div>
+            </div>
+
+            @if(request()->anyFilled(['q', 'status', 'tanggal_dari', 'tanggal_sampai']))
+            <div class="mt-6 flex justify-end">
+                <a href="{{ route('payment.index') }}" class="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-400 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-times-circle"></i> Bersihkan Semua Filter
+                </a>
+            </div>
+            @endif
+        </form>
+    </div>
+
     <div class="card-pro !p-0 overflow-hidden animate-fade-in-up">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
@@ -62,9 +112,15 @@
                                 @if($pembayaran->metode === 'midtrans')
                                     <span class="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></span>
                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Midtrans Digital</span>
+                                @elseif($pembayaran->metode === 'nestonpay')
+                                    <span class="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]"></span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">NestonPay</span>
+                                @elseif($pembayaran->metode === 'cash')
+                                    <span class="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tunai</span>
                                 @else
                                     <span class="w-2 h-2 rounded-full bg-slate-500"></span>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ $pembayaran->metode ?? 'Cash' }}</span>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ $pembayaran->metode ?? '-' }}</span>
                                 @endif
                             </div>
                         </td>
@@ -113,4 +169,15 @@
         @endif
     </div>
 </div>
+@push('scripts')
+<script>
+    let searchTimer;
+    function debounceSearch(input) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            input.form.submit();
+        }, 800);
+    }
+</script>
+@endpush
 @endsection

@@ -25,6 +25,18 @@
         </div>
     </div>
 
+    @if(isset($error))
+        <div class="mb-10 p-6 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-6 animate-fade-in-up">
+            <div class="w-14 h-14 rounded-2xl bg-rose-500/20 flex items-center justify-center text-rose-500 shrink-0">
+                <i class="fa-solid fa-circle-exclamation text-2xl"></i>
+            </div>
+            <div>
+                <h4 class="text-white font-bold uppercase tracking-widest text-xs mb-1">Configuration Required</h4>
+                <p class="text-rose-200/70 text-sm font-medium">{{ $error }}</p>
+            </div>
+        </div>
+    @endif
+
     <!-- Quick Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <!-- Active Parking -->
@@ -183,19 +195,19 @@
                     <h2 class="text-sm font-black text-white uppercase tracking-widest">Quick Navigation</h2>
                 </div>
                 <div class="p-6 grid grid-cols-2 gap-4">
-                    <a href="{{ route('transaksi.active') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-emerald-500/50 transition-all group flex flex-col items-center text-center">
+                    <a href="{{ route('transaksi.index', ['status' => 'aktif']) }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-emerald-500/50 transition-all group flex flex-col items-center text-center">
                         <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform mb-3">
                             <i class="fa-solid fa-car-side text-base"></i>
                         </div>
                         <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Active</span>
                     </a>
-                    <a href="{{ route('transaksi.bookings') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-blue-500/50 transition-all group flex flex-col items-center text-center">
+                    <a href="{{ route('transaksi.index', ['status' => 'booking']) }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-blue-500/50 transition-all group flex flex-col items-center text-center">
                         <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform mb-3">
                             <i class="fa-solid fa-bookmark text-base"></i>
                         </div>
                         <span class="text-[9px] font-black text-slate-500 group-hover:text-white uppercase tracking-widest transition-colors">Bookings</span>
                     </a>
-                    <a href="{{ route('transaksi.history') }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-indigo-500/50 transition-all group flex flex-col items-center text-center">
+                    <a href="{{ route('transaksi.index', ['status' => 'riwayat']) }}" class="p-4 rounded-2xl bg-slate-950 border border-white/5 hover:border-indigo-500/50 transition-all group flex flex-col items-center text-center">
                         <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform mb-3">
                             <i class="fa-solid fa-clock-rotate-left text-base"></i>
                         </div>
@@ -249,7 +261,7 @@
                                     </div>
                                 </td>
                                 <td class="px-8 py-6">
-                                    @php 
+                                    @php
                                         $displayTime = $trx->status === 'bookmarked' ? $trx->bookmarked_at : $trx->waktu_masuk;
                                     @endphp
                                     <p class="text-xs font-black text-white">{{ $displayTime ? $displayTime->format('H:i') : '-' }}</p>

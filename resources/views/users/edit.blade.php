@@ -14,7 +14,7 @@
         'method' => 'PUT',
         'submitText' => 'Update'
     ])
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-data="{ userRole: '{{ old('role', $user->role) }}' }" x-init="$watch('userRole', v => { if (v !== 'petugas') { const k=document.getElementById('kode_peta'); const a=document.getElementById('id_area'); if(k) k.value=''; if(a) a.value=''; } })">
             <div class="space-y-2">
                 <label for="name" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nama Lengkap <span class="text-rose-500">*</span></label>
                 <div class="relative group">
@@ -68,30 +68,20 @@
                 @error('role')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>
 
-            <!-- New: Kode Peta input, visible only for 'petugas' role -->
-            <div class="space-y-2" x-data="{ userRole: '{{ old('role', $user->role) }}' }" x-init="$watch('userRole', value => {
-                if (value !== 'petugas') {
-                    document.getElementById('kode_peta').value = '';
-                    document.getElementById('id_area').value = '';
-                }
-            })">
-                <label for="kode_peta" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Kode Peta <span class="text-slate-700">(Khusus Petugas)</span></label>
+            <div class="space-y-2">
+                <label for="kode_peta" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Kode Peta <span class="text-slate-700">(Petugas / Kasir)</span></label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
                         <i class="fa-solid fa-map-pin text-xs"></i>
                     </div>
-                    <input type="text" name="kode_peta" id="kode_peta" value="{{ old('kode_peta', $user->area?->map_prefix) }}" placeholder="Contoh: S, Y, A"
+                    <input type="text" name="kode_peta" id="kode_peta" value="{{ old('kode_peta', $user->area?->map_prefix) }}" placeholder="Contoh: LT1 (sama dengan map prefix area)"
                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm @error('kode_peta') border-rose-500 @enderror"
                            x-bind:disabled="userRole !== 'petugas'">
                 </div>
                 @error('kode_peta')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>
 
-            <div class="space-y-2" x-data="{ userRole: '{{ old('role', $user->role) }}' }" x-init="$watch('userRole', value => {
-                if (value !== 'petugas') {
-                    document.getElementById('id_area').value = '';
-                }
-            })">
+            <div class="space-y-2">
                 <label for="id_area" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Area Tugas <span class="text-slate-700">(Khusus Petugas)</span></label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">

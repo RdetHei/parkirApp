@@ -51,11 +51,11 @@
 
                     <div class="mt-4 sm:mt-0">
                         <h2 class="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter text-white flex items-baseline gap-2 sm:gap-4 break-all">
-                            <span class="text-emerald-500 text-lg sm:text-3xl font-medium tracking-normal">Rp</span>{{ number_format($user->saldo, 0, ',', '.') }}
+                            <span class="text-emerald-500 text-lg sm:text-3xl font-medium tracking-normal">Rp</span>{{ number_format($user->balance ?? $user->saldo ?? 0, 0, ',', '.') }}
                         </h2>
                         <p class="text-[10px] sm:text-xs text-slate-500 mt-2 sm:mt-4 font-medium max-w-md leading-relaxed">Dana Anda aman di NestonPay. Gunakan untuk pembayaran parkir otomatis di seluruh area Neston.</p>
                     </div>
-                    
+
                     <div class="flex gap-4 mt-8 sm:mt-12">
                         <a href="{{ route('user.saldo.index') }}" class="px-6 sm:px-8 py-3 sm:py-3.5 bg-white/5 hover:bg-emerald-500 hover:text-slate-950 rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all border border-white/5 hover:border-emerald-500 active:scale-95 shadow-xl">
                             Riwayat Transaksi
@@ -109,9 +109,10 @@
                         <div class="space-y-4 sm:space-y-6">
                             @foreach($activeParkings as $trx)
                                 @php
-                                    $masuk = \Carbon\Carbon::parse($trx->waktu_masuk);
-                                    $durasiMenit = now()->diffInMinutes($masuk);
-                                    $durasiJam = ceil($durasiMenit / 60);
+                                    $masuk = \Illuminate\Support\Carbon::parse($trx->waktu_masuk, config('app.timezone'));
+                                    $now = \Illuminate\Support\Carbon::now(config('app.timezone'));
+                                    $durasiMenit = $now->diffInMinutes($masuk, true);
+                                    $durasiJam = (int) max(1, ceil($durasiMenit / 60));
                                     $estimasiBiaya = $durasiJam * ($trx->tarif->tarif_perjam ?? 0);
                                 @endphp
                                 <div class="p-5 sm:p-6 rounded-[2rem] bg-slate-950/50 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition-all">

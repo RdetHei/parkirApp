@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\KasShift;
 use App\Models\Pembayaran;
 use App\Models\Transaksi;
 use Carbon\Carbon;
@@ -41,16 +42,24 @@ class PaymentController extends Controller
     /**
      * Halaman untuk memilih transaksi yang akan dibayar
      */
-    public function selectTransaction()
+    public function selectTransaction(Request $request)
     {
         // Hanya ambil transaksi yang sudah checkout (status 'keluar') dan pembayaran pending
-        $transaksis = Transaksi::where('status', 'keluar')
+        $query = Transaksi::where('status', 'keluar')
             ->where(function($q) {
                 // Tampilkan transaksi dengan status pembayaran pending atau belum ada
                 $q->whereNull('status_pembayaran')
                   ->orWhere('status_pembayaran', '!=', 'berhasil');
-            })
-            ->with(['kendaraan', 'tarif', 'user', 'area'])
+            });
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->whereHas('kendaraan', function($sub) use ($search) {
+                $sub->where('plat_nomor', 'like', "%{$search}%");
+            });
+        }
+
+        $transaksis = $query->with(['kendaraan', 'tarif', 'user', 'area'])
             ->orderBy('waktu_keluar', 'desc')
             ->get();
 
@@ -65,12 +74,35 @@ class PaymentController extends Controller
         $transaksi = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
             ->findOrFail($id_parkir);
 
-        // Cek apakah sudah ada pembayaran berhasil
+        // Sudah lunas → halaman sukses (hindari loop error jika redirect kembali dari konfirmasi tunai)
         if ($transaksi->status_pembayaran === 'berhasil') {
-            return back()->with('error', 'Transaksi ini sudah dibayar');
+            return redirect()
+                ->route('payment.success', $transaksi->id_parkir)
+                ->with('info', __('Transaksi ini sudah lunas.'));
         }
 
-        return view('payment.create', compact('transaksi'));
+        $user = Auth::user();
+        $canProcessCash = $user && in_array($user->role, ['admin', 'petugas'], true);
+        $openKasShift = null;
+        $pendingCashPembayaran = null;
+
+        if ($canProcessCash) {
+            $areaId = $transaksi->id_area ? (int) $transaksi->id_area : null;
+            $openKasShift = KasShift::openShiftFor((int) $user->id, $areaId);
+            $pendingCashPembayaran = Pembayaran::query()
+                ->where('id_parkir', $transaksi->id_parkir)
+                ->where('metode', 'cash')
+                ->where('status', 'pending')
+                ->orderByDesc('id_pembayaran')
+                ->first();
+        }
+
+        return view('payment.create', compact(
+            'transaksi',
+            'canProcessCash',
+            'openKasShift',
+            'pendingCashPembayaran'
+        ));
     }
 
     /**

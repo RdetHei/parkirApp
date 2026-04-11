@@ -3,6 +3,13 @@
 @section('title', 'Pilih Metode Pembayaran')
 
 @section('content')
+@php
+    $viewer = Auth::user();
+    $isStaffCheckout = $viewer && in_array($viewer->role ?? '', ['admin', 'petugas'], true);
+    $nestonSaldo = ($isStaffCheckout && $transaksi->user)
+        ? (float) ($transaksi->user->balance ?? $transaksi->user->saldo ?? 0)
+        : (float) ($viewer->balance ?? $viewer->saldo ?? 0);
+@endphp
 <div class="min-h-screen flex items-start justify-center py-10 px-4" style="background:#020617;">
 <div class="w-full max-w-3xl">
 
@@ -18,6 +25,25 @@
         <h1 class="text-2xl font-bold text-white tracking-tight">Pilih Metode Pembayaran</h1>
         <p class="text-slate-500 text-sm mt-0.5">Selesaikan transaksi parkir dengan metode pembayaran pilihan Anda.</p>
     </div>
+
+    @if(session('success'))
+        <div class="mb-6 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="mb-6 rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-300">{{ session('error') }}</div>
+    @endif
+    @if(session('info'))
+        <div class="mb-6 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-200">{{ session('info') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="mb-6 rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            <ul class="list-disc list-inside space-y-1">
+                @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     {{--
         VARIANT 1: Summary strip di atas, dua card metode berdampingan di bawah.
@@ -78,13 +104,13 @@
 
                 {{-- Saldo display --}}
                 <div class="rounded-xl px-4 py-3" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.12);">
-                    <p class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Saldo Anda</p>
-                    <p class="text-base font-bold text-indigo-300">Rp {{ number_format(Auth::user()->saldo, 0, ',', '.') }}</p>
+                    <p class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">{{ $isStaffCheckout && $transaksi->user ? 'Saldo pemilik transaksi' : 'Saldo Anda' }}</p>
+                    <p class="text-base font-bold text-indigo-300">Rp {{ number_format($nestonSaldo, 0, ',', '.') }}</p>
                 </div>
 
                 {{-- CTA --}}
                 <div class="mt-auto">
-                    @if(Auth::user()->saldo < $transaksi->biaya_total)
+                    @if($nestonSaldo < $transaksi->biaya_total)
                         <div class="w-full py-3 rounded-xl text-center text-xs font-bold uppercase tracking-widest"
                              style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:#fbbf24;">
                             Saldo tidak cukup — Silakan Top Up
@@ -137,6 +163,96 @@
         </div>
 
     </div>
+
+    @if(!empty($canProcessCash) && $canProcessCash)
+        <div class="rounded-2xl border mt-8 overflow-hidden" style="background:#0d1526;border-color:rgba(255,255,255,0.07);">
+            <div class="h-1 w-full" style="background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div>
+            <div class="p-6 space-y-5">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-base font-bold text-white tracking-tight">Pembayaran tunai</h2>
+                        <p class="text-xs text-slate-500 mt-1">Shift kas wajib terbuka. Konfirmasi setelah uang diterima di loket.</p>
+                    </div>
+                    @if($openKasShift)
+                        <span class="px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                            Shift #{{ $openKasShift->id_kas_shift }} aktif
+                        </span>
+                    @endif
+                </div>
+
+                @if(!$openKasShift)
+                    <div class="rounded-xl border border-white/10 bg-slate-950/40 p-4 space-y-3">
+                        <p class="text-sm text-slate-400">Belum ada shift kas terbuka untuk area transaksi ini. Buka shift sebelum menerima tunai.</p>
+                        <form action="{{ route('kas.shift.open') }}" method="post" class="flex flex-wrap items-end gap-3">
+                            @csrf
+                            @if($transaksi->id_area)
+                                <input type="hidden" name="id_area" value="{{ $transaksi->id_area }}">
+                            @endif
+                            <button type="submit"
+                                    class="px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors">
+                                Buka shift kas
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <div class="flex flex-wrap gap-2">
+                        <form action="{{ route('kas.shift.close', $openKasShift->id_kas_shift) }}" method="post" class="inline"
+                              onsubmit="return confirm('Tutup shift? Pembayaran tunai pada shift ini tidak bisa diubah lagi.');">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-colors">
+                                Tutup shift
+                            </button>
+                        </form>
+                        <a href="{{ route('kas.report.harian') }}" target="_blank" rel="noopener"
+                           class="inline-flex items-center px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-colors">
+                            Rekap harian (JSON)
+                        </a>
+                    </div>
+
+                    @if($pendingCashPembayaran)
+                        <div class="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-4">
+                            <p class="text-xs text-amber-200/90 font-medium">Intent tunai aktif — masukkan uang yang diterima pelanggan.</p>
+                            <dl class="grid grid-cols-2 gap-2 text-xs">
+                                <dt class="text-slate-500">Total tagihan</dt>
+                                <dd class="text-white font-bold text-right">Rp {{ number_format($transaksi->biaya_total, 0, ',', '.') }}</dd>
+                                <dt class="text-slate-500">ID pembayaran</dt>
+                                <dd class="text-slate-300 font-mono text-right">#{{ $pendingCashPembayaran->id_pembayaran }}</dd>
+                            </dl>
+                            <form action="{{ route('kas.cash.confirm') }}" method="post" class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-end">
+                                @csrf
+                                <input type="hidden" name="id_pembayaran" value="{{ $pendingCashPembayaran->id_pembayaran }}">
+                                <div class="flex-1 min-w-[160px]">
+                                    <label for="cash_received" class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Uang diterima (Rp)</label>
+                                    <input type="number" name="cash_received" id="cash_received" min="0" step="1" required
+                                           value="{{ (int) $transaksi->biaya_total }}"
+                                           class="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50">
+                                </div>
+                                <button type="submit"
+                                        class="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors">
+                                    Konfirmasi lunas
+                                </button>
+                            </form>
+                            <form action="{{ route('kas.cash.cancel', $pendingCashPembayaran->id_pembayaran) }}" method="post"
+                                  onsubmit="return confirm('Batalkan intent tunai?');">
+                                @csrf
+                                <button type="submit" class="text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-rose-400 transition-colors">
+                                    Batal intent (ganti metode lain)
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <form action="{{ route('kas.cash.intent', $transaksi->id_parkir) }}" method="post">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full sm:w-auto px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 transition-colors">
+                                Tandai bayar tunai (pending)
+                            </button>
+                        </form>
+                    @endif
+                @endif
+            </div>
+        </div>
+    @endif
 
 </div>
 </div>

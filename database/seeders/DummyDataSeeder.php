@@ -61,9 +61,9 @@ class DummyDataSeeder extends Seeder
         }
 
         // 3. Tambah 1000 Transaksi (Riwayat 30 hari terakhir)
-        $this->command->info('Membuat 1000 Transaksi (ini butuh waktu)...');
+        $this->command->info('Membuat 200 Transaksi (ini butuh waktu)...');
         $statuses = ['keluar', 'masuk'];
-        for ($k = 0; $k < 1000; $k++) {
+        for ($k = 0; $k < 200; $k++) {
             $vehicle = $faker->randomElement($vehicles);
             $area = $faker->randomElement($areas);
             $tarif = $tarifs->where('jenis_kendaraan', $vehicle->jenis_kendaraan)->first() ?? $tarifs->first();
@@ -105,9 +105,9 @@ class DummyDataSeeder extends Seeder
         }
 
         // 4. Tambah 500 Log Aktivitas
-        $this->command->info('Membuat 500 Log Aktivitas...');
+        $this->command->info('Membuat 250 Log Aktivitas...');
         $types = ['login', 'transaction', 'config', 'profile'];
-        for ($l = 0; $l < 500; $l++) {
+        for ($l = 0; $l < 250; $l++) {
             LogAktifitas::create([
                 'id_user' => $faker->randomElement($users)->id,
                 'aktivitas' => $faker->sentence(6),

@@ -85,17 +85,27 @@ class Transaksi extends Model
     // Accessors & Mutators
     public function getDurasiJamAttribute()
     {
-        // Jika sudah ada value di database, gunakan itu
-        if ($this->attributes['durasi_jam'] ?? null) {
-            return $this->attributes['durasi_jam'];
+        // Untuk transaksi yang sudah keluar, prioritaskan nilai yang tersimpan di database (jika ada dan positif)
+        if ($this->status === 'keluar' && !empty($this->attributes['durasi_jam']) && $this->attributes['durasi_jam'] > 0) {
+            return (int) $this->attributes['durasi_jam'];
         }
 
-        // Jika belum ada, hitung dari waktu masuk dan keluar
-        if ($this->waktu_masuk && $this->waktu_keluar) {
-            $masuk = \Carbon\Carbon::parse($this->waktu_masuk);
-            $keluar = \Carbon\Carbon::parse($this->waktu_keluar);
-            return ceil($keluar->diffInMinutes($masuk) / 60);
+        // Untuk transaksi aktif atau jika nilai di database tidak valid/negatif, hitung ulang secara real-time
+        if ($this->waktu_masuk) {
+            $masuk = \Illuminate\Support\Carbon::parse($this->waktu_masuk);
+            $keluar = $this->waktu_keluar ? \Illuminate\Support\Carbon::parse($this->waktu_keluar) : \Illuminate\Support\Carbon::now();
+
+            // Pastikan timezone sinkron sebelum kalkulasi
+            $masuk->setTimezone(config('app.timezone'));
+            $keluar->setTimezone(config('app.timezone'));
+
+            // Gunakan absolute true untuk mencegah nilai negatif
+            $durasi_menit = $keluar->diffInMinutes($masuk, true);
+
+            // Minimal 1 jam untuk durasi parkir
+            return (int) max(1, ceil($durasi_menit / 60));
         }
+
         return null;
     }
 

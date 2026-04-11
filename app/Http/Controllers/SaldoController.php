@@ -105,7 +105,7 @@ class SaldoController extends Controller
             $user = Auth::user();
             $transaksiPreview = Transaksi::with('kendaraan')->findOrFail($id_parkir);
 
-            if (!in_array($user->role, ['admin', 'petugas', 'owner'], true) && (int) $transaksiPreview->id_user !== (int) $user->id) {
+            if (! in_array($user->role, ['admin', 'petugas', 'owner'], true) && (int) $transaksiPreview->id_user !== (int) $user->id) {
                 abort(403);
             }
 
@@ -123,17 +123,21 @@ class SaldoController extends Controller
                 if (!$transaksi->id_user) {
                     throw new \Exception('Transaksi ini tidak terikat dengan akun user (Guest). Tidak dapat menggunakan NestonPay.');
                 }
-                
+
                 $userTarget = User::query()->where('id', $transaksi->id_user)->lockForUpdate()->firstOrFail();
 
-                if ((float) $userTarget->saldo < $amount) {
+                $currentBalance = (float) ($userTarget->balance ?? $userTarget->saldo ?? 0);
+
+                if ($currentBalance < $amount) {
                     throw new \Exception('Saldo NestonPay user tidak mencukupi. Silakan informasikan user untuk Top Up.');
                 }
 
                 // 1) Potong Saldo User Target
-                $userTarget->saldo = (float) $userTarget->saldo - $amount;
                 if (array_key_exists('balance', $userTarget->getAttributes())) {
-                    $userTarget->balance = (float) ($userTarget->balance ?? 0) - $amount;
+                    $userTarget->balance = $currentBalance - $amount;
+                }
+                if (array_key_exists('saldo', $userTarget->getAttributes())) {
+                    $userTarget->saldo = (float) $userTarget->saldo - $amount;
                 }
                 $userTarget->save();
 
@@ -198,9 +202,11 @@ class SaldoController extends Controller
 
         DB::beginTransaction();
         try {
-            $user->saldo += $amount;
             if (array_key_exists('balance', $user->getAttributes())) {
                 $user->balance = (float) ($user->balance ?? 0) + $amount;
+            }
+            if (array_key_exists('saldo', $user->getAttributes())) {
+                $user->saldo = (float) ($user->saldo ?? 0) + $amount;
             }
             $user->save();
 
@@ -276,9 +282,11 @@ class SaldoController extends Controller
             }
 
             $userLocked = User::lockForUpdate()->findOrFail($user->id);
-            $userLocked->saldo = (float) $userLocked->saldo + $grossAmount;
             if (array_key_exists('balance', $userLocked->getAttributes())) {
                 $userLocked->balance = (float) ($userLocked->balance ?? 0) + $grossAmount;
+            }
+            if (array_key_exists('saldo', $userLocked->getAttributes())) {
+                $userLocked->saldo = (float) ($userLocked->saldo ?? 0) + $grossAmount;
             }
             $userLocked->save();
 

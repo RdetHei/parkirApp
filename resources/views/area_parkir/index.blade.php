@@ -151,23 +151,32 @@
                 </div>
 
                 {{-- Actions --}}
-                <div class="flex items-center gap-2 pt-4 border-t border-white/[0.05]">
-                    <a href="{{ route('area-parkir.design', $area->id_area) }}"
-                       class="flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all">
-                        Design
-                    </a>
-                    <a href="{{ route('area-parkir.edit', $area->id_area) }}"
-                       class="flex-1 py-2 text-center text-[10px] font-bold uppercase tracking-widest rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-slate-950 transition-all">
-                        Edit
-                    </a>
-                    <form action="{{ route('area-parkir.destroy', $area->id_area) }}" method="POST"
-                          onsubmit="return confirm('Hapus area ini? Seluruh data slot terkait akan terhapus.')">
-                        @csrf @method('DELETE')
-                        <button type="submit"
-                                class="p-2 bg-rose-500/10 text-rose-400 rounded-lg border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                    </form>
+                <div class="flex items-center justify-between pt-4 border-t border-white/[0.05]">
+                    <div class="flex items-center bg-slate-900 border border-white/5 rounded-xl p-1 gap-1">
+                        <a href="{{ route('area-parkir.design', $area->id_area) }}"
+                           class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                           title="Design Layout">
+                            <i class="fa-solid fa-map-location-dot text-xs"></i>
+                        </a>
+                        <a href="{{ route('area-parkir.edit', $area->id_area) }}"
+                           class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                           title="Edit Area">
+                            <i class="fa-solid fa-pen-to-square text-xs"></i>
+                        </a>
+                        <form action="{{ route('area-parkir.destroy', $area->id_area) }}" method="POST" class="inline"
+                              onsubmit="return confirm('Hapus area ini? Seluruh data slot terkait akan terhapus.')">
+                            @csrf @method('DELETE')
+                            <button type="submit"
+                                    class="w-9 h-9 flex items-center justify-center text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all"
+                                    title="Hapus Area">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="px-3 py-1 bg-slate-900 border border-white/5 rounded-lg">
+                        <span class="text-[8px] font-black text-slate-500 uppercase tracking-widest">Zone Security</span>
+                    </div>
                 </div>
             </div>
         </div>

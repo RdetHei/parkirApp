@@ -168,8 +168,8 @@ class RfidParkingController extends Controller
             $activeKendaraan = $activeTransaksi->kendaraan ?? $kendaraan;
 
             $startTime = Carbon::parse($activeTransaksi->waktu_masuk);
-            $endTime = now();
-            $durationHours = max(1, ceil($startTime->diffInMinutes($endTime) / 60));
+            $endTime = \Illuminate\Support\Carbon::now();
+            $durationHours = (int) max(1, ceil($startTime->diffInMinutes($endTime, true) / 60));
             $totalAmount = $durationHours * $rate;
 
             $checkout = DB::transaction(function () use ($user, $activeTransaksi, $rate, $totalAmount) {
@@ -202,7 +202,7 @@ class RfidParkingController extends Controller
 
                 // Hitung ulang durasi/biaya berdasarkan waktu masuk transaksi yang terkunci.
                 $startTime2 = Carbon::parse($lockedTransaksi->waktu_masuk);
-                $durationHours2 = max(1, ceil($startTime2->diffInMinutes(now()) / 60));
+                $durationHours2 = (int) max(1, ceil($startTime2->diffInMinutes(\Illuminate\Support\Carbon::now(), true) / 60));
                 $totalAmount2 = $durationHours2 * $rate;
 
                 if ($bal < $totalAmount2) {

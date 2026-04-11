@@ -90,11 +90,11 @@ class ANPRController extends Controller
             if (!$activeTransaksi) {
                 // ENTRY LOGIC
                 $statusAction = 'entry';
-                
+
                 // Refactor: Gunakan id_area dari petugas yang sedang login
                 $currentUser = Auth::user();
                 $area = null;
-                
+
                 if ($currentUser && $currentUser->id_area) {
                     $area = AreaParkir::find($currentUser->id_area);
                 }
@@ -375,9 +375,6 @@ class ANPRController extends Controller
         }
     }
 
-    /**
-     * Satu kali update checkout (align dengan TransaksiController::checkOut).
-     */
     protected function applyCheckoutTotals(Transaksi $transaksi, Carbon $waktuKeluar): void
     {
         $transaksi->loadMissing('tarif');
@@ -386,8 +383,13 @@ class ANPRController extends Controller
             throw new \RuntimeException('Tarif tidak ditemukan untuk transaksi ANPR.');
         }
 
-        $durasi_detik = $waktuKeluar->diffInSeconds($transaksi->waktu_masuk);
-        $durasi_jam = $durasi_detik < 300 ? 1 : (int) ceil($durasi_detik / 3600);
+        $durasi_menit = abs($waktuKeluar->diffInMinutes($transaksi->waktu_masuk));
+        $durasi_jam = (int) ceil($durasi_menit / 60);
+
+        if ($durasi_jam < 1) {
+            $durasi_jam = 1;
+        }
+
         $biaya_total = $durasi_jam * $tarif->tarif_perjam;
 
         $transaksi->update([

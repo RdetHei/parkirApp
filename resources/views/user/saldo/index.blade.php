@@ -46,7 +46,7 @@
                 </div>
 
                 <h2 class="text-5xl lg:text-7xl font-black tracking-tighter text-white flex items-baseline gap-3 lg:gap-4 mb-2">
-                    <span class="text-emerald-500 text-2xl lg:text-3xl font-medium tracking-normal">Rp</span>{{ number_format($user->saldo, 0, ',', '.') }}
+                    <span class="text-emerald-500 text-2xl lg:text-3xl font-medium tracking-normal">Rp</span>{{ number_format($user->balance ?? $user->saldo ?? 0, 0, ',', '.') }}
                 </h2>
                 <div class="h-1 lg:h-1.5 w-16 lg:w-24 bg-gradient-to-r from-emerald-500 to-transparent rounded-full opacity-50"></div>
             </div>

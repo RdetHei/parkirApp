@@ -21,12 +21,17 @@ class Pembayaran extends Model
         'status',
         'keterangan',
         'id_user',
+        'id_kas_shift',
+        'cash_received',
+        'cash_change',
         'waktu_pembayaran',
     ];
 
     protected $casts = [
         'waktu_pembayaran' => 'datetime',
         'nominal' => 'decimal:2',
+        'cash_received' => 'decimal:2',
+        'cash_change' => 'decimal:2',
     ];
 
     // Relationships
@@ -36,6 +41,11 @@ class Pembayaran extends Model
     }
 
     public function petugas()
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
+
+    public function user()
     {
         return $this->belongsTo(User::class, 'id_user', 'id');
     }
@@ -54,5 +64,10 @@ class Pembayaran extends Model
     public function scopeMidtrans($query)
     {
         return $query->where('metode', 'midtrans');
+    }
+
+    public function scopeCash($query)
+    {
+        return $query->where('metode', 'cash');
     }
 }

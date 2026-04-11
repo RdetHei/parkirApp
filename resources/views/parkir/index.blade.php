@@ -122,11 +122,11 @@
                                     @else
                                         <span class="text-xs font-bold text-white">{{ $transaksi->waktu_masuk->format('H:i') }} <span class="text-slate-600 text-[10px] ml-1">{{ $transaksi->waktu_masuk->format('d/m/y') }}</span></span>
                                         @php
-                                            $durasi = now()->diffInMinutes($transaksi->waktu_masuk);
-                                            $jam = intdiv($durasi, 60);
-                                            $menit = $durasi % 60;
+                                            $durasiTotalMenit = (int) now()->diffInMinutes($transaksi->waktu_masuk, true);
+                                            $jamDisplay = floor($durasiTotalMenit / 60);
+                                            $menitDisplay = $durasiTotalMenit % 60;
                                         @endphp
-                                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-1">Duration: {{ $jam }}h {{ $menit }}m</span>
+                                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-1">Duration: {{ $jamDisplay }}h {{ $menitDisplay }}m</span>
                                     @endif
                                 </div>
                             </td>

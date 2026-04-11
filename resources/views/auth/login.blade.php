@@ -60,7 +60,7 @@
                 <!-- Email -->
                 <div class="space-y-2">
                     <label for="email" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
-                        Email Address
+                        Email
                     </label>
                     <input
                         id="email"

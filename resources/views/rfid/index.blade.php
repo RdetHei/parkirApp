@@ -94,21 +94,24 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button type="button"
-                                            onclick="toggleExpand('{{ $user->id }}', '{{ $user->name }}', '{{ $user->rfid_uid }}')"
-                                            class="p-2 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition-all border border-blue-500/20"
-                                            id="toggle-{{ $user->id }}"
-                                            title="Register RFID">
-                                        <svg class="w-4 h-4 transition-transform duration-200" id="icon-{{ $user->id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                    </button>
-                                    @if($user->rfid_uid)
-                                    <form action="{{ route('admin.rfid.unlink', $user->id) }}" method="POST" onsubmit="return confirm('Hapus identitas kartu RFID dari user ini?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    <div class="flex items-center bg-slate-900 border border-white/5 rounded-xl p-1 gap-1">
+                                        <button type="button"
+                                                onclick="toggleExpand('{{ $user->id }}', '{{ $user->name }}', '{{ $user->rfid_uid }}')"
+                                                class="w-9 h-9 flex items-center justify-center text-blue-500 hover:text-white hover:bg-blue-500 rounded-lg transition-all"
+                                                id="toggle-{{ $user->id }}"
+                                                title="Register RFID">
+                                            <i class="fa-solid fa-plus text-xs transition-transform duration-200" id="icon-{{ $user->id }}"></i>
                                         </button>
-                                    </form>
-                                    @endif
+                                        
+                                        @if($user->rfid_uid)
+                                        <form action="{{ route('admin.rfid.unlink', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus identitas kartu RFID dari user ini?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="w-9 h-9 flex items-center justify-center text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all">
+                                                <i class="fa-solid fa-trash-can text-xs"></i>
+                                            </button>
+                                        </form>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
                         </tr>

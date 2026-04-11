@@ -141,20 +141,20 @@
                     <div class="pt-5 mt-5 border-t border-white/5 flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             @if((auth()->user()->role ?? null) === 'admin')
-                                <a href="{{ route('kamera.edit', $item) }}"
-                                   class="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-emerald-500/20 transition-all flex items-center gap-2">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit
-                                </a>
-                                <form action="{{ route('kamera.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Archive this camera? All associated parking maps will be updated.')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                            class="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
-                                            title="Archive Device">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </form>
+                                <div class="flex items-center bg-slate-900 border border-white/5 rounded-xl p-1 gap-1">
+                                    <a href="{{ route('kamera.edit', $item) }}"
+                                       class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                                       title="Edit Kamera">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </a>
+                                    
+                                    <form action="{{ route('kamera.destroy', $item) }}" method="POST" class="inline" onsubmit="return confirm('Archive this camera? All associated parking maps will be updated.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="w-9 h-9 flex items-center justify-center text-rose-500 hover:text-white hover:bg-rose-500 rounded-lg transition-all" title="Archive Device">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             @else
                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Device Secured</span>
                             @endif

@@ -101,9 +101,9 @@
         <div class="card-pro border-white/5 bg-white/[0.02]">
             <p class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-2">Active Period</p>
             <p class="text-sm font-bold text-white leading-snug">
-                {{ request('tanggal_dari') ? \Carbon\Carbon::parse(request('tanggal_dari'))->format('d M Y') : 'Start' }}
+                {{ request('tanggal_dari') ? \Illuminate\Support\Carbon::parse(request('tanggal_dari'))->format('d M Y') : 'Start' }}
                 <span class="text-slate-500 font-normal">to</span>
-                {{ request('tanggal_sampai') ? \Carbon\Carbon::parse(request('tanggal_sampai'))->format('d M Y') : 'Now' }}
+                {{ request('tanggal_sampai') ? \Illuminate\Support\Carbon::parse(request('tanggal_sampai'))->format('d M Y') : 'Now' }}
             </p>
         </div>
     </div>

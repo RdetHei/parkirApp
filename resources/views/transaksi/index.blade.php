@@ -5,15 +5,21 @@
 @section('content')
 <div class="p-8 relative z-10">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
         <div>
             <div class="flex items-center gap-3 mb-3">
                 <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">
-                    Financial Ledger
+                    Parking Console
                 </span>
             </div>
-            <h1 class="text-4xl font-bold tracking-tight text-white">{{ explode(' ', $title ?? 'Parking History')[0] }} <span class="text-emerald-500">{{ explode(' ', $title ?? 'Parking History')[1] ?? '' }}</span></h1>
-            <p class="text-slate-400 text-sm mt-2">Comprehensive logs of all completed vehicle movements and payments.</p>
+            <h1 class="text-4xl font-bold tracking-tight text-white">Management <span class="text-emerald-500">Parkir</span></h1>
+            <p class="text-slate-400 text-sm mt-2">Pusat kendali operasional untuk memantau kendaraan aktif, reservasi, dan riwayat.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('transaksi.create-check-in') }}" class="group relative px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2">
+                <i class="fa-solid fa-plus text-sm"></i>
+                Check-In Baru
+            </a>
         </div>
     </div>
 
@@ -21,85 +27,111 @@
     @if($message = Session::get('success'))
         <div class="mb-8 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4 animate-fade-in">
             <div class="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-500">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <i class="fa-solid fa-check"></i>
             </div>
             <p class="text-sm font-bold text-emerald-500 uppercase tracking-widest">{{ $message }}</p>
         </div>
     @endif
 
-    @if($message = Session::get('error'))
-        <div class="mb-8 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-4 animate-fade-in">
-            <div class="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center text-rose-500">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-            <p class="text-sm font-bold text-rose-500 uppercase tracking-widest">{{ $message }}</p>
-        </div>
-    @endif
+    <!-- Main Navigation Tabs -->
+    <div class="flex items-center gap-2 mb-8 bg-slate-900/50 p-1.5 rounded-2xl border border-white/5 w-fit">
+        <a href="{{ route('transaksi.index', ['status' => 'aktif']) }}"
+           class="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 {{ $currentStatus === 'aktif' ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5' }}">
+            <i class="fa-solid fa-car-side"></i>
+            Parkir Aktif
+            <span class="px-1.5 py-0.5 rounded-md text-[8px] {{ $currentStatus === 'aktif' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-500' }}">{{ $counts['aktif'] }}</span>
+        </a>
+        <a href="{{ route('transaksi.index', ['status' => 'booking']) }}"
+           class="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 {{ $currentStatus === 'booking' ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5' }}">
+            <i class="fa-solid fa-bookmark"></i>
+            Reservasi
+            <span class="px-1.5 py-0.5 rounded-md text-[8px] {{ $currentStatus === 'booking' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-500' }}">{{ $counts['booking'] }}</span>
+        </a>
+        <a href="{{ route('transaksi.index', ['status' => 'riwayat']) }}"
+           class="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 {{ $currentStatus === 'riwayat' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5' }}">
+            <i class="fa-solid fa-history"></i>
+            Riwayat Selesai
+        </a>
+    </div>
 
     <!-- Filter Console -->
-    <div class="card-pro mb-10 border-white/5 bg-white/[0.02]">
-        <div class="flex items-center gap-3 mb-6">
-            <div class="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-            </div>
-            <h2 class="text-[10px] font-black text-white uppercase tracking-widest">Advanced Filtering</h2>
-        </div>
+    <div class="card-pro mb-8 border-white/5 bg-white/[0.02]">
+        <form action="{{ route('transaksi.index') }}" method="GET" id="filterForm">
+            <input type="hidden" name="status" value="{{ $currentStatus }}">
 
-        <form action="{{ route('transaksi.index') }}" method="GET">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                <div class="lg:col-span-2">
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Plate Number</label>
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Search by plate..."
-                           oninput="debounceSearch(this)"
-                           class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white placeholder:text-slate-700 focus:outline-none focus:border-emerald-500/50 transition-all">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ $currentStatus === 'riwayat' ? '5' : '3' }} gap-6">
+                <div class="{{ $currentStatus === 'riwayat' ? 'lg:col-span-2' : 'lg:col-span-1' }}">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Cari Plat Nomor</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-slate-700 text-xs"></i>
+                        </div>
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Contoh: B 1234 ABC"
+                               oninput="debounceSearch(this)"
+                               class="block w-full pl-11 pr-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white placeholder:text-slate-700 focus:outline-none focus:border-emerald-500/50 transition-all">
+                    </div>
                 </div>
+
+                @if($currentStatus === 'riwayat')
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Start Date</label>
-                    <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Dari Tanggal</label>
+                    <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" onchange="this.form.submit()"
                            class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">End Date</label>
-                    <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Sampai Tanggal</label>
+                    <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" onchange="this.form.submit()"
                            class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
                 </div>
+                @endif
+
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Parking Zone</label>
-                    <select name="id_area"
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Area Parkir</label>
+                    <select name="area" onchange="this.form.submit()"
                             class="block w-full px-4 py-3 bg-slate-950 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-all">
-                        <option value="" class="bg-slate-900">All Areas</option>
-                        @foreach(\App\Models\AreaParkir::all() as $area)
-                            <option value="{{ $area->id_area }}" class="bg-slate-900" {{ request('id_area') == $area->id_area ? 'selected' : '' }}>
+                        <option value="" class="bg-slate-900">Semua Area</option>
+                        @foreach($areas as $area)
+                            <option value="{{ $area->id_area }}" class="bg-slate-900" {{ request('area') == $area->id_area ? 'selected' : '' }}>
                                 {{ $area->nama_area }}
                             </option>
                         @endforeach
                     </select>
                 </div>
             </div>
-            <div class="mt-8 flex justify-end gap-3">
-                <a href="{{ route('transaksi.index') }}" class="px-6 py-2.5 bg-slate-800 text-slate-400 font-bold text-[10px] uppercase tracking-widest rounded-xl border border-white/5 hover:bg-slate-700 transition-all">Reset</a>
-                <button type="submit" class="px-8 py-2.5 bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-emerald-400 transition-all">Apply Parameters</button>
+
+            @if(request()->anyFilled(['q', 'area', 'tanggal_dari', 'tanggal_sampai']))
+            <div class="mt-6 flex justify-end">
+                <a href="{{ route('transaksi.index', ['status' => $currentStatus]) }}" class="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-400 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-times-circle"></i> Bersihkan Semua Filter
+                </a>
             </div>
+            @endif
         </form>
     </div>
 
     <!-- Data Table -->
     <div class="card-pro !p-0 overflow-hidden shadow-2xl">
         <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-            <h2 class="text-sm font-bold text-white uppercase tracking-widest">Transaction Records</h2>
+            <h2 class="text-sm font-bold text-white uppercase tracking-widest">
+                @if($currentStatus === 'aktif') Kendaraan Terparkir @elseif($currentStatus === 'booking') Reservasi Menunggu @else Riwayat Selesai @endif
+                <span class="text-slate-500 ml-2 font-medium">({{ $transaksis->total() }})</span>
+            </h2>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-white/[0.01] text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                        <th class="px-8 py-4">Ref ID</th>
-                        <th class="px-8 py-4">Vehicle</th>
-                        <th class="px-8 py-4">Timeline</th>
-                        <th class="px-8 py-4">Metrics</th>
-                        <th class="px-8 py-4">Revenue</th>
-                        <th class="px-8 py-4">Status</th>
-                        <th class="px-8 py-4 text-right">Actions</th>
+                        <th class="px-8 py-4">ID Transaksi</th>
+                        <th class="px-8 py-4">Kendaraan</th>
+                        <th class="px-8 py-4">Lokasi</th>
+                        <th class="px-8 py-4">Waktu</th>
+                        @if($currentStatus === 'riwayat')
+                        <th class="px-8 py-4">Biaya</th>
+                        @else
+                        <th class="px-8 py-4">Petugas</th>
+                        @endif
+                        <th class="px-8 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
@@ -116,96 +148,106 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-bold text-white tracking-tight">{{ $transaksi->kendaraan->plat_nomor ?? '-' }}</p>
-                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{{ $transaksi->area->nama_area ?? 'Zone' }}</p>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{{ $transaksi->kendaraan->jenis_kendaraan ?? 'Motor' }}</p>
                                 </div>
                             </div>
                         </td>
                         <td class="px-8 py-5">
-                            <div class="flex flex-col gap-1.5">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    <span class="text-xs font-medium text-slate-300">{{ $transaksi->waktu_masuk->format('d M, H:i') }}</span>
-                                </div>
-                                @if($transaksi->waktu_keluar)
-                                <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                    <span class="text-xs font-medium text-slate-300">{{ $transaksi->waktu_keluar->format('d M, H:i') }}</span>
-                                </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-white">{{ $transaksi->area->nama_area ?? '-' }}</span>
+                                <span class="text-[10px] text-slate-500 font-medium">Slot: {{ $transaksi->parkingMapSlot->code ?? 'Umum' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5">
+                            <div class="flex flex-col gap-1">
+                                @if($currentStatus === 'aktif')
+                                    <span class="text-xs font-bold text-white">{{ $transaksi->waktu_masuk->format('H:i') }} <span class="text-slate-600 text-[10px] ml-1">{{ $transaksi->waktu_masuk->format('d/m') }}</span></span>
+                                    @php
+                                        $masuk = \Illuminate\Support\Carbon::parse($transaksi->waktu_masuk, config('app.timezone'));
+                                        $now = \Illuminate\Support\Carbon::now(config('app.timezone'));
+                                        $durasi = (int) $now->diffInMinutes($masuk, true);
+                                    @endphp
+                                    <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{{ intdiv($durasi, 60) }}j {{ $durasi % 60 }}m berjalan</span>
+                                @elseif($currentStatus === 'booking')
+                                    <span class="text-xs font-bold text-amber-500 italic">Booking: {{ $transaksi->bookmarked_at->format('H:i') }}</span>
+                                    <span class="text-[9px] text-slate-500 font-medium italic">Exp: {{ $transaksi->bookmarked_at->addMinutes(10)->format('H:i') }}</span>
+                                @else
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-medium text-slate-300">{{ $transaksi->waktu_masuk->format('d/m H:i') }}</span>
+                                        <i class="fa-solid fa-arrow-right text-[8px] text-slate-700"></i>
+                                        <span class="text-xs font-bold text-white">{{ $transaksi->waktu_keluar->format('H:i') }}</span>
+                                    </div>
+                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Durasi: {{ $transaksi->durasi_jam }} jam</span>
                                 @endif
                             </div>
                         </td>
+                        @if($currentStatus === 'riwayat')
                         <td class="px-8 py-5">
-                            @if($transaksi->durasi_jam)
-                                <div class="inline-flex flex-col">
-                                    <span class="text-sm font-bold text-white">{{ $transaksi->durasi_jam }} <span class="text-[10px] text-slate-500 font-bold uppercase">Hours</span></span>
-                                    <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Total Duration</span>
-                                </div>
-                            @else
-                                <span class="text-[10px] font-black text-slate-700 uppercase italic tracking-widest">Active Session</span>
-                            @endif
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-emerald-500">Rp {{ number_format($transaksi->biaya_total, 0, ',', '.') }}</span>
+                                <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">{{ $transaksi->pembayaran->metode ?? 'Cash' }}</span>
+                            </div>
                         </td>
+                        @else
                         <td class="px-8 py-5">
-                            @if($transaksi->biaya_total)
-                                <div class="inline-flex flex-col">
-                                    <span class="text-sm font-bold text-emerald-500">Rp {{ number_format($transaksi->biaya_total, 0, ',', '.') }}</span>
-                                    <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Gross total</span>
-                                </div>
-                            @else
-                                <span class="text-[10px] font-black text-slate-700 uppercase italic tracking-widest">Uncalculated</span>
-                            @endif
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-300 font-medium">{{ explode(' ', $transaksi->user->name ?? '-')[0] }}</span>
+                            </div>
                         </td>
-                        <td class="px-8 py-5">
-                            @if($transaksi->status === 'masuk')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Active</span>
-                            @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[8px] font-black uppercase bg-slate-800 text-slate-500 border border-white/5">Archived</span>
-                            @endif
-                        </td>
-                        <td class="px-8 py-5 text-right space-x-1">
-                            <div class="flex items-center justify-end gap-1">
-                                <a href="{{ route('transaksi.show', $transaksi->id_parkir) }}"
-                                   class="p-2 bg-slate-800 hover:bg-emerald-500 text-slate-500 hover:text-slate-950 rounded-lg border border-white/5 transition-all"
-                                   title="View Details">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                </a>
+                        @endif
 
-                                @if(auth()->user()->role === 'admin')
-                                    <a href="{{ route('transaksi.edit', $transaksi->id_parkir) }}"
-                                       class="p-2 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-slate-950 rounded-lg border border-amber-500/20 transition-all"
-                                       title="Edit Record">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </a>
-
-                                    @if($transaksi->status === 'keluar')
-                                        <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
-                                           class="p-2 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-500 hover:text-white rounded-lg border border-indigo-500/20 transition-all"
-                                           title="Print Receipt">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                        </a>
+                        <td class="px-8 py-5 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <div class="flex items-center bg-slate-900 border border-white/5 rounded-xl p-1 gap-1">
+                                    @if($currentStatus === 'aktif')
+                                        <form action="{{ route('transaksi.checkOut', $transaksi->id_parkir) }}" method="POST" class="inline">
+                                            @csrf @method('PUT')
+                                            <button type="submit" 
+                                                    class="group relative w-9 h-9 flex items-center justify-center bg-amber-500 text-slate-950 rounded-lg hover:bg-amber-400 transition-all active:scale-90 shadow-lg shadow-amber-500/10 overflow-hidden" 
+                                                    title="Proses Checkout"
+                                                    onclick="return confirm('Proses keluar untuk kendaraan ini?')">
+                                                <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                                                <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                                            </button>
+                                        </form>
+                                    @elseif($currentStatus === 'booking')
+                                        <form action="{{ route('transaksi.accept-reservation', $transaksi->id_parkir) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" 
+                                                    class="group relative w-9 h-9 flex items-center justify-center bg-emerald-500 text-slate-950 rounded-lg hover:bg-emerald-400 transition-all active:scale-90 shadow-lg shadow-emerald-500/10 overflow-hidden"
+                                                    title="Konfirmasi Kedatangan">
+                                                <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                                                <i class="fa-solid fa-check text-xs"></i>
+                                            </button>
+                                        </form>
                                     @endif
 
-                                    <form action="{{ route('transaksi.destroy', $transaksi->id_parkir) }}" method="POST" class="inline" onsubmit="return confirm('Archive this transaction record? Financial data will be preserved but entry will be hidden.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="p-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
-                                                title="Delete Record">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                        </button>
-                                    </form>
-                                @endif
+                                    <a href="{{ route('transaksi.show', $transaksi->id_parkir) }}"
+                                       class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                                       title="Lihat Detail">
+                                        <i class="fa-solid fa-eye text-xs"></i>
+                                    </a>
+
+                                    @if(auth()->user()->role === 'admin' && $currentStatus === 'riwayat')
+                                        <a href="{{ route('transaksi.print', $transaksi->id_parkir) }}"
+                                           class="w-9 h-9 flex items-center justify-center text-indigo-400 hover:text-white hover:bg-indigo-500 rounded-lg transition-all"
+                                           title="Cetak Struk">
+                                            <i class="fa-solid fa-print text-xs"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-8 py-24 text-center">
+                        <td colspan="6" class="px-8 py-24 text-center">
                             <div class="flex flex-col items-center">
-                                <div class="w-20 h-20 bg-slate-900 border border-white/5 rounded-[2rem] flex items-center justify-center text-slate-700 mb-6">
-                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                                <div class="w-16 h-16 bg-slate-900 border border-white/5 rounded-2xl flex items-center justify-center text-slate-700 mb-4">
+                                    <i class="fa-solid fa-folder-open text-2xl"></i>
                                 </div>
-                                <h3 class="text-lg font-bold text-white mb-2">No records found</h3>
-                                <p class="text-slate-500 text-sm max-w-xs mx-auto">Try adjusting your filters or search criteria to find specific logs.</p>
+                                <h3 class="text-white font-bold mb-1">Tidak ada data ditemukan</h3>
+                                <p class="text-slate-500 text-xs">Coba ubah filter atau pencarian Anda.</p>
                             </div>
                         </td>
                     </tr>
@@ -221,6 +263,7 @@
         @endif
     </div>
 </div>
+
 @push('scripts')
 <script>
     let searchTimer;
@@ -231,5 +274,10 @@
         }, 800);
     }
 </script>
+<style>
+    @keyframes shimmer {
+        100% { transform: translateX(100%); }
+    }
+</style>
 @endpush
 @endsection

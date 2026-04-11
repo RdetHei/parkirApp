@@ -68,8 +68,8 @@
         <div class="glass-card rounded-[2.5rem] p-8 sm:p-12 shadow-2xl shadow-black/50">
             <!-- Header -->
             <div class="mb-10 text-center">
-                <h2 class="text-2xl font-bold text-white tracking-tight mb-2">Buat Akun Baru</h2>
-                <p class="text-slate-500 text-sm">Bergabung dengan ekosistem parkir cerdas</p>
+                <h2 class="text-2xl font-bold text-white tracking-tight mb-2">Create New Account</h2>
+                <p class="text-slate-500 text-sm">Join the intelligent parking ecosystem</p>
             </div>
 
             <!-- Alerts -->
@@ -90,7 +90,7 @@
                     <!-- Name -->
                     <div class="space-y-2">
                         <label for="name" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
-                            Nama Lengkap
+                            Username
                         </label>
                         <input
                             id="name"
@@ -173,7 +173,7 @@
                     <!-- Password -->
                     <div class="space-y-2">
                         <label for="password" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
-                            Sandi
+                            Password
                         </label>
                         <div class="relative group">
                             <input
@@ -202,7 +202,7 @@
                 <!-- Confirm Password -->
                 <div class="space-y-2">
                     <label for="password_confirmation" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">
-                        Konfirmasi Sandi
+                        Confirm Password
                     </label>
                     <input
                         id="password_confirmation"
@@ -221,7 +221,7 @@
                     class="group relative w-full flex justify-center py-4 px-4 bg-emerald-500 text-slate-950 text-xs font-bold uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-all duration-300 shadow-xl shadow-emerald-500/20 active:scale-[0.98] overflow-hidden"
                 >
                     <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                    <span id="buttonText" class="relative z-10">Buat Akun Gratis</span>
+                    <span id="buttonText" class="relative z-10">Create new account</span>
                     <svg id="spinner" class="hidden animate-spin ml-3 h-4 w-4 text-slate-950 relative z-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -232,9 +232,9 @@
             <!-- Login Link -->
             <div class="mt-10 pt-8 border-t border-white/5 text-center">
                 <p class="text-xs text-slate-500 font-medium">
-                    Sudah punya akun?
+                    Already have an account?
                     <a href="{{ route('login') }}" class="text-emerald-500 font-bold hover:text-emerald-400 transition-colors">
-                        Masuk Sekarang
+                        Sign in
                     </a>
                 </p>
             </div>

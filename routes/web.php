@@ -22,6 +22,7 @@ use App\Support\UserPhoto;
 use App\Http\Controllers\RfidAdminController;
 use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CashPaymentController;
 
 use App\Http\Controllers\LandingController;
 
@@ -414,12 +415,12 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
     // ========== OPERATIONS (Admin & Petugas) ==========
     Route::middleware(['role:admin,petugas'])->group(function () {
         // Management Unifikasi
+        Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'index'])->name('transaksi.index');
         Route::get('/active-parking', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.active');
         Route::get('/active-bookings', [\App\Http\Controllers\TransaksiController::class, 'bookings'])->name('transaksi.bookings');
         Route::get('/parking-history', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.history');
 
         // Aliases / Compatibility
-        Route::get('/transaksi', [\App\Http\Controllers\TransaksiController::class, 'history'])->name('transaksi.index');
         Route::get('/parkir-aktif', [\App\Http\Controllers\TransaksiController::class, 'activeParking'])->name('transaksi.parkir.index');
 
         // Check-in & Check-out
@@ -482,6 +483,16 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
     Route::get('/payment/{id_parkir}/success', [\App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/{id_parkir}/midtrans', [\App\Http\Controllers\PaymentController::class, 'midtransPay'])->name('payment.midtrans');
     Route::post('/payment/{id_parkir}/midtrans/token', [\App\Http\Controllers\PaymentController::class, 'midtransSnapToken'])->name('payment.midtrans.token');
+
+    // Pembayaran tunai + shift kas (petugas/admin)
+    Route::middleware(['role:admin,petugas'])->prefix('kas')->name('kas.')->group(function () {
+        Route::post('/shift/open', [CashPaymentController::class, 'openShift'])->name('shift.open');
+        Route::post('/shift/{id_kas_shift}/close', [CashPaymentController::class, 'closeShift'])->name('shift.close');
+        Route::post('/transaksi/{id_parkir}/cash/intent', [CashPaymentController::class, 'initiate'])->name('cash.intent');
+        Route::post('/cash/confirm', [CashPaymentController::class, 'confirm'])->name('cash.confirm');
+        Route::post('/cash/{id_pembayaran}/cancel', [CashPaymentController::class, 'cancelPending'])->name('cash.cancel');
+        Route::get('/report/harian', [CashPaymentController::class, 'dailyBreakdown'])->name('report.harian');
+    });
 
     // ========== OWNER ONLY (sesuai SPK: Rekap transaksi sesuai waktu) ==========
     Route::middleware(['role:owner'])->group(function () {

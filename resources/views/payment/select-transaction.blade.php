@@ -10,21 +10,36 @@
 
     <div class="max-w-7xl mx-auto relative z-10">
         <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div>
                 <div class="flex items-center gap-3 mb-3">
                     <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-500/20">
-                        Transaction Picker
+                        Payment Terminal
                     </span>
                 </div>
-                <h1 class="text-4xl font-black tracking-tight text-white uppercase">Transaksi <span class="text-emerald-500">Aktif</span></h1>
-                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Pilih salah satu sesi parkir Anda yang sedang berlangsung untuk diproses.</p>
+                <h1 class="text-4xl font-black tracking-tight text-white uppercase">Pilih <span class="text-emerald-500">Transaksi</span></h1>
+                <p class="text-slate-400 text-sm mt-2 font-medium tracking-wide">Pilih sesi parkir yang sudah selesai untuk diproses pembayarannya.</p>
             </div>
-            
+
             <div class="px-6 py-4 bg-slate-950 border border-white/5 rounded-2xl flex items-center gap-4 shadow-xl">
                 <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">{{ $transaksis->count() }} Transaksi Terdeteksi</span>
+                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">{{ $transaksis->count() }} Transaksi Menunggu</span>
             </div>
+        </div>
+
+        <!-- Filter Console -->
+        <div class="card-pro mb-8 border-white/5 bg-white/[0.02] backdrop-blur-md">
+            <form action="{{ route('payment.select-transaction') }}" method="GET" id="searchForm">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-colors group-focus-within:text-emerald-500 text-slate-600">
+                        <i class="fa-solid fa-search text-xs"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ request('q') }}"
+                           placeholder="Cari Plat Nomor (Contoh: B 1234 ABC)"
+                           oninput="debounceSearch(this)"
+                           class="block w-full pl-12 pr-6 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-xs font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all">
+                </div>
+            </form>
         </div>
 
         <!-- Table Card -->
@@ -97,6 +112,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    let searchTimer;
+    function debounceSearch(input) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            input.form.submit();
+        }, 800);
+    }
+</script>
 
 <style>
     @keyframes shimmer {

@@ -101,7 +101,7 @@ class TransaksiController extends Controller
                     );
                 }
 
-                $now = Carbon::now();
+                $now = \Illuminate\Support\Carbon::now();
                 $slotId = $request->filled('parking_map_slot_id') ? (int) $request->parking_map_slot_id : null;
 
                 if ($slotId) {
@@ -187,20 +187,19 @@ class TransaksiController extends Controller
                 }
 
                 // Kalkulasi durasi dan biaya
-                $waktu_keluar = Carbon::now();
+                $waktu_keluar = \Illuminate\Support\Carbon::now();
                 $tarif = $transaksi->tarif;
 
                 if (! $tarif) {
                     throw new \Exception('Tarif tidak ditemukan untuk transaksi ini.');
                 }
 
-                $durasi_detik = $waktu_keluar->diffInSeconds($transaksi->waktu_masuk);
+                $durasi_menit = abs($waktu_keluar->diffInMinutes($transaksi->waktu_masuk));
+                $durasi_jam = (int) ceil($durasi_menit / 60);
 
-                // Grace period: jika keluar <5 menit, selalu minimal 1 jam tarif.
-                if ($durasi_detik < 300) {
+                // Minimal 1 jam
+                if ($durasi_jam < 1) {
                     $durasi_jam = 1;
-                } else {
-                    $durasi_jam = (int) ceil($durasi_detik / 3600);
                 }
 
                 $biaya_total = $durasi_jam * $tarif->tarif_perjam;
@@ -241,116 +240,98 @@ class TransaksiController extends Controller
 
     // == CRUD UNTUK ADMIN ==
 
+    /**
+     * Tampilan utama manajemen parkir (Petugas & Admin).
+     * Menyatukan Parkir Aktif, Booking, dan Riwayat dalam satu halaman dengan tab.
+     */
     public function index(Request $request)
     {
-        return $this->history($request);
+        $status = $request->get('status', 'aktif'); // default ke parkir aktif
+        $tenMinutesAgo = Carbon::now()->subMinutes(10);
+
+        // Cleanup expired bookmarks
+        Transaksi::where('status', 'bookmarked')
+            ->where('bookmarked_at', '<', $tenMinutesAgo)
+            ->delete();
+
+        $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot']);
+
+        // Filter berdasarkan status/tab
+        if ($status === 'aktif') {
+            $query->where('status', 'masuk')->whereNull('waktu_keluar');
+        } elseif ($status === 'booking') {
+            $query->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
+        } elseif ($status === 'riwayat') {
+            $query->where('status', 'keluar')->where('status_pembayaran', 'berhasil');
+        }
+
+        // Pencarian plat nomor
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->whereHas('kendaraan', function($sub) use ($search) {
+                $sub->where('plat_nomor', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Area
+        if ($request->filled('area')) {
+            $query->where('id_area', $request->area);
+        }
+
+        // Filter Tanggal (hanya untuk riwayat)
+        if ($status === 'riwayat') {
+            if ($request->filled('tanggal_dari')) {
+                $query->whereDate('waktu_keluar', '>=', $request->tanggal_dari);
+            }
+            if ($request->filled('tanggal_sampai')) {
+                $query->whereDate('waktu_keluar', '<=', $request->tanggal_sampai);
+            }
+        }
+
+        $items = $query->orderBy($status === 'riwayat' ? 'waktu_keluar' : 'created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        $areas = AreaParkir::orderBy('nama_area')->get();
+        $title = 'Management Parkir';
+
+        // Hitung count untuk badges di tab
+        $counts = [
+            'aktif' => Transaksi::where('status', 'masuk')->whereNull('waktu_keluar')->count(),
+            'booking' => Transaksi::where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo)->count(),
+        ];
+
+        return view('transaksi.index', [
+            'transaksis' => $items,
+            'areas' => $areas,
+            'title' => $title,
+            'currentStatus' => $status,
+            'counts' => $counts
+        ]);
     }
 
     /**
-     * Parkir Aktif: Kendaraan yang sedang di dalam lot.
+     * @deprecated Gunakan index() dengan parameter status=aktif
      */
     public function activeParking(Request $request)
     {
-        $tenMinutesAgo = Carbon::now()->subMinutes(10);
-        // Cleanup expired bookmarks
-        Transaksi::where('status', 'bookmarked')
-            ->where('bookmarked_at', '<', $tenMinutesAgo)
-            ->delete();
-
-        $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
-            ->where('status', 'masuk')
-            ->whereNull('waktu_keluar');
-
-        if ($request->filled('q')) {
-            $search = $request->q;
-            $query->whereHas('kendaraan', function($sub) use ($search) {
-                $sub->where('plat_nomor', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('area')) {
-            $query->where('id_area', $request->area);
-        }
-
-        $items = $query->orderBy('waktu_masuk', 'desc')
-            ->paginate(30)
-            ->withQueryString();
-
-        $areas = AreaParkir::orderBy('nama_area')->get();
-        $title = 'Active Parking';
-
-        return view('parkir.index', ['transaksis' => $items, 'areas' => $areas, 'title' => $title]);
+        return redirect()->route('transaksi.index', ['status' => 'aktif']);
     }
 
     /**
-     * Bookings: Kendaraan yang sudah booking tapi belum masuk.
+     * @deprecated Gunakan index() dengan parameter status=booking
      */
     public function bookings(Request $request)
     {
-        $tenMinutesAgo = Carbon::now()->subMinutes(10);
-
-        // Cleanup expired bookmarks
-        Transaksi::where('status', 'bookmarked')
-            ->where('bookmarked_at', '<', $tenMinutesAgo)
-            ->delete();
-
-        $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area', 'parkingMapSlot'])
-            ->where('status', 'bookmarked')
-            ->where('bookmarked_at', '>', $tenMinutesAgo);
-
-        if ($request->filled('q')) {
-            $search = $request->q;
-            $query->whereHas('kendaraan', function($sub) use ($search) {
-                $sub->where('plat_nomor', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('area')) {
-            $query->where('id_area', $request->area);
-        }
-
-        $items = $query->orderBy('bookmarked_at', 'desc')
-            ->paginate(30)
-            ->withQueryString();
-
-        $areas = AreaParkir::orderBy('nama_area')->get();
-        $title = 'Active Bookings';
-
-        return view('parkir.index', ['transaksis' => $items, 'areas' => $areas, 'title' => $title]);
+        return redirect()->route('transaksi.index', ['status' => 'booking']);
     }
 
     /**
-     * Riwayat: Transaksi yang sudah selesai (keluar).
+     * @deprecated Gunakan index() dengan parameter status=riwayat
      */
     public function history(Request $request)
     {
-        $query = Transaksi::with(['kendaraan', 'tarif', 'user', 'area'])
-            ->where('status', 'keluar')
-            ->where('status_pembayaran', 'berhasil');
-
-        if ($request->filled('q')) {
-            $q = $request->q;
-            $query->whereHas('kendaraan', function($sub) use ($q) {
-                $sub->where('plat_nomor', 'like', '%' . $q . '%');
-            });
-        }
-
-        if ($request->filled('id_area')) {
-            $query->where('id_area', $request->id_area);
-        }
-
-        if ($request->filled('tanggal_dari')) {
-            $query->whereDate('waktu_keluar', '>=', $request->tanggal_dari);
-        }
-        if ($request->filled('tanggal_sampai')) {
-            $query->whereDate('waktu_keluar', '<=', $request->tanggal_sampai);
-        }
-
-        $transaksis = $query->orderBy('waktu_keluar', 'desc')->paginate(30)->withQueryString();
-        $areas = AreaParkir::orderBy('nama_area')->get();
-        $title = 'Parking History';
-
-        return view('transaksi.index', compact('transaksis', 'areas', 'title'));
+        return redirect()->route('transaksi.index', ['status' => 'riwayat']);
     }
 
     public function store(Request $request)
