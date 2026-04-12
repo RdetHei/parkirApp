@@ -100,7 +100,7 @@ class DashboardController extends Controller
                     $jamSibukQuery->where('id_area', $areaId);
                 }
                 $grafikJamSibuk['labels'][] = sprintf('%02d:00', $h);
-                $grafikJamSibuk['data'][] = $jamSibukQuery->count() / 30; // Rata-rata per hari // Modified
+                $grafikJamSibuk['data'][] = round($jamSibukQuery->count() / 30); // Modified to whole numbers
             }
 
             // Analisis Pendapatan Per Jam (Heatmap Data)

@@ -120,7 +120,17 @@ class Transaksi extends Model
         if ($this->waktu_masuk && $this->waktu_keluar && $this->tarif) {
             $durasi = $this->getDurasiJamAttribute();
             $tarif_perjam = $this->tarif->tarif_perjam;
-            return $durasi * $tarif_perjam;
+            $subtotal = $durasi * $tarif_perjam;
+
+            // Diskon 10% jika user memiliki rfid_uid (kartu member)
+            if ($this->id_user) {
+                $user = $this->user ?: User::find($this->id_user);
+                if ($user && !empty($user->rfid_uid)) {
+                    $subtotal = $subtotal * 0.9;
+                }
+            }
+
+            return $subtotal;
         }
         return 0;
     }

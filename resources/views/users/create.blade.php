@@ -14,7 +14,7 @@
         'method' => 'POST',
         'submitText' => 'Buat'
     ])
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-data="{ userRole: '{{ old('role', 'user') }}' }" x-init="$watch('userRole', v => { if (v !== 'petugas') { const k=document.getElementById('kode_peta'); const a=document.getElementById('id_area'); if(k) k.value=''; if(a) a.value=''; } })">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" x-data="{ userRole: '{{ old('role', 'user') }}' }">
             <div class="space-y-2">
                 <label for="name" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nama Lengkap <span class="text-rose-500">*</span></label>
                 <div class="relative group">
@@ -68,34 +68,27 @@
                 @error('role')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>
 
-            <div class="space-y-2">
-                <label for="kode_peta" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Kode Peta <span class="text-slate-700">(Khusus Petugas)</span></label>
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
-                        <i class="fa-solid fa-map-pin text-xs"></i>
-                    </div>
-                    <input type="text" name="kode_peta" id="kode_peta" value="{{ old('kode_peta') }}" placeholder="Contoh: LT1 (sama dengan map prefix area)"
-                           class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm @error('kode_peta') border-rose-500 @enderror"
-                           x-bind:disabled="userRole !== 'petugas'">
-                </div>
-                @error('kode_peta')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
+            <div class="md:col-span-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6" x-show="userRole === 'petugas'">
+                <p class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Petugas lapangan</p>
+                <p class="text-sm text-slate-300 leading-relaxed">Area tugas tidak diset lewat form ini. Admin memberi petugas <span class="text-white font-semibold">Kode Peta</span> persis seperti pada master Area Parkir. Petugas memasukkan kode itu setelah login (dashboard atau terminal RFID).</p>
             </div>
 
-            <div class="space-y-2">
-                <label for="id_area" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Area Tugas <span class="text-slate-700">(Khusus Petugas)</span></label>
+            <div class="md:col-span-2 space-y-2" x-show="userRole === 'admin'">
+                <label for="id_area" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Area default admin (opsional)</label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
                         <i class="fa-solid fa-location-dot text-xs"></i>
                     </div>
                     <select name="id_area" id="id_area"
-                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('id_area') border-rose-500 @enderror"
-                            x-bind:disabled="userRole !== 'petugas'">
-                        <option value="" class="bg-slate-900">-- Pilih Area Tugas --</option>
+                            x-bind:disabled="userRole !== 'admin'"
+                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('id_area') border-rose-500 @enderror">
+                        <option value="" class="bg-slate-900">— Tidak ada —</option>
                         @foreach($areas as $area)
                             <option value="{{ $area->id_area }}" {{ old('id_area') == $area->id_area ? 'selected' : '' }} class="bg-slate-900">{{ $area->nama_area }}</option>
                         @endforeach
                     </select>
                 </div>
+                <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest ml-1">Cadangan untuk RFID bila tidak memakai kode peta di terminal.</p>
                 @error('id_area')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>
 

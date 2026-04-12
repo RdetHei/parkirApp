@@ -31,7 +31,50 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        @php
+            $isPetugas = auth()->user()->role === 'petugas';
+        @endphp
+
+        <div class="mb-8 rounded-3xl border border-white/10 bg-slate-950/80 p-6 sm:p-8">
+            @if($operationalArea)
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Area terminal (auto slot)</p>
+                        <p class="text-white font-bold text-lg">{{ $operationalArea->nama_area }} <span class="text-slate-500 font-mono text-sm font-normal">· {{ $operationalArea->map_code }}</span></p>
+                    </div>
+                    <form method="POST" action="{{ route('operational-area.clear') }}" class="shrink-0">
+                        @csrf
+                        <button type="submit" class="px-5 py-2.5 rounded-xl border border-white/15 text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-white/5 transition-colors">
+                            Ganti kode peta
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="flex flex-col lg:flex-row lg:items-end gap-6 justify-between">
+                    <div class="max-w-xl">
+                        <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Kode peta terminal</p>
+                        @if($isPetugas)
+                            <p class="text-slate-400 text-sm leading-relaxed">Wajib isi dulu: masukkan <strong class="text-white">Kode Peta</strong> yang diberikan admin (sama dengan di Area Parkir). Tanpa ini scan RFID tidak akan menempatkan kendaraan ke slot otomatis.</p>
+                        @else
+                            <p class="text-slate-400 text-sm leading-relaxed">Opsional jika akun Anda punya area default; jika tidak, masukkan <strong class="text-white">Kode Peta</strong> untuk check-in dengan auto slot.</p>
+                        @endif
+                    </div>
+                    <form method="POST" action="{{ route('operational-area.set') }}" class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
+                        @csrf
+                        <input type="text" name="kode_peta" value="{{ old('kode_peta') }}" required placeholder="Kode peta"
+                               class="min-w-[220px] px-5 py-3.5 bg-slate-900 border border-white/10 rounded-xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50">
+                        <button type="submit" class="px-8 py-3.5 bg-blue-500 text-slate-950 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-blue-400 transition-colors">
+                            Terapkan
+                        </button>
+                    </form>
+                </div>
+                @if($errors->has('kode_peta'))
+                    <p class="mt-4 text-sm text-rose-400 font-medium">{{ $errors->first('kode_peta') }}</p>
+                @endif
+            @endif
+        </div>
+
+        <div id="rfid-terminal-panel" class="grid grid-cols-1 lg:grid-cols-5 gap-8 @if($isPetugas && !$operationalArea) opacity-40 pointer-events-none select-none @endif">
             <!-- Left: Scanner State -->
             <div class="lg:col-span-2 card-pro group overflow-hidden relative border-blue-500/10 flex flex-col items-center justify-center p-12 text-center">
                 <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
@@ -218,9 +261,10 @@
     const nestonPayUrlTemplate = @json(route('user.saldo.pay', ['id_parkir' => '__ID__']));
     const midtransUrlTemplate = @json(route('payment.create', ['id_parkir' => '__ID__']));
     const accessScanUrl = @json(route('api.rfid.access.scan'));
+    const mustEnterMapBeforeScan = @json($isPetugas && !$operationalArea);
 
-    document.addEventListener('click', () => rfidInput.focus());
-    rfidInput.focus();
+    document.addEventListener('click', () => { if (!mustEnterMapBeforeScan) rfidInput.focus(); });
+    if (!mustEnterMapBeforeScan) rfidInput.focus();
 
     let isProcessing = false;
     let resetTimer;
@@ -238,6 +282,7 @@
     }
 
     rfidInput.addEventListener('input', function(e) {
+        if (mustEnterMapBeforeScan) return;
         if (isProcessing) return;
         clearTimeout(timer);
         const uid = e.target.value.trim();
@@ -250,6 +295,7 @@
     rfidInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
+            if (mustEnterMapBeforeScan) return;
             if (isProcessing) return;
             clearTimeout(timer);
             const uid = e.target.value.trim();
@@ -258,6 +304,10 @@
     });
 
     async function processScan(uid) {
+        if (mustEnterMapBeforeScan) {
+            showResult({ success: false, message: 'Masukkan Kode Peta di atas terlebih dahulu agar auto slot berfungsi.', user: { name: 'Terminal', status: 'Kode peta wajib' } }, false);
+            return;
+        }
         const nowMs = Date.now();
         if (uid === lastUid && (nowMs - lastUidAt) < 1500) {
             showResult({ success: false, message: 'Scan terdeteksi ganda. Tunggu sebentar lalu scan ulang.', user: { name: 'Scanner', status: 'Anti double-scan' } }, false);

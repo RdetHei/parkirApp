@@ -38,50 +38,67 @@
         <div class="grid grid-cols-1 gap-8 lg:gap-10">
             <!-- Add Vehicle Form -->
             <div class="card-pro border-white/5 backdrop-blur-xl bg-slate-900/40 p-6 lg:p-8">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-xl">
-                        <i class="fa-solid fa-plus text-sm"></i>
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shadow-xl">
+                            <i class="fa-solid fa-plus text-sm"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-[10px] lg:text-[11px] font-black text-white uppercase tracking-[0.2em]">Tambah Kendaraan Baru</h2>
+                            <p class="text-[10px] text-slate-500 font-bold mt-1">Gunakan plat valid agar terdeteksi otomatis saat check-in RFID.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="text-[10px] lg:text-[11px] font-black text-white uppercase tracking-[0.2em]">Tambah Kendaraan Baru</h2>
-                        <p class="text-[10px] text-slate-500 font-bold mt-1">Gunakan plat valid agar terdeteksi otomatis saat check-in RFID.</p>
-                    </div>
+                    @if($kendaraans->count() >= 2)
+                        <div class="px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[9px] font-black uppercase tracking-widest rounded-xl animate-pulse">
+                            Limit Tercapai (Maks. 2)
+                        </div>
+                    @endif
                 </div>
 
-                <form method="POST" action="{{ route('user.vehicles.store') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
-                    @csrf
-                    <div>
-                        <label for="plat_nomor" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Plat Nomor</label>
-                        <input type="text" name="plat_nomor" id="plat_nomor"
-                               class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-black uppercase tracking-widest"
-                               placeholder="B 1234 XYZ" required>
+                @if($kendaraans->count() < 2)
+                    <form method="POST" action="{{ route('user.vehicles.store') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+                        @csrf
+                        <div>
+                            <label for="plat_nomor" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Plat Nomor</label>
+                            <input type="text" name="plat_nomor" id="plat_nomor"
+                                   class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-black uppercase tracking-widest"
+                                   placeholder="B 1234 XYZ" required>
+                        </div>
+                        <div>
+                            <label for="jenis_kendaraan" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Jenis</label>
+                            <select name="jenis_kendaraan" id="jenis_kendaraan"
+                                    class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-bold"
+                                    required>
+                                <option value="" class="bg-slate-900">Pilih...</option>
+                                <option value="motor" class="bg-slate-900">Motor</option>
+                                <option value="mobil" class="bg-slate-900">Mobil</option>
+                                <option value="lainnya" class="bg-slate-900">Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="warna" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Warna</label>
+                            <input type="text" name="warna" id="warna"
+                                   class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-medium"
+                                   placeholder="Hitam">
+                        </div>
+                        <div>
+                            <button type="submit"
+                                    class="w-full group relative flex items-center justify-center gap-3 py-4 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20 active:scale-[0.98] overflow-hidden">
+                                <div class="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                                <i class="fa-solid fa-floppy-disk text-sm"></i>
+                                Simpan Data
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <div class="px-6 py-12 text-center bg-slate-950/30 rounded-3xl border border-dashed border-white/5">
+                        <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-rose-500 shadow-2xl">
+                            <i class="fa-solid fa-lock text-xl"></i>
+                        </div>
+                        <h3 class="text-xs font-black text-white uppercase tracking-widest mb-2">Batas Pendaftaran Tercapai</h3>
+                        <p class="text-[10px] text-slate-500 font-bold max-w-sm mx-auto">Anda telah mencapai batas maksimal pendaftaran kendaraan (2 unit). Hapus salah satu kendaraan untuk mendaftarkan kendaraan baru.</p>
                     </div>
-                    <div>
-                        <label for="jenis_kendaraan" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Jenis</label>
-                        <select name="jenis_kendaraan" id="jenis_kendaraan"
-                                class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-bold"
-                                required>
-                            <option value="" class="bg-slate-900">Pilih...</option>
-                            <option value="motor" class="bg-slate-900">Motor</option>
-                            <option value="mobil" class="bg-slate-900">Mobil</option>
-                            <option value="lainnya" class="bg-slate-900">Lainnya</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="warna" class="block text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Warna</label>
-                        <input type="text" name="warna" id="warna"
-                               class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white placeholder:text-slate-700 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-medium"
-                               placeholder="Hitam">
-                    </div>
-                    <div>
-                        <button type="submit"
-                                class="w-full group relative flex items-center justify-center gap-3 py-4 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-all shadow-xl shadow-emerald-500/20 active:scale-[0.98] overflow-hidden">
-                            <div class="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                            <i class="fa-solid fa-floppy-disk text-sm"></i>
-                            Simpan Data
-                        </button>
-                    </div>
-                </form>
+                @endif
             </div>
 
             <!-- List Vehicles -->

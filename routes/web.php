@@ -142,98 +142,23 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
     // Petugas Dashboard
     Route::get('/petugas/dashboard', [PetugasDashboardController::class, 'index'])->name('petugas.dashboard')->middleware('role:petugas');
 
+    // Sesi area tugas (kode peta): admin & petugas
+    Route::post('/operational-area', [PetugasDashboardController::class, 'setOperationalArea'])
+        ->middleware('role:admin,petugas')
+        ->name('operational-area.set');
+    Route::post('/operational-area/clear', [PetugasDashboardController::class, 'clearOperationalArea'])
+        ->middleware('role:admin,petugas')
+        ->name('operational-area.clear');
+
     // User Dashboard
-    Route::get('/user/dashboard', function (\Illuminate\Http\Request $request) {
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-
-        $totalKendaraan = \App\Models\Kendaraan::where('id_user', $user->id)->count();
-        $totalTransaksi = \App\Models\Transaksi::where('id_user', $user->id)->count();
-        $transaksiAktif = \App\Models\Transaksi::where('id_user', $user->id)
-            ->where('status', 'masuk')
-            ->count();
-
-        $totalPembayaran = \App\Models\Pembayaran::where('id_user', $user->id)->count();
-        $totalPengeluaran = \App\Models\Pembayaran::where('id_user', $user->id)
-            ->where('status', 'berhasil')
-            ->sum('nominal');
-
-        // Tagihan (transaksi sudah keluar tapi belum dibayar)
-        $transaksiBelumDibayar = \App\Models\Transaksi::where('id_user', $user->id)
-            ->where('status', 'keluar')
-            ->where(function ($q) {
-                $q->whereNull('status_pembayaran')
-                    ->orWhere('status_pembayaran', '!=', 'berhasil');
-            })
-            ->count();
-
-        $riwayatTransaksi = \App\Models\Transaksi::with(['kendaraan', 'area', 'tarif'])
-            ->where('id_user', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(5)
-            ->get();
-
-        $riwayatPembayaran = \App\Models\Pembayaran::with(['transaksi'])
-            ->where('id_user', $user->id)
-            ->orderByDesc('waktu_pembayaran')
-            ->limit(5)
-            ->get();
-
-        return view('user.dashboard', compact(
-            'user',
-            'totalKendaraan',
-            'totalTransaksi',
-            'transaksiAktif',
-            'totalPembayaran',
-            'totalPengeluaran',
-            'transaksiBelumDibayar',
-            'riwayatTransaksi',
-            'riwayatPembayaran'
-        ));
-    })->name('user.dashboard');
+    Route::get('/user/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
 
     // User: Riwayat transaksi lengkap
-    Route::get('/user/history', function (\Illuminate\Http\Request $request) {
-        $user = $request->user();
-        $transactions = \App\Models\Transaksi::with(['kendaraan', 'area', 'tarif', 'pembayaran'])
-            ->where('id_user', $user->id)
-            ->orderByDesc('created_at')
-            ->paginate(15);
-        $title = 'Riwayat Parkir';
-        return view('user.history', compact('transactions', 'title'));
-    })->name('user.history');
+    Route::get('/user/history', [UserController::class, 'history'])->name('user.history');
 
     // User: Kelola profil sendiri
-    Route::get('/user/profile', function (\Illuminate\Http\Request $request) {
-        return view('user.profile', ['user' => $request->user(), 'title' => 'Profil Saya']);
-    })->name('user.profile');
-
-    Route::put('/user/profile', function (\Illuminate\Http\Request $request) {
-        $user = $request->user();
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:tb_user,email,' . $user->id,
-            'phone' => 'nullable|string|max:32',
-            'password' => 'nullable|string|min:8|confirmed',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
-        ]);
-
-        if ($request->filled('password')) {
-            $data['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
-        } else {
-            unset($data['password']);
-        }
-
-        $photoFile = $request->file('photo');
-        unset($data['photo']);
-
-        if ($photoFile?->isValid()) {
-            $data = array_merge($data, UserPhoto::replaceWithUpload($photoFile, $user));
-        }
-
-        $user->update($data);
-        return back()->with('success', 'Profil berhasil diperbarui.');
-    })->name('user.profile.update');
+    Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::put('/user/profile', [UserController::class, 'profileUpdate'])->name('user.profile.update');
 
     // User: Kelola kendaraan milik sendiri
     Route::get('/user/vehicles', [\App\Http\Controllers\UserVehicleController::class, 'index'])->name('user.vehicles.index');
@@ -242,126 +167,8 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
     Route::delete('/user/vehicles/{vehicle}', [\App\Http\Controllers\UserVehicleController::class, 'destroy'])->name('user.vehicles.destroy');
 
     // User: Booking slot (area-based bookmark)
-    Route::get('/user/bookings/areas/{area?}', function (\Illuminate\Http\Request $request, $areaId = null) {
-        /** @var \App\Models\User $user */
-        $user = $request->user();
+    Route::get('/user/bookings/areas/{area?}', [ParkingSlotController::class, 'bookingPage'])->name('user.bookings');
 
-        $selectedDaerah = $request->query('daerah');
-        $daerahs = \App\Models\AreaParkir::query()
-            ->whereNotNull('daerah')
-            ->where('daerah', '!=', '')
-            ->orderBy('daerah')
-            ->distinct()
-            ->pluck('daerah');
-
-        $query = \App\Models\AreaParkir::orderBy('nama_area');
-        if ($selectedDaerah) {
-            $query->where('daerah', $selectedDaerah);
-        }
-        $areas = $query->get();
-
-        // Pilih peta area aktif berdasarkan filter + pilihan user.
-        $map = null;
-        if ($areaId) {
-            $map = $areas->firstWhere('id_area', (int) $areaId) ?? \App\Models\AreaParkir::find((int) $areaId);
-        }
-        if (!$map) {
-            $map = $areas->first() ?? \App\Models\AreaParkir::getDefaultMap();
-        }
-        if ($selectedDaerah && $map && !$areas->contains('id_area', $map->id_area)) {
-            $map = $areas->first();
-        }
-        $selectedAreaId = $map?->id_area;
-
-        $kendaraans = \App\Models\Kendaraan::where('id_user', $user->id)->orderBy('plat_nomor')->get();
-        $tarifs = \App\Models\Tarif::orderBy('jenis_kendaraan')->get();
-        $activeBookingInfo = null;
-
-        // Hitung status per area (kosong / terisi / dibookmark)
-        $now = \Carbon\Carbon::now();
-        $statusPerArea = [];
-        $myBookingIds = [];
-
-        foreach ($areas as $area) {
-            $occupied = \App\Models\Transaksi::where('id_area', $area->id_area)
-                ->whereNull('waktu_keluar')
-                ->where('status', 'masuk')
-                ->exists();
-
-            if ($occupied) {
-                $statusPerArea[$area->id_area] = 'occupied';
-                continue;
-            }
-
-            $reservation = \App\Models\ParkingSlotReservation::active()
-                ->where('id_area', $area->id_area)
-                ->orderByDesc('expires_at')
-                ->first();
-
-            if ($reservation) {
-                if ((int) $reservation->id_user === (int) $user->id) {
-                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
-                    $myBookingIds[$area->id_area] = $reservation->id;
-                } else {
-                    $statusPerArea[$area->id_area] = 'bookmarked';
-                }
-                continue;
-            }
-
-            $legacy = \App\Models\Transaksi::where('id_area', $area->id_area)
-                ->where('status', 'bookmarked')
-                ->where('bookmarked_at', '>', $now->copy()->subMinutes(10))
-                ->orderByDesc('bookmarked_at')
-                ->first();
-
-            if ($legacy) {
-                if ((int) $legacy->id_user === (int) $user->id) {
-                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
-                    $myBookingIds[$area->id_area] = $legacy->id_parkir;
-                } else {
-                    $statusPerArea[$area->id_area] = 'bookmarked';
-                }
-                continue;
-            }
-
-            $statusPerArea[$area->id_area] = 'empty';
-        }
-
-        $activeReservation = \App\Models\ParkingSlotReservation::active()
-            ->with(['area:id_area,nama_area', 'slot:id,code'])
-            ->where('id_user', $user->id)
-            ->latest('expires_at')
-            ->first();
-
-        if ($activeReservation) {
-            $activeBookingInfo = [
-                'id' => (int) $activeReservation->id,
-                'kind' => 'reservation',
-                'area_name' => $activeReservation->area?->nama_area ?? '-',
-                'slot_code' => $activeReservation->slot?->code ?? '-',
-                'expires_at' => optional($activeReservation->expires_at)->toIso8601String(),
-            ];
-        } else {
-            $legacyBooking = \App\Models\Transaksi::where('id_user', $user->id)
-                ->where('status', 'bookmarked')
-                ->where('bookmarked_at', '>', $now->copy()->subMinutes(10))
-                ->with(['area:id_area,nama_area', 'parkingMapSlot:id,code'])
-                ->latest('bookmarked_at')
-                ->first();
-
-            if ($legacyBooking) {
-                $activeBookingInfo = [
-                    'id' => (int) $legacyBooking->id_parkir,
-                    'kind' => 'transaksi',
-                    'area_name' => $legacyBooking->area?->nama_area ?? '-',
-                    'slot_code' => $legacyBooking->parkingMapSlot?->code ?? '-',
-                    'expires_at' => optional($legacyBooking->bookmarked_at)->addMinutes(10)->toIso8601String(),
-                ];
-            }
-        }
-
-        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs', 'daerahs', 'selectedDaerah', 'selectedAreaId', 'activeBookingInfo'));
-    })->name('user.bookings');
 
     Route::post('/user/bookings/areas/{area}', [\App\Http\Controllers\ParkingSlotController::class, 'bookmark'])->name('user.bookings.book');
     Route::delete('/user/bookings/areas/{id}', [\App\Http\Controllers\ParkingSlotController::class, 'unbookmark'])->name('user.bookings.unbook');
@@ -393,6 +200,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
 
         Route::resource('kendaraan', \App\Http\Controllers\KendaraanController::class);
         Route::resource('tarif', \App\Http\Controllers\TarifController::class);
+        Route::delete('log-aktivitas/delete-all', [\App\Http\Controllers\LogAktifitasController::class, 'deleteAll'])->name('log-aktivitas.deleteAll');
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
         Route::resource('kamera', \App\Http\Controllers\CameraController::class);
 

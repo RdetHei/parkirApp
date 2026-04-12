@@ -11,8 +11,118 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
+use App\Models\Kendaraan;
+use App\Models\Transaksi;
+use App\Models\Pembayaran;
+
 class UserController extends Controller
 {
+    /**
+     * User Dashboard
+     */
+    public function dashboard(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        $totalKendaraan = Kendaraan::where('id_user', $user->id)->count();
+        $totalTransaksi = Transaksi::where('id_user', $user->id)->count();
+        $transaksiAktif = Transaksi::where('id_user', $user->id)
+            ->where('status', 'masuk')
+            ->count();
+
+        $totalPembayaran = Pembayaran::where('id_user', $user->id)->count();
+        $totalPengeluaran = Pembayaran::where('id_user', $user->id)
+            ->where('status', 'berhasil')
+            ->sum('nominal');
+
+        // Tagihan (transaksi sudah keluar tapi belum dibayar)
+        $transaksiBelumDibayar = Transaksi::where('id_user', $user->id)
+            ->where('status', 'keluar')
+            ->where(function ($q) {
+                $q->whereNull('status_pembayaran')
+                    ->orWhere('status_pembayaran', '!=', 'berhasil');
+            })
+            ->count();
+
+        $riwayatTransaksi = Transaksi::with(['kendaraan', 'area', 'tarif'])
+            ->where('id_user', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        $riwayatPembayaran = Pembayaran::with(['transaksi'])
+            ->where('id_user', $user->id)
+            ->orderByDesc('waktu_pembayaran')
+            ->limit(5)
+            ->get();
+
+        return view('user.dashboard', compact(
+            'user',
+            'totalKendaraan',
+            'totalTransaksi',
+            'transaksiAktif',
+            'totalPembayaran',
+            'totalPengeluaran',
+            'transaksiBelumDibayar',
+            'riwayatTransaksi',
+            'riwayatPembayaran'
+        ));
+    }
+
+    /**
+     * User: Riwayat transaksi lengkap
+     */
+    public function history(Request $request)
+    {
+        $user = $request->user();
+        $transactions = Transaksi::with(['kendaraan', 'area', 'tarif', 'pembayaran'])
+            ->where('id_user', $user->id)
+            ->orderByDesc('created_at')
+            ->paginate(15);
+        $title = 'Riwayat Parkir';
+        return view('user.history', compact('transactions', 'title'));
+    }
+
+    /**
+     * User: Profil sendiri
+     */
+    public function profile(Request $request)
+    {
+        return view('user.profile', ['user' => $request->user(), 'title' => 'Profil Saya']);
+    }
+
+    /**
+     * User: Update profil sendiri
+     */
+    public function profileUpdate(Request $request)
+    {
+        $user = $request->user();
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:tb_user,email,' . $user->id,
+            'phone' => 'nullable|string|max:32',
+            'password' => 'nullable|string|min:8|confirmed',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+        ]);
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        $photoFile = $request->file('photo');
+        unset($data['photo']);
+
+        if ($photoFile?->isValid()) {
+            $data = array_merge($data, UserPhoto::replaceWithUpload($photoFile, $user));
+        }
+
+        $user->update($data);
+        return back()->with('success', 'Profil berhasil diperbarui.');
+    }
+
     public function topup(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -82,21 +192,12 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
-            'id_area' => 'nullable|exists:tb_area_parkir,id_area', // Dari dropdown
-            'kode_peta' => 'nullable|string|max:10', // Dari input teks
+            'id_area' => 'nullable|exists:tb_area_parkir,id_area',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
-        // Handle kode_peta to id_area conversion, overriding dropdown if valid
-        if ($request->filled('kode_peta')) {
-            $areaByPrefix = AreaParkir::where('map_prefix', $request->kode_peta)->first();
-            if (!$areaByPrefix) {
-                return back()->withErrors(['kode_peta' => 'Kode Peta tidak valid.'])->withInput();
-            }
-            $data['id_area'] = $areaByPrefix->id_area;
-        } else {
-            // If kode_peta is empty, use id_area from dropdown (which is already in $data)
-            // No need to explicitly set $data['id_area'] = null here, as it's nullable in validation
+        if (($data['role'] ?? '') === 'petugas' || ($data['role'] ?? '') === 'user') {
+            $data['id_area'] = null;
         }
 
         $data['password'] = Hash::make($data['password']);
@@ -170,20 +271,15 @@ class UserController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|string|in:user,admin,petugas',
-            'id_area' => 'nullable|exists:tb_area_parkir,id_area', // Dari dropdown
-            'kode_peta' => 'nullable|string|max:10', // Dari input teks
+            'id_area' => 'nullable|exists:tb_area_parkir,id_area',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
-        // Handle kode_peta to id_area conversion, overriding dropdown if valid
-        if ($request->filled('kode_peta')) {
-            $areaByPrefix = AreaParkir::where('map_prefix', $request->kode_peta)->first();
-            if (!$areaByPrefix) {
-                return back()->withErrors(['kode_peta' => 'Kode Peta tidak valid.'])->withInput();
-            }
-            $data['id_area'] = $areaByPrefix->id_area;
-        } else {
-            // If kode_peta is empty, use id_area from dropdown (which is already in $data)
+        if (($data['role'] ?? '') === 'petugas') {
+            $data['id_area'] = null;
+        }
+        if (($data['role'] ?? '') === 'user') {
+            $data['id_area'] = null;
         }
 
         if (!empty($data['password'])) {

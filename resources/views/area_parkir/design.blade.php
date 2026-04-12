@@ -156,21 +156,47 @@
 
             <!-- Properties Sidebar -->
             <div class="lg:col-span-1 space-y-6">
-                <!-- Change Image Quick Action -->
-                <div class="card-pro bg-gradient-to-br from-indigo-600/20 to-blue-600/20 border-blue-500/20">
-                    <h3 class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-4">Background Blueprint</h3>
-                    <form action="{{ route('area-parkir.update', $area->id_area) }}" method="POST" enctype="multipart/form-data" id="quick-image-form">
-                        @csrf @method('PUT')
-                        <input type="hidden" name="nama_area" value="{{ $area->nama_area }}">
-                        <input type="hidden" name="kapasitas" value="{{ $area->kapasitas }}">
-                        <label class="block group cursor-pointer">
-                            <div class="p-4 bg-white/5 border-2 border-dashed border-white/10 rounded-2xl text-center group-hover:bg-white/10 group-hover:border-blue-500/50 transition-all">
-                                <svg class="w-6 h-6 text-slate-500 mx-auto mb-2 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 012-2V6a2 2 0 01-2-2H6a2 2 0 01-2 2v12a2 2 0 012 2z"></path></svg>
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Update Image</span>
+                <!-- Area Information Card -->
+                <div class="card-pro bg-gradient-to-br from-slate-900 to-slate-800 border-white/5">
+                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-6">Area Intelligence</h3>
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <!-- Prefix Info -->
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Map Prefix</span>
                             </div>
-                            <input type="file" name="map_image" class="hidden" onchange="document.getElementById('quick-image-form').submit()">
-                        </label>
-                    </form>
+                            <span class="text-xs font-black text-white">{{ $area->map_prefix ?: 'N/A' }}</span>
+                        </div>
+
+                        <!-- Slots Info -->
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Slots Usage</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="info-slot-count" class="text-xs font-black text-white">{{ count($area->slots) }}</span>
+                                <span class="text-[10px] font-bold text-slate-600">/ {{ $area->kapasitas }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Cameras Info -->
+                        <div class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Map Cameras</span>
+                            </div>
+                            <span id="info-camera-count" class="text-xs font-black text-white">{{ count($area->mapCameras) }}</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-pro sticky top-8 min-h-[400px]" id="properties-panel">
@@ -455,7 +481,27 @@
         if (activeElement) activeElement.dataset.cameraId = e.target.value;
     });
 
+    function updateInfoCounts() {
+        const slots = canvas.querySelectorAll('.parking-slot').length;
+        const cameras = canvas.querySelectorAll('.parking-camera').length;
+        
+        const slotCountEl = document.getElementById('info-slot-count');
+        const camCountEl = document.getElementById('info-camera-count');
+        
+        if (slotCountEl) slotCountEl.innerText = slots;
+        if (camCountEl) camCountEl.innerText = cameras;
+    }
+
     function createNewSlot(x, y) {
+        const capacity = {{ $area->kapasitas }};
+        const currentSlots = canvas.querySelectorAll('.parking-slot').length;
+
+        if (currentSlots >= capacity) {
+            alert(`Kapasitas area ini sudah penuh (${capacity} slots). Tidak bisa menambah slot lagi.`);
+            setMode('select');
+            return;
+        }
+
         const slot = document.createElement('div');
         slot.className = 'parking-slot absolute cursor-move select-none border-2 border-blue-500/50 bg-blue-500/10 flex items-center justify-center text-[10px] font-black text-white hover:bg-blue-500/30 hover:border-blue-400 transition-all group';
         slot.style.left = x + 'px';
@@ -469,6 +515,7 @@
         canvas.appendChild(slot);
         setMode('select');
         selectElement(slot);
+        updateInfoCounts();
     }
 
     function createNewCamera(x, y) {
@@ -484,6 +531,7 @@
         canvas.appendChild(cam);
         setMode('select');
         selectElement(cam);
+        updateInfoCounts();
     }
 
     function removeElement(btn, e) {
@@ -493,12 +541,21 @@
             el.remove();
             activeElement = null;
             showProperties(null);
+            updateInfoCounts();
         }
     }
 
     async function saveDesign() {
         const slots = [];
         const cameras = [];
+
+        const capacity = {{ $area->kapasitas }};
+        const currentSlots = canvas.querySelectorAll('.parking-slot').length;
+
+        if (currentSlots > capacity) {
+            alert(`Jumlah slot (${currentSlots}) melebihi kapasitas area (${capacity}). Harap kurangi slot.`);
+            return;
+        }
 
         canvas.querySelectorAll('.parking-slot').forEach(el => {
             slots.push({

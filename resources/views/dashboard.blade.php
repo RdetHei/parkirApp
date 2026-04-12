@@ -134,7 +134,7 @@
                     <div class="h-8 w-px bg-white/10 mx-2"></div>
                     <button id="btnShowTraffic" class="text-left group outline-none opacity-40 hover:opacity-100 transition-all">
                         <h2 class="text-xl font-bold text-white tracking-tight group-hover:text-blue-500 transition-colors">{{ __('Peak Hours') }}</h2>
-                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Daily average vehicle entries by hour') }}</p>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Vehicle entries by hour') }}</p>
                     </button>
                 </div>
                 <div class="flex items-center gap-3">
@@ -382,7 +382,7 @@
                 data: {
                     labels: @json($grafikJamSibuk['labels']),
                     datasets: [{
-                        label: 'Avg Entries',
+                        label: 'Entries',
                         data: @json($grafikJamSibuk['data']),
                         backgroundColor: 'rgba(59, 130, 246, 0.5)',
                         borderColor: '#3b82f6',
@@ -400,7 +400,11 @@
                         y: {
                             beginAtZero: true,
                             grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
-                            title: { display: true, text: 'Avg Vehicles/Hour' }
+                            title: { display: true, text: 'Vehicles/Hour' },
+                            ticks: {
+                                stepSize: 1, // Show only whole numbers
+                                precision: 0
+                            }
                         },
                         x: {
                             grid: { display: false, drawBorder: false }

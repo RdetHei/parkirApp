@@ -20,7 +20,13 @@ class RfidParkingController extends Controller
     public function index()
     {
         $title = 'Parking Scan RFID';
-        return view('parkir.scan', compact('title'));
+        $operationalArea = null;
+        $sessionId = session(PetugasDashboardController::SESSION_OPERATIONAL_AREA);
+        if ($sessionId) {
+            $operationalArea = AreaParkir::find($sessionId);
+        }
+
+        return view('parkir.scan', compact('title', 'operationalArea'));
     }
 
     public function processScan(Request $request)
@@ -82,25 +88,25 @@ class RfidParkingController extends Controller
                 ], 400);
             }
 
-            // Enforce id_area from the current petugas
             $currentUser = Auth::user();
-            $area = null;
+            $area = $this->resolveCheckInArea($currentUser);
 
-            if ($currentUser && $currentUser->id_area) {
-                $area = AreaParkir::find($currentUser->id_area);
-            }
+            if (! $area) {
+                $msg = $currentUser && $currentUser->role === 'petugas'
+                    ? 'Gagal check-in: masukkan Kode Peta di dashboard atau di halaman terminal RFID terlebih dahulu agar auto slot berjalan.'
+                    : 'Gagal check-in: atur area dengan Kode Peta di terminal, atau hubungi admin untuk menugaskan area pada akun Anda.';
 
-            if (!$area) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal check-in: Anda belum ditugaskan ke area parkir manapun. Silakan hubungi admin.',
+                    'message' => $msg,
                     'user' => [
                         'name' => $user->name,
                         'photo' => $user->profile_photo_url,
                         'balance' => $user->balance ?? 0,
-                        'status' => 'Petugas Belum Ada Area',
+                        'status' => 'Belum Ada Area Terminal',
                         'vehicle' => $kendaraan->plat_nomor,
-                    ]
+                    ],
+                    'requires_map_code' => true,
                 ], 403);
             }
 
@@ -172,6 +178,11 @@ class RfidParkingController extends Controller
             $durationHours = (int) max(1, ceil($startTime->diffInMinutes($endTime, true) / 60));
             $totalAmount = $durationHours * $rate;
 
+            // Diskon 10% jika user memiliki rfid_uid (kartu member)
+            if (!empty($user->rfid_uid)) {
+                $totalAmount = $totalAmount * 0.9;
+            }
+
             $checkout = DB::transaction(function () use ($user, $activeTransaksi, $rate, $totalAmount) {
                 $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
                 $bal = (float) ($lockedUser->balance ?? 0);
@@ -204,6 +215,11 @@ class RfidParkingController extends Controller
                 $startTime2 = Carbon::parse($lockedTransaksi->waktu_masuk);
                 $durationHours2 = (int) max(1, ceil($startTime2->diffInMinutes(\Illuminate\Support\Carbon::now(), true) / 60));
                 $totalAmount2 = $durationHours2 * $rate;
+
+                // Diskon 10% jika user memiliki rfid_uid (kartu member)
+                if (!empty($lockedUser->rfid_uid)) {
+                    $totalAmount2 = $totalAmount2 * 0.9;
+                }
 
                 if ($bal < $totalAmount2) {
                     $lockedTransaksi->update([
@@ -322,6 +338,31 @@ class RfidParkingController extends Controller
             'title' => 'Riwayat Scan RFID',
             'items' => $items,
         ]);
+    }
+
+    /**
+     * Area check-in: sesi kode peta (wajib untuk petugas); admin bisa fallback id_area.
+     */
+    private function resolveCheckInArea(?User $currentUser): ?AreaParkir
+    {
+        if (! $currentUser) {
+            return null;
+        }
+
+        $sessionId = session(PetugasDashboardController::SESSION_OPERATIONAL_AREA);
+        if ($sessionId) {
+            return AreaParkir::find($sessionId);
+        }
+
+        if ($currentUser->role === 'petugas') {
+            return null;
+        }
+
+        if ($currentUser->id_area) {
+            return AreaParkir::find($currentUser->id_area);
+        }
+
+        return null;
     }
 }
 

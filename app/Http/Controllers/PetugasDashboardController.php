@@ -11,16 +11,61 @@ use Illuminate\Support\Facades\Cache;
 
 class PetugasDashboardController extends Controller
 {
+    public const SESSION_OPERATIONAL_AREA = 'operational_area_id';
+
+    public function setOperationalArea(Request $request)
+    {
+        $request->validate([
+            'kode_peta' => 'required|string|max:50',
+        ]);
+
+        $area = AreaParkir::findByMapCode($request->kode_peta);
+        if (! $area) {
+            $message = 'Kode peta tidak valid. Gunakan Kode Peta yang sama dengan di menu Area Parkir.';
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+
+            return back()->withErrors(['kode_peta' => $message])->withInput();
+        }
+
+        session([self::SESSION_OPERATIONAL_AREA => $area->id_area]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Area aktif: ' . $area->nama_area,
+                'area' => [
+                    'nama' => $area->nama_area,
+                    'map_code' => $area->map_code,
+                ],
+            ]);
+        }
+
+        return back()->with('success', 'Area tugas diaktifkan: ' . $area->nama_area);
+    }
+
+    public function clearOperationalArea(Request $request)
+    {
+        session()->forget(self::SESSION_OPERATIONAL_AREA);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Area tugas dihapus dari sesi.']);
+        }
+
+        return back()->with('success', 'Sesi area tugas dibersihkan. Masukkan kode peta untuk shift berikutnya.');
+    }
+
     public function index()
     {
         try {
-            $user = auth()->user();
-            $idArea = $user->id_area;
+            $idArea = session(self::SESSION_OPERATIONAL_AREA);
 
-            if (! $idArea && $user->role === 'petugas') {
+            if (! $idArea) {
                 return view('petugas.dashboard', [
                     'title' => 'Dashboard Petugas',
-                    'error' => 'Anda belum ditugaskan ke area manapun. Silakan hubungi Admin.',
+                    'needsOperationalArea' => true,
+                    'operationalArea' => null,
                     'transaksiAktif' => 0,
                     'bookingAktif' => 0,
                     'transaksiHariIni' => 0,
@@ -29,7 +74,7 @@ class PetugasDashboardController extends Controller
                     'totalTerisi' => 0,
                     'aktivitasTerbaru' => collect([]),
                     'areaParkir' => AreaParkir::all(),
-                    'area' => null
+                    'area' => null,
                 ]);
             }
 
@@ -71,6 +116,8 @@ class PetugasDashboardController extends Controller
 
             return view('petugas.dashboard', [
                 'title' => $title,
+                'needsOperationalArea' => false,
+                'operationalArea' => $area,
                 'transaksiAktif' => $transaksiAktif,
                 'bookingAktif' => $bookingAktif,
                 'transaksiHariIni' => $stats['transaksiHariIni'],
@@ -79,7 +126,7 @@ class PetugasDashboardController extends Controller
                 'totalTerisi' => $totalTerisi,
                 'aktivitasTerbaru' => $aktivitasTerbaru,
                 'areaParkir' => AreaParkir::all(),
-                'area' => $area
+                'area' => $area,
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('PetugasDashboardController@index error: ' . $e->getMessage());

@@ -204,6 +204,14 @@ class TransaksiController extends Controller
 
                 $biaya_total = $durasi_jam * $tarif->tarif_perjam;
 
+                // Diskon 10% jika user memiliki rfid_uid (kartu member)
+                if ($transaksi->id_user) {
+                    $user = $transaksi->user ?: User::find($transaksi->id_user);
+                    if ($user && !empty($user->rfid_uid)) {
+                        $biaya_total = $biaya_total * 0.9;
+                    }
+                }
+
                 // Update transaksi
                 $transaksi->update([
                     'waktu_keluar' => $waktu_keluar,

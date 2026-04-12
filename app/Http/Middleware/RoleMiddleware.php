@@ -19,15 +19,18 @@ class RoleMiddleware
         }
 
         $user = Auth::user();
-        \Illuminate\Support\Facades\Log::info('RoleMiddleware check', ['user_id' => $user->id, 'user_role' => $user->role, 'allowed_roles' => $roles]);
 
-        $allowedRoles = array_map(function ($r) {
-            return strtolower(trim($r));
-        }, $roles);
+        // Satu parameter "admin,petugas" dari role:admin,petugas harus dipecah jadi beberapa role (OR).
+        $allowedRoles = [];
+        foreach ($roles as $segment) {
+            foreach (preg_split('/\s*,\s*/', (string) $segment, -1, PREG_SPLIT_NO_EMPTY) as $part) {
+                $allowedRoles[] = strtolower(trim($part));
+            }
+        }
+        $allowedRoles = array_values(array_unique($allowedRoles));
 
-        // Check if user's role is in allowed roles
         $userRole = strtolower(trim($user->role ?? ''));
-        if (!in_array($userRole, $allowedRoles)) {
+        if (! in_array($userRole, $allowedRoles, true)) {
             abort(403, 'Unauthorized - Insufficient permissions');
         }
 

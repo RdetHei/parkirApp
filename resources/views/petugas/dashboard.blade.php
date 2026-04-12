@@ -25,15 +25,49 @@
         </div>
     </div>
 
-    @if(isset($error))
-        <div class="mb-10 p-6 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-6 animate-fade-in-up">
-            <div class="w-14 h-14 rounded-2xl bg-rose-500/20 flex items-center justify-center text-rose-500 shrink-0">
-                <i class="fa-solid fa-circle-exclamation text-2xl"></i>
+    @if(session('success'))
+        <div class="mb-8 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-medium">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(!empty($needsOperationalArea))
+        <div class="mb-10 p-8 rounded-3xl bg-amber-500/5 border border-amber-500/20 animate-fade-in-up">
+            <div class="flex flex-col lg:flex-row lg:items-end gap-6 justify-between">
+                <div class="max-w-xl">
+                    <h4 class="text-white font-black uppercase tracking-widest text-xs mb-2 text-amber-400">Kode peta diperlukan</h4>
+                    <p class="text-slate-400 text-sm leading-relaxed">Masukkan <strong class="text-white">Kode Peta</strong> dari admin — sama persis dengan kolom Kode Peta pada data Area Parkir. Tanpa ini, statistik dashboard, AI Scanner, dan auto slot di terminal RFID tidak terikat ke area Anda.</p>
+                </div>
+                <form method="POST" action="{{ route('operational-area.set') }}" class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
+                    @csrf
+                    <input type="text" name="kode_peta" value="{{ old('kode_peta') }}" required placeholder="Kode peta"
+                           class="min-w-[200px] px-5 py-3.5 bg-slate-950 border border-white/10 rounded-xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 @error('kode_peta') border-rose-500 @enderror">
+                    <button type="submit" class="px-8 py-3.5 bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-colors">
+                        Aktifkan area
+                    </button>
+                </form>
             </div>
-            <div>
-                <h4 class="text-white font-bold uppercase tracking-widest text-xs mb-1">Configuration Required</h4>
-                <p class="text-rose-200/70 text-sm font-medium">{{ $error }}</p>
+            @error('kode_peta')
+                <p class="mt-4 text-sm text-rose-400 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
+    @elseif(!empty($operationalArea))
+        <div class="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 rounded-3xl bg-emerald-500/5 border border-emerald-500/20">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-emerald-400">
+                    <i class="fa-solid fa-map-location-dot text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Area tugas aktif</p>
+                    <p class="text-white font-bold">{{ $operationalArea->nama_area }} <span class="text-slate-500 font-mono text-sm">· {{ $operationalArea->map_code }}</span></p>
+                </div>
             </div>
+            <form method="POST" action="{{ route('operational-area.clear') }}" class="shrink-0">
+                @csrf
+                <button type="submit" class="px-5 py-2.5 rounded-xl border border-white/10 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:bg-white/5 hover:text-white transition-colors">
+                    Ganti area
+                </button>
+            </form>
         </div>
     @endif
 

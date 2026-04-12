@@ -46,7 +46,7 @@ return [
     ],
 
     'whatsapp' => [
-        'enabled' => filter_var(env('WHATSAPP_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        'enabled' => env('WHATSAPP_ENABLED', false),
         'driver' => env('WHATSAPP_DRIVER', 'fonnte'), // fonnte | ultramsg
         'url' => env('WHATSAPP_GATEWAY_URL', ''),
         'token' => env('WHATSAPP_API_TOKEN', ''),

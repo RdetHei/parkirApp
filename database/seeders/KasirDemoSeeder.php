@@ -15,25 +15,60 @@ class KasirDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $area = AreaParkir::query()->orderBy('id_area')->first();
-        if (! $area) {
+        if (! AreaParkir::query()->exists()) {
             $this->command->error('Belum ada area parkir. Jalankan: php artisan db:seed --class=AreaParkirSeeder');
 
             return;
         }
 
         User::updateOrCreate(
-            ['email' => 'petugas.loket@neston.local'],
+            ['email' => 'owner@gmail.com'],
             [
-                'name' => 'Petugas Loket (Demo)',
+                'name' => 'Owner',
                 'password' => Hash::make('password'),
-                'role' => 'petugas',
-                'id_area' => $area->id_area,
+                'role' => 'owner',
                 'balance' => 0,
                 'email_verified_at' => now(),
-            ]
+            ],
         );
 
-        $this->command->info('Petugas loket demo — email: petugas.loket@neston.local | password: password | area: '.$area->nama_area);
+        User::updateOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'balance' => 0,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        User::updateOrCreate(
+            ['email' => 'petugas@gmail.com'],
+            [
+                'name' => 'Petugas',
+                'password' => Hash::make('password'),
+                'role' => 'petugas',
+                'balance' => 0,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        User::updateOrCreate(
+            ['email' => 'user@gmail.com'],
+            [
+                'name' => 'User',
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'balance' => 100000,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        $this->command->info('Data seeder berhasil ditambahkan:');
+        $this->command->info('- Owner: owner@gmail.com | password');
+        $this->command->info('- Admin: admin@gmail.com | password');
+        $this->command->info('- Petugas: petugas@gmail.com | password');
+        $this->command->info('- User: user@gmail.com | password (saldo: 100rb)');
     }
 }

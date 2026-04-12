@@ -43,8 +43,8 @@ class DummyDataSeeder extends Seeder
             ]);
         }
 
-        // 2. Tambah 150 Kendaraan (acak untuk 100 user tadi)
-        $this->command->info('Membuat 150 Kendaraan...');
+        // 2. Tambah 100 Kendaraan (acak untuk 100 user tadi)
+        $this->command->info('Membuat 100 Kendaraan...');
         $vehicles = [];
         $jenis = ['motor', 'mobil'];
         foreach ($users as $user) {
@@ -60,10 +60,10 @@ class DummyDataSeeder extends Seeder
             }
         }
 
-        // 3. Tambah 1000 Transaksi (Riwayat 30 hari terakhir)
-        $this->command->info('Membuat 200 Transaksi (ini butuh waktu)...');
+        // 3. Tambah 100 Transaksi (Riwayat 30 hari terakhir)
+        $this->command->info('Membuat 100 Transaksi (ini butuh waktu)...');
         $statuses = ['keluar', 'masuk'];
-        for ($k = 0; $k < 200; $k++) {
+        for ($k = 0; $k < 100; $k++) {
             $vehicle = $faker->randomElement($vehicles);
             $area = $faker->randomElement($areas);
             $tarif = $tarifs->where('jenis_kendaraan', $vehicle->jenis_kendaraan)->first() ?? $tarifs->first();
@@ -96,7 +96,7 @@ class DummyDataSeeder extends Seeder
                 Pembayaran::create([
                     'id_parkir' => $transaksi->id_parkir,
                     'nominal' => $biaya,
-                    'metode' => $faker->randomElement(['nestonpay', 'cash']),
+                    'metode' => $faker->randomElement(['nestonpay', 'cash','midtrans']),
                     'status' => 'berhasil',
                     'id_user' => 1, // Admin default
                     'waktu_pembayaran' => $waktuKeluar,
@@ -104,10 +104,10 @@ class DummyDataSeeder extends Seeder
             }
         }
 
-        // 4. Tambah 500 Log Aktivitas
-        $this->command->info('Membuat 250 Log Aktivitas...');
+        // 4. Tambah 100 Log Aktivitas
+        $this->command->info('Membuat 100 Log Aktivitas...');
         $types = ['login', 'transaction', 'config', 'profile'];
-        for ($l = 0; $l < 250; $l++) {
+        for ($l = 0; $l < 100; $l++) {
             LogAktifitas::create([
                 'id_user' => $faker->randomElement($users)->id,
                 'aktivitas' => $faker->sentence(6),

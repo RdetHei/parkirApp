@@ -182,7 +182,7 @@
         loginForm.addEventListener('submit', function() {
             submitBtn.disabled = true;
             spinner.classList.remove('hidden');
-            buttonText.textContent = 'Memproses...';
+            buttonText.textContent = 'Processing...';
         });
     </script>
 </body>

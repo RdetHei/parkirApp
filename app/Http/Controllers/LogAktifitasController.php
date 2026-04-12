@@ -94,5 +94,11 @@ class LogAktifitasController extends Controller
         LogAktifitas::destroy($id);
         return redirect()->route('log-aktivitas.index')->with('success','Log aktivitas berhasil dihapus');
     }
+
+    public function deleteAll()
+    {
+        LogAktifitas::truncate();
+        return redirect()->route('log-aktivitas.index')->with('success','Semua log aktivitas berhasil dihapus');
+    }
 }
 

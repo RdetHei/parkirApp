@@ -91,11 +91,15 @@ class ANPRController extends Controller
                 // ENTRY LOGIC
                 $statusAction = 'entry';
 
-                // Refactor: Gunakan id_area dari petugas yang sedang login
                 $currentUser = Auth::user();
                 $area = null;
 
-                if ($currentUser && $currentUser->id_area) {
+                if ($currentUser && $currentUser->role === 'petugas') {
+                    $sessionArea = session(PetugasDashboardController::SESSION_OPERATIONAL_AREA);
+                    if ($sessionArea) {
+                        $area = AreaParkir::find($sessionArea);
+                    }
+                } elseif ($currentUser && $currentUser->id_area) {
                     $area = AreaParkir::find($currentUser->id_area);
                 }
 

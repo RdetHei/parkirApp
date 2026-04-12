@@ -54,6 +54,25 @@ class AreaParkir extends Model
         return static::where('is_default_map', true)->first() ?? static::first();
     }
 
+    /**
+     * Mencocokkan input petugas dengan master area: utamakan map_code (Kode Peta),
+     * fallback map_prefix untuk data lama.
+     */
+    public static function findByMapCode(string $raw): ?self
+    {
+        $code = trim($raw);
+        if ($code === '') {
+            return null;
+        }
+
+        $byCode = static::where('map_code', $code)->first();
+        if ($byCode) {
+            return $byCode;
+        }
+
+        return static::where('map_prefix', $code)->first();
+    }
+
     public function getMapImageUrlAttribute(): ?string
     {
         $value = $this->map_image;

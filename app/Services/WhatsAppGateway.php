@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\NotificationLog;
 use App\Models\User;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -60,8 +61,27 @@ class WhatsAppGateway
                     ]);
             }
 
+            /** @var \Illuminate\Http\Client\Response $response */
             if ($response->successful()) {
-                $this->log($user->id, 'success', $response->body());
+                $rawBody = $response->body();
+                $body = $response->json();
+
+                if ($driver === 'fonnte') {
+                    // Fonnte: sukses {"status":true,"detail":"success! message in queue",...}
+                    // Gagal kadang {"status":false,"reason":"..."} atau {"Status":false,"reason":"..."} (lihat docs.fonnte.com)
+                    if ($this->fonnteIndicatesSuccess($body)) {
+                        $this->log($user->id, 'success', $rawBody);
+
+                        return true;
+                    }
+
+                    $reason = $this->fonnteFailureDetail($body, $rawBody);
+                    $this->log($user->id, 'failed', 'Fonnte: '.$reason);
+
+                    return false;
+                }
+
+                $this->log($user->id, 'success', $rawBody);
 
                 return true;
             }
@@ -87,6 +107,40 @@ class WhatsAppGateway
             'status' => $status,
             'message' => mb_substr($message, 0, 65000),
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $body
+     */
+    private function fonnteIndicatesSuccess(?array $body): bool
+    {
+        if (! is_array($body)) {
+            return false;
+        }
+
+        $st = $body['status'] ?? $body['Status'] ?? null;
+
+        return $st === true
+            || $st === 'true'
+            || $st === 1
+            || $st === '1';
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $body
+     */
+    private function fonnteFailureDetail(?array $body, string $rawBody): string
+    {
+        if (! is_array($body)) {
+            return 'Respons bukan JSON: '.mb_substr($rawBody, 0, 500);
+        }
+
+        $reason = $body['reason'] ?? $body['Reason'] ?? $body['message'] ?? $body['Message'] ?? null;
+        if (is_string($reason) && $reason !== '') {
+            return $reason;
+        }
+
+        return mb_substr(json_encode($body, JSON_UNESCAPED_UNICODE) ?: $rawBody, 0, 2000);
     }
 
     public function normalizeIndonesianWa(string $phone): string

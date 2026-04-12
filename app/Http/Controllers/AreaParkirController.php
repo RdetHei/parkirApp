@@ -194,6 +194,15 @@ class AreaParkirController extends Controller
             'cameras' => 'nullable|array',
         ]);
 
+        // Validate slot count against capacity
+        $slotCount = !empty($data['slots']) ? count($data['slots']) : 0;
+        if ($slotCount > $area->kapasitas) {
+            return response()->json([
+                'success' => false,
+                'message' => "Jumlah slot ({$slotCount}) melebihi kapasitas area ({$area->kapasitas})."
+            ], 422);
+        }
+
         try {
             return \Illuminate\Support\Facades\DB::transaction(function () use ($area, $data) {
                 // Sync Slots

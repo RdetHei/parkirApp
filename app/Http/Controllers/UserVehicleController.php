@@ -23,6 +23,12 @@ class UserVehicleController extends Controller
     {
         $user = Auth::user();
 
+        // Batasi maksimal 2 kendaraan per user
+        $count = Kendaraan::where('id_user', $user->id)->count();
+        if ($count >= 2) {
+            return back()->with('error', 'Anda hanya dapat mendaftarkan maksimal 2 kendaraan.');
+        }
+
         $data = $request->validate([
             'plat_nomor' => 'required|string|max:15',
             'jenis_kendaraan' => 'required|string|max:20',

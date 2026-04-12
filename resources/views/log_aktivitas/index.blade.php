@@ -111,6 +111,16 @@
                 <p class="text-xs text-slate-500 mt-1">Detailed history of all system activities.</p>
             </div>
             <div class="flex items-center gap-3">
+                @if(auth()->user()->role === 'admin' && $items->count())
+                    <form action="{{ route('log-aktivitas.deleteAll') }}" method="POST" onsubmit="return confirm('PERINGATAN: Tindakan ini akan menghapus SELURUH data log aktivitas sistem secara permanen. Lanjutkan?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-4 py-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-[10px] font-black text-rose-500 uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            Clear All Logs
+                        </button>
+                    </form>
+                @endif
                 <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     {{ $items->total() }} Records found
                 </span>

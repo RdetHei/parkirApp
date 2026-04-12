@@ -10,8 +10,136 @@ use App\Models\ParkingSlotReservation;
 use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Kendaraan;
+use App\Models\Tarif;
+
 class ParkingSlotController extends Controller
 {
+    /**
+     * User: Booking slot (area-based bookmark)
+     */
+    public function bookingPage(Request $request, $areaId = null)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $selectedDaerah = $request->query('daerah');
+        $daerahs = AreaParkir::query()
+            ->whereNotNull('daerah')
+            ->where('daerah', '!=', '')
+            ->orderBy('daerah')
+            ->distinct()
+            ->pluck('daerah');
+
+        $query = AreaParkir::orderBy('nama_area');
+        if ($selectedDaerah) {
+            $query->where('daerah', $selectedDaerah);
+        }
+        $areas = $query->get();
+
+        // Pilih peta area aktif berdasarkan filter + pilihan user.
+        $map = null;
+        if ($areaId) {
+            $map = $areas->firstWhere('id_area', (int) $areaId) ?? AreaParkir::find((int) $areaId);
+        }
+        if (!$map) {
+            $map = $areas->first() ?? AreaParkir::getDefaultMap();
+        }
+        if ($selectedDaerah && $map && !$areas->contains('id_area', $map->id_area)) {
+            $map = $areas->first();
+        }
+        $selectedAreaId = $map?->id_area;
+
+        $kendaraans = Kendaraan::where('id_user', $user->id)->orderBy('plat_nomor')->get();
+        $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
+        $activeBookingInfo = null;
+
+        // Hitung status per area (kosong / terisi / dibookmark)
+        $now = Carbon::now();
+        $statusPerArea = [];
+        $myBookingIds = [];
+
+        foreach ($areas as $area) {
+            $occupied = Transaksi::where('id_area', $area->id_area)
+                ->whereNull('waktu_keluar')
+                ->where('status', 'masuk')
+                ->exists();
+
+            if ($occupied) {
+                $statusPerArea[$area->id_area] = 'occupied';
+                continue;
+            }
+
+            $reservation = ParkingSlotReservation::active()
+                ->where('id_area', $area->id_area)
+                ->orderByDesc('expires_at')
+                ->first();
+
+            if ($reservation) {
+                if ((int) $reservation->id_user === (int) $user->id) {
+                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
+                    $myBookingIds[$area->id_area] = $reservation->id;
+                } else {
+                    $statusPerArea[$area->id_area] = 'bookmarked';
+                }
+                continue;
+            }
+
+            $legacy = Transaksi::where('id_area', $area->id_area)
+                ->where('status', 'bookmarked')
+                ->where('bookmarked_at', '>', $now->copy()->subMinutes(10))
+                ->orderByDesc('bookmarked_at')
+                ->first();
+
+            if ($legacy) {
+                if ((int) $legacy->id_user === (int) $user->id) {
+                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
+                    $myBookingIds[$area->id_area] = $legacy->id_parkir;
+                } else {
+                    $statusPerArea[$area->id_area] = 'bookmarked';
+                }
+                continue;
+            }
+
+            $statusPerArea[$area->id_area] = 'empty';
+        }
+
+        $activeReservation = ParkingSlotReservation::active()
+            ->with(['area:id_area,nama_area', 'slot:id,code'])
+            ->where('id_user', $user->id)
+            ->latest('expires_at')
+            ->first();
+
+        if ($activeReservation) {
+            $activeBookingInfo = [
+                'id' => (int) $activeReservation->id,
+                'kind' => 'reservation',
+                'area_name' => $activeReservation->area?->nama_area ?? '-',
+                'slot_code' => $activeReservation->slot?->code ?? '-',
+                'expires_at' => optional($activeReservation->expires_at)->toIso8601String(),
+            ];
+        } else {
+            $legacyBooking = Transaksi::where('id_user', $user->id)
+                ->where('status', 'bookmarked')
+                ->where('bookmarked_at', '>', $now->copy()->subMinutes(10))
+                ->with(['area:id_area,nama_area', 'parkingMapSlot:id,code'])
+                ->latest('bookmarked_at')
+                ->first();
+
+            if ($legacyBooking) {
+                $activeBookingInfo = [
+                    'id' => (int) $legacyBooking->id_parkir,
+                    'kind' => 'transaksi',
+                    'area_name' => $legacyBooking->area?->nama_area ?? '-',
+                    'slot_code' => $legacyBooking->parkingMapSlot?->code ?? '-',
+                    'expires_at' => optional($legacyBooking->bookmarked_at)->addMinutes(10)->toIso8601String(),
+                ];
+            }
+        }
+
+        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs', 'daerahs', 'selectedDaerah', 'selectedAreaId', 'activeBookingInfo'));
+    }
+
     /**
      * API: slot parkir + kamera di peta + ringkasan (untuk Leaflet).
      */
