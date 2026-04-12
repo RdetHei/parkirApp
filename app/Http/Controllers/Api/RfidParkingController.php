@@ -22,7 +22,7 @@ class RfidParkingController extends Controller
     public function checkin(Request $request)
     {
         // Cari RFID berdasarkan uid
-        $rfid = RfidTag::with('vehicle')->where('uid', $request->uid)->first();
+        $rfid = RfidTag::with('kendaraan')->where('uid', $request->uid)->first();
 
         // Jika UID tidak ditemukan -> return error JSON 404.
         if (!$rfid) {
@@ -41,7 +41,7 @@ class RfidParkingController extends Controller
             ], 403);
         }
 
-        $vehicle = $rfid->vehicle;
+        $vehicle = $rfid->kendaraan;
         if (!$vehicle) {
             return response()->json([
                 'success' => false,
@@ -50,7 +50,7 @@ class RfidParkingController extends Controller
         }
 
         // Validasi: Tidak boleh check-in jika belum check-out sebelumnya
-        $latestLog = ParkingLog::where('vehicle_id', $vehicle->id)
+        $latestLog = ParkingLog::where('id_kendaraan', $vehicle->id_kendaraan)
             ->whereNull('checkout_time')
             ->orderBy('checkin_time', 'desc')
             ->first();
@@ -59,7 +59,7 @@ class RfidParkingController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Kendaraan sudah berada di dalam area parkir (Belum check-out).',
-                'plate_number' => $vehicle->plate_number,
+                'plate_number' => $vehicle->plat_nomor,
                 'checkin_time' => $latestLog->checkin_time->toDateTimeString(),
             ], 400);
         }
@@ -68,21 +68,21 @@ class RfidParkingController extends Controller
             return DB::transaction(function () use ($vehicle) {
                 // Simpan ke parking_logs sebagai check-in
                 $parkingLog = ParkingLog::create([
-                    'vehicle_id' => $vehicle->id,
+                    'id_kendaraan' => $vehicle->id_kendaraan,
                     'checkin_time' => now(),
                     'gate_type' => 'masuk',
                     'tariff_amount' => null, // Sesuai requirement, tariff_amount nullable
                 ]);
 
-        // Return response:
-        // * plate_number
-        // * vehicle_type
-        // * checkin_time
-        return response()->json([
-            'plate_number' => $vehicle->plate_number,
-            'vehicle_type' => $vehicle->vehicle_type,
-            'checkin_time' => $parkingLog->checkin_time->toDateTimeString(),
-        ], 201);
+                // Return response:
+                // * plate_number
+                // * vehicle_type
+                // * checkin_time
+                return response()->json([
+                    'plate_number' => $vehicle->plat_nomor,
+                    'vehicle_type' => $vehicle->jenis_kendaraan,
+                    'checkin_time' => $parkingLog->checkin_time->toDateTimeString(),
+                ], 201);
             });
         } catch (\Exception $e) {
             return response()->json([
@@ -90,5 +90,62 @@ class RfidParkingController extends Controller
                 'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Handle RFID Login
+     *
+     * POST /api/rfid/login
+     * {
+     *   "uid": "RFID123456"
+     * }
+     */
+    public function login(Request $request)
+    {
+        $request->validate([
+            'uid' => 'required|string',
+        ]);
+
+        // Cari RFID berdasarkan uid, lalu ambil kendaraan dan pemiliknya (user)
+        $rfid = RfidTag::with(['kendaraan.user'])->where('uid', $request->uid)->first();
+
+        if (!$rfid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'RFID tidak terdaftar.'
+            ], 404);
+        }
+
+        if ($rfid->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kartu RFID dalam status tidak aktif.'
+            ], 403);
+        }
+
+        $user = $rfid->kendaraan->user ?? null;
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User tidak ditemukan untuk RFID ini.'
+            ], 404);
+        }
+
+        // Login user secara otomatis (jika menggunakan session)
+        // Atau return data user (jika untuk login terminal/API)
+        auth()->login($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login berhasil via RFID.',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'plate_number' => $rfid->kendaraan->plat_nomor
+            ]
+        ], 200);
     }
 }

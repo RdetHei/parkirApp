@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('rfid_tags', function (Blueprint $table) {
             $table->id();
             $table->string('uid')->unique();
-            $table->foreignId('vehicle_id')->unique()->constrained('vehicles')->onDelete('cascade');
+            $table->foreignId('id_kendaraan')->unique()->constrained('tb_kendaraan', 'id_kendaraan')->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

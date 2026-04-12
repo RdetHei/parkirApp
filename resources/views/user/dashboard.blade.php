@@ -211,6 +211,73 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Area Parkir Section -->
+            <div class="lg:col-span-2 card-pro !p-0 overflow-hidden border-white/5 backdrop-blur-xl bg-slate-900/40">
+                <div class="px-6 sm:px-8 py-5 sm:py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                    <h2 class="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-[0.2em]">Status Area Parkir</h2>
+                    <a href="{{ route('user.bookings') }}" class="text-[9px] sm:text-[10px] font-black text-emerald-500 hover:text-emerald-400 uppercase tracking-widest transition-all flex items-center gap-2">
+                        Pesan Slot <i class="fa-solid fa-calendar-check text-[8px]"></i>
+                    </a>
+                </div>
+                <div class="p-6 sm:p-8">
+                    @php
+                        $allAreas = \App\Models\AreaParkir::all();
+                        $myActiveAreas = $riwayatTransaksi->where('status', 'masuk')->pluck('id_area')->unique();
+                        $myReservations = \App\Models\ParkingSlotReservation::active()->where('id_user', $user->id)->pluck('id_area')->unique();
+                        $myAreas = $myActiveAreas->merge($myReservations)->unique();
+                    @endphp
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Area Milik Saya -->
+                        <div>
+                            <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-4">Milik Saya</p>
+                            <div class="space-y-3">
+                                @forelse($allAreas->whereIn('id_area', $myAreas) as $area)
+                                    <a href="{{ route('user.bookings', $area->id_area) }}" class="flex items-center justify-between p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 hover:border-blue-500/30 transition-all group">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                                <i class="fa-solid fa-square-parking"></i>
+                                            </div>
+                                            <span class="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">{{ $area->nama_area }}</span>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-600 group-hover:text-blue-400 transition-all"></i>
+                                    </a>
+                                @empty
+                                    <div class="py-6 text-center rounded-2xl border border-dashed border-white/5">
+                                        <p class="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Tidak ada area yang Anda tempati</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <!-- Area Tersedia -->
+                        <div>
+                            <p class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-4">Tersedia</p>
+                            <div class="space-y-3">
+                                @forelse($allAreas->whereNotIn('id_area', $myAreas)->where('terisi', '<', 'kapasitas')->take(4) as $area)
+                                    <a href="{{ route('user.bookings', $area->id_area) }}" class="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 hover:border-emerald-500/30 transition-all group">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                                <i class="fa-solid fa-map-location-dot"></i>
+                                            </div>
+                                            <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{{ $area->nama_area }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-[9px] font-black text-emerald-500 tabular-nums">{{ $area->kapasitas - $area->terisi }} Slot</span>
+                                            <i class="fa-solid fa-chevron-right text-[10px] text-slate-600 group-hover:text-emerald-400 transition-all"></i>
+                                        </div>
+                                    </a>
+                                @empty
+                                    <div class="py-6 text-center rounded-2xl border border-dashed border-white/5">
+                                        <p class="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Semua area penuh</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

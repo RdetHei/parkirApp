@@ -118,7 +118,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
+                        <div class="hidden">
                             <label class="block text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5">Tarif</label>
                             <select id="booking_tarif_id"
                                     class="w-full rounded-xl border px-3 py-2.5 text-xs text-white focus:border-emerald-500/50 focus:outline-none transition-all font-semibold"
@@ -174,26 +174,31 @@
                     $tersedia  = $areas->filter(fn($a) => ($statusPerArea[$a->id_area] ?? '') === 'empty')->count();
                     $milikku   = $areas->filter(fn($a) => ($statusPerArea[$a->id_area] ?? '') === 'bookmarked-by-me')->count();
                     $penuh     = $totalArea - $tersedia - $milikku;
+
+                    // Gunakan ringkasan slot jika ada map terpilih
+                    $showSlotSummary = isset($slotSummary) && $map;
                 @endphp
                 <div class="rounded-2xl border overflow-hidden" style="background:#0b1221;border-color:rgba(255,255,255,0.07);">
                     <div class="px-5 py-3.5 border-b" style="border-color:rgba(255,255,255,0.05);">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ringkasan</p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            {{ $showSlotSummary ? 'Ringkasan Slot: ' . $map->nama_area : 'Ringkasan Area' }}
+                        </p>
                     </div>
                     <div class="p-4 grid grid-cols-2 gap-3">
                         <div class="rounded-xl border p-3 text-center" style="background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.06);">
-                            <p class="text-xl font-black text-white">{{ $totalArea }}</p>
+                            <p class="text-xl font-black text-white">{{ $showSlotSummary ? $slotSummary['total'] : $totalArea }}</p>
                             <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Total</p>
                         </div>
                         <div class="rounded-xl border p-3 text-center" style="background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.12);">
-                            <p class="text-xl font-black text-emerald-400">{{ $tersedia }}</p>
+                            <p class="text-xl font-black text-emerald-400">{{ $showSlotSummary ? $slotSummary['empty'] : $tersedia }}</p>
                             <p class="text-[9px] text-emerald-700 uppercase tracking-widest mt-0.5">Tersedia</p>
                         </div>
                         <div class="rounded-xl border p-3 text-center" style="background:rgba(59,130,246,0.05);border-color:rgba(59,130,246,0.12);">
-                            <p class="text-xl font-black text-blue-400">{{ $milikku }}</p>
+                            <p class="text-xl font-black text-blue-400">{{ $showSlotSummary ? $slotSummary['mine'] : $milikku }}</p>
                             <p class="text-[9px] text-blue-800 uppercase tracking-widest mt-0.5">Milik Saya</p>
                         </div>
                         <div class="rounded-xl border p-3 text-center" style="background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.06);">
-                            <p class="text-xl font-black text-slate-500">{{ $penuh }}</p>
+                            <p class="text-xl font-black text-slate-500">{{ $showSlotSummary ? $slotSummary['occupied'] : $penuh }}</p>
                             <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Penuh</p>
                         </div>
                     </div>
@@ -523,11 +528,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function autoTarifFromJenis() {
-        if (!kendaraanSelect || !tarifSelect || tarifSelect.value) return;
+        if (!kendaraanSelect || !tarifSelect) return;
         const jenis = kendaraanSelect.options[kendaraanSelect.selectedIndex]?.dataset?.jenis;
-        if (!jenis) return;
+        if (!jenis) {
+            tarifSelect.value = '';
+            return;
+        }
         for (const opt of tarifSelect.options) {
-            if (opt.dataset?.jenis === jenis) { tarifSelect.value = opt.value; break; }
+            if (opt.dataset?.jenis === jenis) { 
+                tarifSelect.value = opt.value; 
+                break; 
+            }
         }
     }
 

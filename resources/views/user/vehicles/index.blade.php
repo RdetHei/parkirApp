@@ -72,7 +72,6 @@
                                 <option value="" class="bg-slate-900">Pilih...</option>
                                 <option value="motor" class="bg-slate-900">Motor</option>
                                 <option value="mobil" class="bg-slate-900">Mobil</option>
-                                <option value="lainnya" class="bg-slate-900">Lainnya</option>
                             </select>
                         </div>
                         <div>

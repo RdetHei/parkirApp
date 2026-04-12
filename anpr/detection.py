@@ -2,7 +2,7 @@ import cv2
 import os
 import time
 from ultralytics import YOLO
-from config import YOLO_MODEL_PATH, CAMERA_INDEX, SCAN_INTERVAL, CONFIDENCE_THRESHOLD, SAVE_CROP_DIR
+from config import YOLO_MODEL_PATH, CAMERA_SOURCE, SCAN_INTERVAL, CONFIDENCE_THRESHOLD, SAVE_CROP_DIR
 from plate_api import scan_plate_with_api, send_to_laravel
 
 def run_anpr_service():
@@ -14,9 +14,17 @@ def run_anpr_service():
     model = YOLO(YOLO_MODEL_PATH)
 
     # Initialize Camera
-    cap = cv2.VideoCapture(CAMERA_INDEX)
+    # Convert string source to integer if it represents a device index
+    source = CAMERA_SOURCE
+    if str(source).isdigit():
+        source = int(source)
+    
+    print(f"Opening camera source: {source}...")
+    cap = cv2.VideoCapture(source)
     if not cap.isOpened():
-        print("Error: Could not open camera.")
+        print(f"Error: Could not open camera at {source}.")
+        print("Tip: If using local webcam, try index 0, 1, or 2.")
+        print("Tip: If using IP Webcam, ensure the URL is correct (e.g., http://localhost:8080/video).")
         return
 
     last_scan_time = 0
@@ -63,39 +71,20 @@ def run_anpr_service():
 
                         print(f"Scanning vehicle crop: {crop_filename}")
 
-                        # OCR Process (via Plate Recognizer API)
+                        # OCR Process (Directly via Plate Recognizer API)
                         ocr_result = scan_plate_with_api(crop_filename)
 
                         if ocr_result and 'results' in ocr_result and len(ocr_result['results']) > 0:
-                            # Use structure similar to user requested ALPR output
-                            # Plate Recognizer returns 'results' as a list
                             data = ocr_result['results'][0]
                             plate = data.get('plate', '').upper()
+                            confidence = data.get('score', 0)
 
                             # Simple logic to only process if not scanned in last 10 seconds
-                            if plate not in scanned_plates or (current_time - scanned_plates[plate]) > 10:
-                                print(f"Detected Plate: {plate} (Confidence: {data.get('score', 0)})")
+                            if plate and (plate not in scanned_plates or (current_time - scanned_plates[plate]) > 10):
+                                print(f"Detected Plate: {plate} (Confidence: {confidence})")
 
-                                # Prepare full structure for Laravel sync
-                                full_data = {
-                                    'plate': {
-                                        'props': {'plate': [{'value': plate}]},
-                                        'score': data.get('score', 0),
-                                        'box': data.get('box', {})
-                                    },
-                                    'vehicle': {
-                                        'type': data.get('vehicle', {}).get('type', 'Unknown'),
-                                        'props': {
-                                            'color': [{'value': data.get('vehicle', {}).get('color', [{}])[0].get('color', 'Unknown')}],
-                                            'make_model': [{'make': data.get('vehicle', {}).get('make', [{}])[0].get('make', 'Unknown'),
-                                                           'model': data.get('vehicle', {}).get('model', [{}])[0].get('model', 'Unknown')}]
-                                        }
-                                    },
-                                    'timestamp': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))
-                                }
-
-                                # Send to Laravel
-                                if send_to_laravel(full_data, crop_filename):
+                                # Send to Laravel for Entry/Exit logic & Dashboard update
+                                if send_to_laravel(ocr_result, crop_filename):
                                     scanned_plates[plate] = current_time
 
                                     # Show result on screen for feedback

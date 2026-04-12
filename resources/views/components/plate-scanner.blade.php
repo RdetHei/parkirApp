@@ -27,7 +27,7 @@
         <div x-show="cameras.length > 0" class="mb-5 p-4 bg-slate-950/50 border border-white/5 rounded-2xl group transition-all hover:border-emerald-500/20">
             <label for="plate-scanner-camera-select" class="block text-[9px] font-black text-slate-600 mb-2 uppercase tracking-widest group-hover:text-slate-400 transition-colors ml-1">Select Input Source</label>
             <div class="relative">
-                <select id="plate-scanner-camera-select" x-model="selectedCameraId" @change="onCameraChange()"
+                <select id="plate-scanner-camera-select" x-model="selectedCameraId" x-on:change="onCameraChange()"
                         class="block w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-bold uppercase tracking-widest appearance-none cursor-pointer">
                     <template x-for="cam in cameras" :key="cam.id">
                         <option :value="cam.id" x-text="cam.nama + (cam.is_default ? ' (DEFAULT)' : '')" class="bg-slate-900"></option>
@@ -56,6 +56,7 @@
                 x-ref="ipWebcamStream"
                 x-show="useIpWebcam && !capturedImage"
                 :src="streamActive ? ipWebcamUrl : ''"
+                x-on:error="if(streamActive) { errorMessage = 'Gagal memuat stream. Pastikan URL benar (contoh: http://localhost:8080/video) dan aplikasi IP Webcam sudah aktif.'; streamActive = false; }"
                 class="w-full h-full object-cover"
                 style="min-height: 400px;"
                 alt="IP Webcam"
@@ -88,7 +89,7 @@
             <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
                 <!-- Snap Button -->
                 <button
-                    @click="captureImage()"
+                    x-on:click="captureImage()"
                     x-show="!capturedImage && !isLoading"
                     type="button"
                     class="group relative flex items-center justify-center"
@@ -101,7 +102,7 @@
 
                 <!-- Reset Button -->
                 <button
-                    @click="resetScanner()"
+                    x-on:click="resetScanner()"
                     x-show="capturedImage && !isLoading"
                     type="button"
                     class="px-8 py-3 bg-rose-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-rose-500/20 hover:bg-rose-400 transition-all active:scale-95 flex items-center gap-3"
@@ -119,7 +120,7 @@
             >
                 <div class="flex items-center justify-between">
                     <span x-text="errorMessage"></span>
-                    <button @click="errorMessage = ''" class="ml-4 text-white hover:text-gray-200">
+                    <button x-on:click="errorMessage = ''" class="ml-4 text-white hover:text-gray-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -135,7 +136,7 @@
             >
                 <div class="flex items-center justify-between">
                     <span x-text="successMessage"></span>
-                    <button @click="successMessage = ''" class="ml-4 text-white hover:text-gray-200">
+                    <button x-on:click="successMessage = ''" class="ml-4 text-white hover:text-gray-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -149,7 +150,7 @@
             <!-- Start Camera Button -->
             <button
                 x-show="!streamActive && !capturedImage"
-                @click="startCamera()"
+                x-on:click="startCamera()"
                 type="button"
                 class="px-8 py-3 bg-indigo-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-indigo-500/20 hover:bg-indigo-400 transition-all active:scale-95 flex items-center gap-3"
             >
@@ -160,7 +161,7 @@
             <!-- Capture Button -->
             <button
                 x-show="streamActive && !capturedImage"
-                @click="captureImage()"
+                x-on:click="captureImage()"
                 type="button"
                 class="px-8 py-3 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 transition-all active:scale-95 flex items-center gap-3"
             >
@@ -171,7 +172,7 @@
             <!-- Scan Button -->
             <button
                 x-show="capturedImage && !isLoading"
-                @click="scanPlate()"
+                x-on:click="scanPlate()"
                 type="button"
                 :disabled="isLoading"
                 class="px-8 py-3 bg-indigo-500 text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-indigo-500/20 hover:bg-indigo-400 transition-all active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -183,7 +184,7 @@
             <!-- Retake Button -->
             <button
                 x-show="capturedImage"
-                @click="retakePhoto()"
+                x-on:click="retakePhoto()"
                 type="button"
                 class="px-8 py-3 bg-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-white/5 hover:bg-slate-700 hover:text-white transition-all active:scale-95 flex items-center gap-3"
             >
@@ -194,7 +195,7 @@
             <!-- Stop Camera Button -->
             <button
                 x-show="streamActive"
-                @click="stopCamera()"
+                x-on:click="stopCamera()"
                 type="button"
                 class="px-8 py-3 bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border border-rose-500/20 hover:bg-rose-500 hover:text-slate-950 transition-all active:scale-95 flex items-center gap-3"
             >
@@ -270,7 +271,11 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
                 this.successMessage = '';
 
                 if (this.useIpWebcam) {
-                    // IP Webcam: cukup aktifkan stream (img src sudah di-set di template)
+                    // Beri saran otomatis jika URL hanya berisi IP dan port (tanpa path /video)
+                    let finalUrl = this.ipWebcamUrl.trim();
+                    if (finalUrl && !finalUrl.includes('/', 8)) { // Jika tidak ada path setelah http://...
+                        this.errorMessage = 'Peringatan: URL sepertinya kurang lengkap. Gunakan http://localhost:8080/video untuk stream video.';
+                    }
                     this.streamActive = true;
                 } else {
                     // Kamera device: getUserMedia
@@ -305,27 +310,38 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
         },
 
         captureImage() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
 
-            if (this.useIpWebcam && this.$refs.ipWebcamStream) {
-                const img = this.$refs.ipWebcamStream;
-                if (!img.complete || img.naturalWidth === 0) {
-                    this.errorMessage = 'Tunggu sebentar sampai stream IP Webcam siap.';
-                    return;
+                if (this.useIpWebcam && this.$refs.ipWebcamStream) {
+                    const img = this.$refs.ipWebcamStream;
+                    if (!img.complete || img.naturalWidth === 0) {
+                        this.errorMessage = 'Tunggu sebentar sampai stream IP Webcam siap.';
+                        return;
+                    }
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    ctx.drawImage(img, 0, 0);
+                } else {
+                    const video = this.$refs.video;
+                    if (!video || video.videoWidth === 0) {
+                        this.errorMessage = 'Kamera belum siap. Pastikan Anda sudah mengklik "Buka Kamera" dan mengizinkan akses kamera.';
+                        return;
+                    }
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0);
                 }
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                ctx.drawImage(img, 0, 0);
-            } else {
-                const video = this.$refs.video;
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0);
-            }
 
-            this.capturedImage = canvas.toDataURL('image/jpeg', 0.9);
-            this.$refs.capturedImage.src = this.capturedImage;
+                this.capturedImage = canvas.toDataURL('image/jpeg', 0.9);
+                if (this.$refs.capturedImage) {
+                    this.$refs.capturedImage.src = this.capturedImage;
+                }
+            } catch (e) {
+                console.error('Capture error:', e);
+                this.errorMessage = 'Gagal mengambil foto: ' + e.message;
+            }
         },
 
         retakePhoto() {
@@ -333,6 +349,10 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
             this.scanResult = null;
             this.errorMessage = '';
             this.successMessage = '';
+        },
+
+        resetScanner() {
+            this.retakePhoto();
         },
 
         async scanPlate() {

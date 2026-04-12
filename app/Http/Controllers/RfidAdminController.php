@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Kendaraan;
+use App\Models\RfidTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -10,56 +11,64 @@ class RfidAdminController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = Kendaraan::with(['user', 'rfidTag']);
 
         if ($request->filled('q')) {
             $search = $request->q;
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('rfid_uid', 'like', "%{$search}%");
+                $q->where('plat_nomor', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($qu) use ($search) {
+                      $qu->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('rfidTag', function($qr) use ($search) {
+                      $qr->where('uid', 'like', "%{$search}%");
+                  });
             });
         }
 
         if ($request->filled('status')) {
             if ($request->status === 'linked') {
-                $query->whereNotNull('rfid_uid');
+                $query->has('rfidTag');
             } elseif ($request->status === 'unlinked') {
-                $query->whereNull('rfid_uid');
+                $query->doesntHave('rfidTag');
             }
         }
 
-        $users = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
-        $title = 'Manajemen Kartu RFID';
-        return view('rfid.index', compact('title', 'users'));
+        $vehicles = $query->orderBy('id_kendaraan', 'desc')->paginate(15)->withQueryString();
+        $title = 'Manajemen RFID Kendaraan';
+        return view('rfid.index', compact('title', 'vehicles'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:tb_user,id'],
+            'vehicle_id' => ['required', 'integer', 'exists:tb_kendaraan,id_kendaraan'],
             'rfid_uid' => [
                 'required',
                 'string',
                 'max:128',
-                Rule::unique('tb_user', 'rfid_uid')->ignore((int) $request->input('user_id')),
+                Rule::unique('rfid_tags', 'uid')->ignore((int) $request->input('vehicle_id'), 'id_kendaraan'),
             ],
         ]);
 
-        $user = User::findOrFail((int) $data['user_id']);
-        $user->rfid_uid = $data['rfid_uid'];
-        $user->save();
+        RfidTag::updateOrCreate(
+            ['id_kendaraan' => $data['vehicle_id']],
+            [
+                'uid' => $data['rfid_uid'],
+                'status' => 'active'
+            ]
+        );
 
-        return back()->with('success', 'RFID berhasil didaftarkan untuk ' . $user->name);
+        $vehicle = Kendaraan::findOrFail($data['vehicle_id']);
+        return back()->with('success', 'RFID berhasil dihubungkan ke kendaraan ' . $vehicle->plat_nomor);
     }
 
     public function unlink($id)
     {
-        $user = User::findOrFail($id);
-        $user->rfid_uid = null;
-        $user->save();
+        $rfidTag = RfidTag::where('id_kendaraan', $id)->firstOrFail();
+        $rfidTag->delete();
 
-        return back()->with('success', 'RFID berhasil dihapus dari akun ' . $user->name);
+        return back()->with('success', 'Hubungan RFID berhasil dihapus dari kendaraan.');
     }
 }
 

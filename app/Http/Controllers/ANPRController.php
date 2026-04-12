@@ -17,10 +17,18 @@ use Illuminate\Support\Facades\DB;
 
 use App\Traits\LogsActivity;
 use App\Support\PlatNomorNormalizer;
+use App\Services\PlateRecognizerService;
 
 class ANPRController extends Controller
 {
     use LogsActivity;
+
+    private PlateRecognizerService $plateRecognizerService;
+
+    public function __construct(PlateRecognizerService $plateRecognizerService)
+    {
+        $this->plateRecognizerService = $plateRecognizerService;
+    }
 
     public function handleDetection(Request $request)
     {
@@ -50,7 +58,7 @@ class ANPRController extends Controller
                 $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'neston/anpr'
                 ]);
-                $fileName = $upload['secure_url'];
+                $fileName = $upload['secure_url'] ?? null;
             }
 
             // 3. Vehicle & Transaction Logic
@@ -155,14 +163,51 @@ class ANPRController extends Controller
             }
 
             // 4. Logging
+            $rawJson = $request->raw_json;
+            if (is_string($rawJson)) {
+                $rawJson = json_decode($rawJson, true);
+            }
+
             ANPRScan::create([
                 'plat_nomor' => $plateNumber,
                 'confidence' => $confidence,
                 'image_path' => $fileName,
                 'scan_time' => now(),
-                'json_response' => $request->raw_json,
+                'json_response' => $rawJson,
                 'id_parkir' => $transaksi->id_parkir,
             ]);
+
+            // 5. Create Notification for real-time UI updates (via polling)
+            \App\Models\NotificationLog::create([
+                'user_id' => $kendaraan->id_user,
+                'type' => 'anpr_detection',
+                'message' => "Kendaraan {$plateNumber} terdeteksi " . ($statusAction === 'entry' ? 'masuk' : 'keluar'),
+                'data' => json_encode([
+                    'plate' => $plateNumber,
+                    'action' => $statusAction,
+                    'confidence' => $confidence,
+                    'image_url' => $fileName,
+                    'vehicle' => [
+                        'color' => $vehicleColor,
+                        'type' => $vehicleType,
+                        'display_name' => $vehicleDisplayName
+                    ]
+                ]),
+                'status' => 'success'
+            ]);
+
+            // 6. Dispatch Event (for those using real-time broadcasting)
+            event(new \App\Events\ANPRDetected([
+                'plate' => $plateNumber,
+                'action' => $statusAction,
+                'confidence' => $confidence,
+                'image_url' => $fileName,
+                'vehicle' => [
+                    'color' => $vehicleColor,
+                    'type' => $vehicleType,
+                    'display_name' => $vehicleDisplayName
+                ]
+            ]));
 
             return response()->json([
                 'success' => true,
@@ -184,198 +229,74 @@ class ANPRController extends Controller
 
     public function scan(Request $request)
     {
-        $request->validate([
-            'image' => 'required|string', // Base64 image from camera or file upload
-        ]);
-
         try {
-            // 1. Decode and store image
-            $imageData = $request->input('image');
-            if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
-                $imageData = substr($imageData, strpos($imageData, ',') + 1);
-                $type = strtolower($type[1]); // jpg, png, etc
-
-                if (!in_array($type, ['jpg', 'jpeg', 'png'])) {
-                    return response()->json(['error' => 'Invalid image type'], 422);
-                }
-                $imageData = base64_decode($imageData);
-            } else {
-                return response()->json(['error' => 'Invalid image data format'], 422);
-            }
-
-            $upload = cloudinary()->uploadApi()->upload("data:image/{$type};base64," . base64_encode($imageData), [
-                'folder' => 'neston/anpr'
-            ]);
-            $imageUrl = $upload['secure_url'];
-            $fileName = $imageUrl;
-
-            // 2. Send to Plate Recognizer API with Make/Model/Color detection
-            /** @var \Illuminate\Http\Client\Response $response */
-            $response = Http::withHeaders([
-                'Authorization' => 'Token ' . config('services.plate_recognizer.key'),
-            ])->attach(
-                'upload', $imageData, basename($fileName)
-            )->post('https://api.platerecognizer.com/v1/plate-reader/', [
-                'mmc' => 'true' // Enable Make, Model, and Color detection
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg|max:5120',
             ]);
 
-            if ($response->failed()) {
-                Log::error('Plate Recognizer API Error: ' . $response->body());
-                return response()->json(['error' => 'OCR Service error'], 500);
-            }
-
-            $result = $response->json();
-
-            // Handle different JSON structures (Plate Recognizer vs ALPR)
-            $plateData = null;
-            $plateNumber = null;
-            $confidence = 0;
-            $vehicleColor = 'unknown';
-            $vehicleType = 'mobil';
-            $vehicleMake = null;
-            $vehicleModel = null;
-            $boundingBox = null;
-
-            if (isset($result['results']) && !empty($result['results'])) {
-                // Original Plate Recognizer format
-                $plateData = $result['results'][0];
-                $plateNumber = PlatNomorNormalizer::normalize((string) ($plateData['plate'] ?? ''));
-                $confidence = $plateData['score'] ?? $plateData['confidence'] ?? 0;
-                $vehicleColor = $plateData['vehicle']['color'][0]['color'] ?? 'unknown';
-                $vehicleType = $plateData['vehicle']['type'][0]['type'] ?? 'mobil';
-                $vehicleMake = $plateData['vehicle']['make'][0]['make'] ?? null;
-                $vehicleModel = $plateData['vehicle']['model'][0]['model'] ?? null;
-                $boundingBox = $plateData['box'] ?? null;
-            } elseif (is_array($result) && isset($result[0]['plate'])) {
-                // New ALPR format from user
-                $item = $result[0];
-                $plateNumber = PlatNomorNormalizer::normalize((string) ($item['plate']['props']['plate'][0]['value'] ?? ''));
-                $confidence = $item['plate']['score'] ?? 0;
-                $vehicleColor = $item['vehicle']['props']['color'][0]['value'] ?? 'unknown';
-                $vehicleType = $item['vehicle']['type'] ?? 'mobil';
-                $vehicleMake = $item['vehicle']['props']['make_model'][0]['make'] ?? null;
-                $vehicleModel = $item['vehicle']['props']['make_model'][0]['model'] ?? null;
-                $boundingBox = $item['plate']['box'] ?? null;
-            }
-
-            if (!$plateNumber) {
-                return response()->json(['error' => 'No license plate detected'], 404);
-            }
-
-            $vehicleDisplayName = $vehicleMake ? ($vehicleMake . ($vehicleModel ? ' ' . $vehicleModel : '')) : 'Guest';
-
-            // 3. Confidence check (threshold 0.8)
-            if ($confidence < 0.8) {
-                return response()->json([
-                    'error' => 'Confidence too low (' . round($confidence, 2) . '). Please re-scan.',
-                    'plate' => $plateNumber,
-                    'confidence' => $confidence,
-                    'box' => $boundingBox
-                ], 422);
-            }
-
-            // 4. Vehicle Entry/Exit Logic
-            // Find or Create Vehicle
-            $kendaraan = Kendaraan::where('plat_nomor', $plateNumber)->first();
-            if (!$kendaraan) {
-                // If new vehicle, we create it with detected details.
-                $adminUser = User::where('role', 'admin')->first() ?? User::first();
-                $kendaraan = Kendaraan::create([
-                    'plat_nomor' => $plateNumber,
-                    'jenis_kendaraan' => $vehicleType,
-                    'warna' => $vehicleColor,
-                    'pemilik' => $vehicleDisplayName,
-                    'id_user' => $adminUser->id,
+            // 1. Upload to Cloudinary
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $upload = cloudinary()->uploadApi()->upload($file->getRealPath(), [
+                    'folder' => 'neston/anpr'
                 ]);
-            } else {
-                // Update existing vehicle details if unknown
-                if ($kendaraan->warna === 'unknown' || $kendaraan->pemilik === 'Guest') {
-                    $kendaraan->update([
-                        'warna' => $vehicleColor,
-                        'jenis_kendaraan' => $vehicleType,
-                        'pemilik' => $vehicleDisplayName !== 'Guest' ? $vehicleDisplayName : $kendaraan->pemilik,
-                    ]);
-                }
+                $imageUrl = $upload['secure_url'] ?? null;
             }
 
-            // Check if there is an active transaction for this vehicle
-            $activeTransaksi = Transaksi::where('id_kendaraan', $kendaraan->id_kendaraan)
-                ->where('status', 'masuk')
-                ->latest()
-                ->first();
+            if (!$imageUrl) {
+                return response()->json(['error' => 'Gagal mengunggah gambar'], 500);
+            }
 
-            $statusAction = '';
+            // 2. Use the existing PlateRecognizerService
+            $scanResult = $this->plateRecognizerService->scanPlate($request->file('image'), true);
+
+            if (!$scanResult['valid']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $scanResult['message'] ?? 'Gagal mendeteksi plat nomor',
+                    'image_url' => $imageUrl
+                ]);
+            }
+
+            $plateNumber = PlatNomorNormalizer::normalize($scanResult['plate_number']);
+            $confidence = $scanResult['confidence'];
+
+            // Extract MMC (Make, Model, Color) from raw response if available
+            $raw = $scanResult['raw_response'];
+            $vehicleColor = data_get($raw, 'results.0.vehicle.color.0.color', 'unknown');
+            $vehicleType = data_get($raw, 'results.0.vehicle.type.0.type', 'mobil');
+            $boundingBox = data_get($raw, 'results.0.box');
+
+            // 3. Match with database
+            $kendaraan = Kendaraan::where('plat_nomor', $plateNumber)->with('user')->first();
             $transaksi = null;
 
-            if (!$activeTransaksi) {
-                // ENTRY LOGIC
-                $statusAction = 'entry';
-                $defaultArea = AreaParkir::first();
-                $defaultTarif = Tarif::where('jenis_kendaraan', 'mobil')->first() ?? Tarif::first();
-                $adminUser = User::where('role', 'admin')->first() ?? User::first();
-
-                $transaksi = Transaksi::create([
-                    'id_kendaraan' => $kendaraan->id_kendaraan,
-                    'waktu_masuk' => now(),
-                    'id_tarif' => $defaultTarif->id_tarif,
-                    'status' => 'masuk',
-                    'id_user' => $adminUser->id,
-                    'id_area' => $defaultArea->id_area,
-                ]);
-
-                // Update area occupancy
-                $defaultArea->increment('terisi');
-
-                $this->logActivity(
-                    "ANPR Scan (Entry): Kendaraan {$plateNumber} masuk",
-                    'transaksi',
-                    $transaksi,
-                    ['plate' => $plateNumber, 'confidence' => $confidence]
-                );
-            } else {
-                $statusAction = 'exit';
-                $this->applyCheckoutTotals($activeTransaksi, Carbon::now());
-                $activeTransaksi->area->decrement('terisi');
-                $transaksi = $activeTransaksi->fresh();
-
-                $this->logActivity(
-                    "ANPR Scan (Exit): Kendaraan {$plateNumber} keluar",
-                    'transaksi',
-                    $transaksi,
-                    ['plate' => $plateNumber, 'confidence' => $confidence]
-                );
+            if ($kendaraan) {
+                $transaksi = Transaksi::where('id_kendaraan', $kendaraan->id_kendaraan)
+                    ->where('status', 'masuk')
+                    ->latest()
+                    ->first();
             }
-
-            // 5. Save ANPR Scan log
-            ANPRScan::create([
-                'plat_nomor' => $plateNumber,
-                'confidence' => $confidence,
-                'image_path' => $fileName,
-                'scan_time' => now(),
-                'json_response' => $result,
-                'id_parkir' => $transaksi->id_parkir,
-            ]);
 
             return response()->json([
                 'success' => true,
-                'action' => $statusAction,
-                'plate' => $plateNumber,
+                'plate_number' => $plateNumber,
                 'confidence' => $confidence,
                 'vehicle' => [
                     'color' => $vehicleColor,
                     'type' => $vehicleType,
-                    'make' => $vehicleMake,
-                    'model' => $vehicleModel,
-                    'display_name' => $vehicleDisplayName
+                    'is_registered' => !!$kendaraan,
+                    'owner' => $kendaraan?->user?->name
                 ],
                 'box' => $boundingBox,
                 'transaksi' => $transaksi,
-                'image_url' => asset('storage/' . $fileName)
+                'image_url' => $imageUrl
             ]);
 
         } catch (\Exception $e) {
-            Log::error('ANPR Scan Exception: ' . $e->getMessage());
-            return response()->json(['error' => 'Server Error: ' . $e->getMessage()], 500);
+            Log::error('ANPR Scan Error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

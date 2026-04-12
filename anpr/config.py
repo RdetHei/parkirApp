@@ -13,12 +13,12 @@ LARAVEL_API_TOKEN = os.getenv("ANPR_API_TOKEN", "")
 # YOLO Settings
 # Use 'yolov8n.pt' for better CPU performance (Nano model)
 YOLO_MODEL_PATH = 'yolov8n.pt'
-CONFIDENCE_THRESHOLD = 0.5
+CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", 0.5))
 OCR_CONFIDENCE_THRESHOLD = 0.8
 
 # Camera Settings
-CAMERA_INDEX = 0 # 0 for default webcam
-SCAN_INTERVAL = 2 # Seconds
+CAMERA_SOURCE = os.getenv("CAMERA_SOURCE", "0") # 0 for default webcam, or URL like http://localhost:8080/video
+SCAN_INTERVAL = int(os.getenv("SCAN_INTERVAL", 2)) # Seconds
 
 # Paths
 SAVE_CROP_DIR = 'crops'

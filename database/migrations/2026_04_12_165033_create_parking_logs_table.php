@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('parking_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vehicle_id')->constrained('vehicles')->onDelete('cascade');
+            $table->foreignId('id_kendaraan')->constrained('tb_kendaraan', 'id_kendaraan')->onDelete('cascade');
             $table->timestamp('checkin_time');
             $table->timestamp('checkout_time')->nullable();
             $table->enum('gate_type', ['masuk', 'keluar']);

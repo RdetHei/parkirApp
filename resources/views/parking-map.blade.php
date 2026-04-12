@@ -70,6 +70,7 @@
 
                 <!-- Map Container -->
                 <div id="map-viewport" class="flex-1 w-full h-full cursor-grab active:cursor-grabbing overflow-hidden bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:24px_24px]">
+                    @if($area)
                     <div id="map-canvas-wrapper" class="relative origin-top-left transition-transform duration-300 ease-out"
                          data-image="{{ $area->map_image_url }}"
                          data-width="{{ $area->map_width ?: 1000 }}"
@@ -83,6 +84,12 @@
                         <div id="slots-layer" class="absolute inset-0 pointer-events-none"></div>
                         <div id="cameras-layer" class="absolute inset-0 pointer-events-none"></div>
                     </div>
+                    @else
+                    <div class="flex flex-col items-center justify-center h-full text-slate-500 gap-4">
+                        <i class="fa-solid fa-map-location-dot text-6xl opacity-20"></i>
+                        <p class="text-sm font-medium tracking-widest uppercase">{{ $message ?? 'Tidak ada denah area yang tersedia.' }}</p>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Loading Spinner -->

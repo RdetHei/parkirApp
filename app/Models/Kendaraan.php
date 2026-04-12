@@ -29,4 +29,14 @@ class Kendaraan extends Model
     {
         return $this->hasMany(Transaksi::class, 'id_kendaraan', 'id_kendaraan');
     }
+
+    public function rfidTag()
+    {
+        return $this->hasOne(RfidTag::class, 'id_kendaraan', 'id_kendaraan');
+    }
+
+    public function parkingLogs()
+    {
+        return $this->hasMany(ParkingLog::class, 'id_kendaraan', 'id_kendaraan');
+    }
 }

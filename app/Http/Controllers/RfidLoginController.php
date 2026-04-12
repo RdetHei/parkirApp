@@ -20,7 +20,19 @@ class RfidLoginController extends Controller
             'rfid_uid' => ['required', 'string', 'max:128', 'regex:/^[0-9A-Za-z]+$/'],
         ]);
 
-        $user = User::query()->where('rfid_uid', $data['rfid_uid'])->first();
+        $uid = $data['rfid_uid'];
+        $user = null;
+
+        // Coba cari di RfidTag dulu
+        $rfidTag = \App\Models\RfidTag::with('kendaraan.user')->where('uid', $uid)->first();
+
+        if ($rfidTag && $rfidTag->kendaraan) {
+            $user = $rfidTag->kendaraan->user;
+        } else {
+            // Fallback ke tb_user.rfid_uid
+            $user = User::query()->where('rfid_uid', $uid)->first();
+        }
+
         if (! $user) {
             return response()->json([
                 'ok' => false,

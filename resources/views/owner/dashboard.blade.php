@@ -14,6 +14,11 @@
             <p class="text-slate-400 text-sm mt-2">Strategic overview of business performance and revenue metrics.</p>
         </div>
         <div class="flex items-center gap-3 sm:gap-4">
+            <select id="daysFilter" class="bg-slate-800 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer outline-none">
+                <option value="7" {{ $days == 7 ? 'selected' : '' }}>Last 7 Days</option>
+                <option value="30" {{ $days == 30 ? 'selected' : '' }}>Last 30 Days</option>
+                <option value="90" {{ $days == 90 ? 'selected' : '' }}>Last 90 Days</option>
+            </select>
             <button class="flex-1 sm:flex-none group relative px-4 sm:px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-file-export text-sm"></i>
                 Export Report
@@ -98,7 +103,7 @@
         <!-- Weekly Breakdown -->
         <div class="lg:col-span-2 card-pro !p-0 overflow-hidden animate-fade-in-up" style="animation-delay: 0.5s">
             <div class="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-                <h2 class="text-sm font-black text-white uppercase tracking-widest">7-Day Financial Summary</h2>
+                <h2 class="text-sm font-black text-white uppercase tracking-widest">{{ $days }}-Day Financial Summary</h2>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -169,4 +174,18 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const daysFilter = document.getElementById('daysFilter');
+        if (daysFilter) {
+            daysFilter.addEventListener('change', function() {
+                const days = this.value;
+                window.location.href = `{{ route('owner.dashboard') }}?days=${days}`;
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

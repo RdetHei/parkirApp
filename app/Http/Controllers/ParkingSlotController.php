@@ -9,7 +9,6 @@ use App\Models\ParkingMapCamera;
 use App\Models\ParkingSlotReservation;
 use App\Models\Transaksi;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Kendaraan;
 use App\Models\Tarif;
 
@@ -21,7 +20,7 @@ class ParkingSlotController extends Controller
     public function bookingPage(Request $request, $areaId = null)
     {
         /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $user = $request->user();
 
         $selectedDaerah = $request->query('daerah');
         $daerahs = AreaParkir::query()
@@ -60,48 +59,37 @@ class ParkingSlotController extends Controller
         $myBookingIds = [];
 
         foreach ($areas as $area) {
-            $occupied = Transaksi::where('id_area', $area->id_area)
+            // Cek apakah ada reservasi aktif oleh user di area ini
+            $myReservation = ParkingSlotReservation::active()
+                ->where('id_area', $area->id_area)
+                ->where('id_user', $user->id)
+                ->first();
+
+            if ($myReservation) {
+                $statusPerArea[$area->id_area] = 'bookmarked-by-me';
+                $myBookingIds[$area->id_area] = $myReservation->id;
+                continue;
+            }
+
+            // Cek apakah ada transaksi aktif oleh user di area ini
+            $myActiveTx = Transaksi::where('id_area', $area->id_area)
+                ->where('id_user', $user->id)
                 ->whereNull('waktu_keluar')
                 ->where('status', 'masuk')
-                ->exists();
+                ->first();
 
-            if ($occupied) {
+            if ($myActiveTx) {
+                $statusPerArea[$area->id_area] = 'bookmarked-by-me';
+                $myBookingIds[$area->id_area] = $myActiveTx->id_parkir;
+                continue;
+            }
+
+            // Cek ketersediaan berdasarkan kapasitas vs terisi
+            if ($area->kapasitas > 0 && $area->terisi < $area->kapasitas) {
+                $statusPerArea[$area->id_area] = 'empty';
+            } else {
                 $statusPerArea[$area->id_area] = 'occupied';
-                continue;
             }
-
-            $reservation = ParkingSlotReservation::active()
-                ->where('id_area', $area->id_area)
-                ->orderByDesc('expires_at')
-                ->first();
-
-            if ($reservation) {
-                if ((int) $reservation->id_user === (int) $user->id) {
-                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
-                    $myBookingIds[$area->id_area] = $reservation->id;
-                } else {
-                    $statusPerArea[$area->id_area] = 'bookmarked';
-                }
-                continue;
-            }
-
-            $legacy = Transaksi::where('id_area', $area->id_area)
-                ->where('status', 'bookmarked')
-                ->where('bookmarked_at', '>', $now->copy()->subMinutes(10))
-                ->orderByDesc('bookmarked_at')
-                ->first();
-
-            if ($legacy) {
-                if ((int) $legacy->id_user === (int) $user->id) {
-                    $statusPerArea[$area->id_area] = 'bookmarked-by-me';
-                    $myBookingIds[$area->id_area] = $legacy->id_parkir;
-                } else {
-                    $statusPerArea[$area->id_area] = 'bookmarked';
-                }
-                continue;
-            }
-
-            $statusPerArea[$area->id_area] = 'empty';
         }
 
         $activeReservation = ParkingSlotReservation::active()
@@ -137,7 +125,43 @@ class ParkingSlotController extends Controller
             }
         }
 
-        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs', 'daerahs', 'selectedDaerah', 'selectedAreaId', 'activeBookingInfo'));
+        // Hitung ringkasan slot untuk area terpilih
+        $slotSummary = [
+            'total' => 0,
+            'empty' => 0,
+            'mine' => 0,
+            'occupied' => 0,
+        ];
+
+        if ($map) {
+            $slotModels = ParkingMapSlot::where('area_parkir_id', $map->id_area)->get();
+            $slotIds = $slotModels->pluck('id')->all();
+            $activeBySlot = $this->getActiveTransactionsBySlot($slotIds);
+            $activeReservationsBySlot = $this->getActiveReservationsBySlot($slotIds);
+
+            foreach ($slotModels as $slot) {
+                $slotSummary['total']++;
+                if (isset($activeBySlot[$slot->id])) {
+                    $tx = $activeBySlot[$slot->id];
+                    if ($user && (int) $tx['user_id'] === (int) $user->id) {
+                        $slotSummary['mine']++;
+                    } else {
+                        $slotSummary['occupied']++;
+                    }
+                } elseif (isset($activeReservationsBySlot[$slot->id])) {
+                    $rsv = $activeReservationsBySlot[$slot->id];
+                    if ($user && (int) $rsv['user_id'] === (int) $user->id) {
+                        $slotSummary['mine']++;
+                    } else {
+                        $slotSummary['occupied']++;
+                    }
+                } else {
+                    $slotSummary['empty']++;
+                }
+            }
+        }
+
+        return view('user.bookings', compact('areas', 'statusPerArea', 'map', 'myBookingIds', 'kendaraans', 'tarifs', 'daerahs', 'selectedDaerah', 'selectedAreaId', 'activeBookingInfo', 'slotSummary'));
     }
 
     /**
@@ -160,7 +184,7 @@ class ParkingSlotController extends Controller
         $summary = ['total' => 0, 'empty' => 0, 'occupied' => 0, 'reserved' => 0, 'unassigned' => 0];
 
         if ($area) {
-            $currentUserId = Auth::user()?->id ?? null;
+            $currentUserId = $request->user()?->id ?? null;
             $slotModels = ParkingMapSlot::where('area_parkir_id', $area->id_area)
                 ->with(['areaParkir', 'camera'])
                 ->orderBy('code')
@@ -315,33 +339,6 @@ class ParkingSlotController extends Controller
         return $bySlot;
     }
 
-    private function getActiveTransactionsByArea(array $areaIds): array
-    {
-        if (empty($areaIds)) {
-            return [];
-        }
-        $tenMinutesAgo = Carbon::now()->subMinutes(10);
-        $transaksis = Transaksi::whereIn('id_area', $areaIds)
-            ->whereNull('parking_map_slot_id')
-            ->where(function ($q) use ($tenMinutesAgo) {
-                $q->where(function ($q2) {
-                    $q2->whereNull('waktu_keluar')->where('status', 'masuk');
-                })->orWhere(function ($q2) use ($tenMinutesAgo) {
-                    $q2->where('status', 'bookmarked')->where('bookmarked_at', '>', $tenMinutesAgo);
-                });
-            })
-            ->with(['kendaraan'])
-            ->get();
-        $byArea = [];
-        foreach ($transaksis as $tx) {
-            $byArea[$tx->id_area] = [
-                'status' => $tx->status,
-                'vehicle_plate' => $tx->kendaraan?->plat_nomor ?? null,
-            ];
-        }
-        return $byArea;
-    }
-
     /** API: daftar slot untuk area (untuk dropdown form catat masuk). */
     public function slotsByArea(\App\Models\AreaParkir $area)
     {
@@ -387,9 +384,39 @@ class ParkingSlotController extends Controller
 
     public function view(Request $request)
     {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
         $areaId = $request->query('map_id');
-        $area = $areaId ? AreaParkir::find($areaId) : AreaParkir::getDefaultMap();
-        $maps = AreaParkir::whereNotNull('map_image')->where('map_image', '!=', '')->orderBy('nama_area')->get();
+
+        // Jika petugas, kunci area ke id_area miliknya
+        if ($user && $user->role === 'petugas') {
+            $area = null;
+            if ($user->id_area) {
+                $area = AreaParkir::find($user->id_area);
+            }
+
+            if (!$area) {
+                return view('parking-map', [
+                    'area' => null,
+                    'maps' => collect([]),
+                    'title' => 'Peta Parkir',
+                    'message' => 'Anda belum ditugaskan ke area manapun yang memiliki denah visual.'
+                ]);
+            }
+            $maps = collect([$area]);
+        } else {
+            $area = $areaId ? AreaParkir::find($areaId) : AreaParkir::getDefaultMap();
+            $maps = AreaParkir::whereNotNull('map_image')->where('map_image', '!=', '')->orderBy('nama_area')->get();
+
+            // Fallback jika area yang dipilih tidak punya denah, ambil yang default punya denah
+            if ($area && (empty($area->map_image) || $area->map_image === '')) {
+                $areaWithMap = AreaParkir::whereNotNull('map_image')->where('map_image', '!=', '')->first();
+                if ($areaWithMap) {
+                    $area = $areaWithMap;
+                }
+            }
+        }
+
         $title = 'Peta Parkir';
 
         return view('parking-map', compact('area', 'maps', 'title'));
@@ -398,7 +425,7 @@ class ParkingSlotController extends Controller
     public function bookmark(Request $request, AreaParkir $area)
     {
         /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $user = $request->user();
         $now = Carbon::now();
         $tenMinutesAgo = $now->copy()->subMinutes(10);
 
@@ -513,7 +540,7 @@ class ParkingSlotController extends Controller
 
     public function unbookmark(Request $request, $id)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
         // Try finding as Transaksi first
         $transaksi = Transaksi::where('id_parkir', $id)

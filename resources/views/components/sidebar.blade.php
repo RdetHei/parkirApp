@@ -151,10 +151,6 @@
         <div class="pt-4 pb-2 px-3">
             <p class="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] sidebar-label">RFID</p>
         </div>
-        <a href="{{ route('parkir.scan') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('parkir.scan', 'rfid.identify.page', 'rfid.access.scan-page') ? 'active' : '' }}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
-            <span class="sidebar-label">{{ __('RFID Terminal') }}</span>
-        </a>
         <a href="{{ route('admin.rfid.index') }}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 {{ request()->routeIs('admin.rfid.*') ? 'active' : '' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm5 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
             <span class="sidebar-label">{{ __('RFID Management') }}</span>

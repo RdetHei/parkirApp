@@ -36,8 +36,34 @@ class RfidParkingController extends Controller
         ]);
 
         $uid = trim($request->rfid_uid);
-        $user = User::where('rfid_uid', $uid)
-                    ->first();
+        $user = null;
+        $kendaraan = null;
+
+        // Coba cari di RfidTag dulu (metode baru, lebih spesifik ke kendaraan)
+        $rfidTag = \App\Models\RfidTag::with('kendaraan.user')->where('uid', $uid)->first();
+
+        if ($rfidTag && $rfidTag->kendaraan) {
+            $kendaraan = $rfidTag->kendaraan;
+            $user = $kendaraan->user;
+
+            if ($rfidTag->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kartu RFID (' . $uid . ') tidak aktif!',
+                    'user' => [
+                        'name' => $user?->name ?? 'Unknown',
+                        'status' => 'Kartu Inaktif',
+                    ]
+                ], 403);
+            }
+        } else {
+            // Fallback ke metode lama: cari di tb_user.rfid_uid
+            $user = User::where('rfid_uid', $uid)->first();
+            if ($user) {
+                // Kendaraan default user dipakai saat check-in baru.
+                $kendaraan = Kendaraan::where('id_user', $user->id)->first();
+            }
+        }
 
         if (!$user) {
             return response()->json([
@@ -65,13 +91,15 @@ class RfidParkingController extends Controller
         Cache::put($scanKey, now()->toDateTimeString(), now()->addSeconds($scanCooldownSeconds));
 
         // Cek apakah sedang parkir (transaksi dengan status 'masuk')
+        // Gunakan kendaraan_id jika ada (dari RfidTag) untuk akurasi lebih tinggi,
+        // fallback ke user_id jika dari tb_user.
         $activeTransaksi = Transaksi::where('id_user', $user->id)
             ->where('status', 'masuk')
+            ->when($kendaraan, function($q) use ($kendaraan) {
+                return $q->where('id_kendaraan', $kendaraan->id_kendaraan);
+            })
             ->latest('waktu_masuk')
             ->first();
-
-        // Kendaraan default user dipakai saat check-in baru.
-        $kendaraan = Kendaraan::where('id_user', $user->id)->first();
 
         if (!$activeTransaksi) {
             // Scan pertama: Check-in (wajib ada kendaraan terdaftar).
@@ -176,14 +204,18 @@ class RfidParkingController extends Controller
             $startTime = Carbon::parse($activeTransaksi->waktu_masuk);
             $endTime = \Illuminate\Support\Carbon::now();
             $durationHours = (int) max(1, ceil($startTime->diffInMinutes($endTime, true) / 60));
-            $totalAmount = $durationHours * $rate;
+            $baseAmount = $durationHours * $rate;
+            $diskon = 0;
 
             // Diskon 10% jika user memiliki rfid_uid (kartu member)
             if (!empty($user->rfid_uid)) {
-                $totalAmount = $totalAmount * 0.9;
+                $diskon = $baseAmount * 0.1;
+                $totalAmount = $baseAmount - $diskon;
+            } else {
+                $totalAmount = $baseAmount;
             }
 
-            $checkout = DB::transaction(function () use ($user, $activeTransaksi, $rate, $totalAmount) {
+            $checkout = DB::transaction(function () use ($user, $activeTransaksi, $rate, $totalAmount, $diskon) {
                 $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
                 $bal = (float) ($lockedUser->balance ?? 0);
 
@@ -214,11 +246,15 @@ class RfidParkingController extends Controller
                 // Hitung ulang durasi/biaya berdasarkan waktu masuk transaksi yang terkunci.
                 $startTime2 = Carbon::parse($lockedTransaksi->waktu_masuk);
                 $durationHours2 = (int) max(1, ceil($startTime2->diffInMinutes(\Illuminate\Support\Carbon::now(), true) / 60));
-                $totalAmount2 = $durationHours2 * $rate;
+                $baseAmount2 = $durationHours2 * $rate;
+                $diskon2 = 0;
 
                 // Diskon 10% jika user memiliki rfid_uid (kartu member)
                 if (!empty($lockedUser->rfid_uid)) {
-                    $totalAmount2 = $totalAmount2 * 0.9;
+                    $diskon2 = $baseAmount2 * 0.1;
+                    $totalAmount2 = $baseAmount2 - $diskon2;
+                } else {
+                    $totalAmount2 = $baseAmount2;
                 }
 
                 if ($bal < $totalAmount2) {
@@ -226,6 +262,7 @@ class RfidParkingController extends Controller
                         'waktu_keluar' => now(),
                         'durasi_jam' => $durationHours2,
                         'biaya_total' => $totalAmount2,
+                        'diskon' => $diskon2,
                         'status' => 'keluar',
                         'status_pembayaran' => 'pending',
                     ]);
@@ -242,6 +279,7 @@ class RfidParkingController extends Controller
                     'waktu_keluar' => now(),
                     'durasi_jam' => $durationHours2,
                     'biaya_total' => $totalAmount2,
+                    'diskon' => $diskon2,
                     'status' => 'keluar',
                     'status_pembayaran' => 'berhasil',
                 ]);
@@ -349,17 +387,15 @@ class RfidParkingController extends Controller
             return null;
         }
 
+        // Prioritas: Area yang ditugaskan ke user (petugas/admin)
+        if ($currentUser->id_area) {
+            return AreaParkir::find($currentUser->id_area);
+        }
+
+        // Fallback: Sesi (jika masih ada, tapi prefer id_area)
         $sessionId = session(PetugasDashboardController::SESSION_OPERATIONAL_AREA);
         if ($sessionId) {
             return AreaParkir::find($sessionId);
-        }
-
-        if ($currentUser->role === 'petugas') {
-            return null;
-        }
-
-        if ($currentUser->id_area) {
-            return AreaParkir::find($currentUser->id_area);
         }
 
         return null;

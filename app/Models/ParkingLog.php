@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ParkingLog extends Model
 {
     protected $fillable = [
-        'vehicle_id',
+        'id_kendaraan',
         'checkin_time',
         'checkout_time',
         'gate_type',
@@ -19,8 +19,8 @@ class ParkingLog extends Model
         'checkout_time' => 'datetime'
     ];
 
-    public function vehicle()
+    public function kendaraan()
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsTo(Kendaraan::class, 'id_kendaraan', 'id_kendaraan');
     }
 }

@@ -129,12 +129,12 @@
                 <div class="flex items-center gap-4">
                     <button id="btnShowRevenue" class="text-left group outline-none">
                         <h2 class="text-xl font-bold text-white tracking-tight group-hover:text-emerald-500 transition-colors">{{ __('Revenue Analytics') }}</h2>
-                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Income performance for the last 7 days') }}</p>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Income performance for the last') }} {{ $days }} {{ __('days') }}</p>
                     </button>
                     <div class="h-8 w-px bg-white/10 mx-2"></div>
                     <button id="btnShowTraffic" class="text-left group outline-none opacity-40 hover:opacity-100 transition-all">
                         <h2 class="text-xl font-bold text-white tracking-tight group-hover:text-blue-500 transition-colors">{{ __('Peak Hours') }}</h2>
-                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Vehicle entries by hour') }}</p>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">{{ __('Total vehicle entries by hour (last') }} {{ $days }} {{ __('days)') }}</p>
                     </button>
                 </div>
                 <div class="flex items-center gap-3">
@@ -143,9 +143,10 @@
                         <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">{{ __('Live Sync') }}</span>
                     </div>
                     @if(Auth::user()->role !== 'petugas')
-                    <select class="bg-slate-950 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer">
-                        <option class="bg-slate-900">{{ __('Last 7 Days') }}</option>
-                        <option class="bg-slate-900">{{ __('Last 30 Days') }}</option>
+                    <select id="daysFilter" class="bg-slate-950 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white rounded-xl px-4 py-2 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer">
+                        <option value="7" class="bg-slate-900" {{ $days == 7 ? 'selected' : '' }}>{{ __('Last 7 Days') }}</option>
+                        <option value="30" class="bg-slate-900" {{ $days == 30 ? 'selected' : '' }}>{{ __('Last 30 Days') }}</option>
+                        <option value="90" class="bg-slate-900" {{ $days == 90 ? 'selected' : '' }}>{{ __('Last 90 Days') }}</option>
                     </select>
                     @endif
                 </div>
@@ -432,6 +433,15 @@
                 contTraffic.classList.remove('hidden');
                 contRevenue.classList.add('hidden');
             });
+
+            // Days Filter Logic
+            const daysFilter = document.getElementById('daysFilter');
+            if (daysFilter) {
+                daysFilter.addEventListener('change', function() {
+                    const days = this.value;
+                    window.location.href = `{{ route('dashboard') }}?days=${days}`;
+                });
+            }
 
             // Vehicle Distribution Chart
             const ctxVehicle = document.getElementById('vehicleChart').getContext('2d');

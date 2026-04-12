@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
 use App\Models\AreaParkir;
-use App\Models\Pembayaran;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -56,12 +55,35 @@ class PetugasDashboardController extends Controller
         return back()->with('success', 'Sesi area tugas dibersihkan. Masukkan kode peta untuk shift berikutnya.');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $idArea = session(self::SESSION_OPERATIONAL_AREA);
+            /** @var \App\Models\User $user */
+            $user = $request->user();
 
-            if (! $idArea) {
+            // Prioritas 1: Area yang ditugaskan admin di profil user
+            $idArea = $user->id_area;
+            $area = null;
+
+            if ($idArea) {
+                $area = AreaParkir::find($idArea);
+            }
+
+            // Prioritas 2: Sesi area yang dimasukkan via kode peta (jika profil kosong atau area profil tidak ditemukan)
+            if (! $area) {
+                $sessionId = session(self::SESSION_OPERATIONAL_AREA);
+                if ($sessionId) {
+                    $area = AreaParkir::find($sessionId);
+                }
+            }
+
+            // Jika tetap tidak ada area valid, tampilkan form kode peta
+            if (! $area) {
+                // Bersihkan sesi jika ternyata isinya sampah (ID tidak valid)
+                if (! $user->id_area) {
+                    session()->forget(self::SESSION_OPERATIONAL_AREA);
+                }
+
                 return view('petugas.dashboard', [
                     'title' => 'Dashboard Petugas',
                     'needsOperationalArea' => true,
@@ -75,38 +97,41 @@ class PetugasDashboardController extends Controller
                     'aktivitasTerbaru' => collect([]),
                     'areaParkir' => AreaParkir::all(),
                     'area' => null,
+                    'message' => 'Silakan masukkan Kode Peta untuk memulai monitoring.'
                 ]);
             }
 
+            // Gunakan ID area yang valid untuk query selanjutnya
+            $activeIdArea = $area->id_area;
+
             // Stats cached per area
-            $cacheKey = "petugas_dashboard_stats_{$idArea}";
-            $stats = Cache::remember($cacheKey, 60, function() use ($idArea) {
-                $query = Transaksi::where('id_area', $idArea);
+            $cacheKey = "petugas_dashboard_stats_{$activeIdArea}";
+            $stats = Cache::remember($cacheKey, 60, function() use ($activeIdArea) {
+                $query = Transaksi::where('id_area', $activeIdArea);
 
                 return [
-                    'transaksiHariIni' => (clone $query)->whereDate('waktu_masuk', \Illuminate\Support\Carbon::today())->count(),
+                    'transaksiHariIni' => (clone $query)->whereDate('waktu_masuk', Carbon::today())->count(),
                     'pendapatanHariIni' => (clone $query)->where('status', 'keluar')
                         ->where('status_pembayaran', 'berhasil')
-                        ->whereDate('waktu_keluar', \Illuminate\Support\Carbon::today())
+                        ->whereDate('waktu_keluar', Carbon::today())
                         ->sum('biaya_total'),
                 ];
             });
 
             // Live counts filtered by area
-            $transaksiAktif = Transaksi::where('id_area', $idArea)->where('status', 'masuk')->count();
-            $bookingAktif = Transaksi::where('id_area', $idArea)
+            $transaksiAktif = Transaksi::where('id_area', $activeIdArea)->where('status', 'masuk')->count();
+            $bookingAktif = Transaksi::where('id_area', $activeIdArea)
                 ->where('status', 'bookmarked')
-                ->where('bookmarked_at', '>', \Illuminate\Support\Carbon::now()->subMinutes(10))
+                ->where('bookmarked_at', '>', Carbon::now()->subMinutes(10))
                 ->count();
 
-            // Kapasitas parkir - Optimized direct DB aggregation
-            $area = AreaParkir::find($idArea);
+            // Kapasitas parkir
             $totalKapasitas = $area->kapasitas ?? 0;
             $totalTerisi = $area->terisi ?? 0;
 
-            // Aktivitas terbaru - Eager Loading & Limit
+            // Aktivitas terbaru
             $aktivitasTerbaru = Transaksi::with(['kendaraan', 'area'])
-                ->where('id_area', $idArea)
+                ->where('id_area', $activeIdArea)
                 ->whereIn('status', ['masuk', 'keluar', 'bookmarked'])
                 ->orderBy('created_at', 'desc')
                 ->limit(5)
@@ -125,7 +150,7 @@ class PetugasDashboardController extends Controller
                 'totalKapasitas' => $totalKapasitas,
                 'totalTerisi' => $totalTerisi,
                 'aktivitasTerbaru' => $aktivitasTerbaru,
-                'areaParkir' => AreaParkir::all(),
+                'areaParkir' => collect([$area]),
                 'area' => $area,
             ]);
         } catch (\Exception $e) {

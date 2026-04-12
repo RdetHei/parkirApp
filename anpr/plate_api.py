@@ -1,11 +1,12 @@
 import requests
 import json
 import os
+import time
 from config import PLATE_RECOGNIZER_TOKEN, LARAVEL_API_URL, OCR_CONFIDENCE_THRESHOLD
 
 def scan_plate_with_api(image_path):
     """
-    Sends cropped plate image to Plate Recognizer API
+    Sends cropped plate image to Plate Recognizer API directly
     """
     with open(image_path, 'rb') as fp:
         response = requests.post(
@@ -23,19 +24,24 @@ def scan_plate_with_api(image_path):
 
 def send_to_laravel(data, image_path=None):
     """
-    Sends processed data to Laravel Backend
+    Sends processed data from Plate Recognizer to Laravel Backend
     """
-    # Prepare payload based on the requested ALPR structure
-    # and what Laravel expects
+    # Extract results from Plate Recognizer structure
+    results = data.get('results', [])
+    if not results:
+        return False
+        
+    plate_data = results[0]
+    
+    # Prepare payload for Laravel handleDetection endpoint
     payload = {
-        'plate': data.get('plate', {}).get('props', {}).get('plate', [{}])[0].get('value', '').upper(),
-        'confidence': data.get('plate', {}).get('score', 0),
-        'vehicle_type': data.get('vehicle', {}).get('type', 'Unknown'),
-        'vehicle_color': data.get('vehicle', {}).get('props', {}).get('color', [{}])[0].get('value', 'Unknown'),
-        'vehicle_make': data.get('vehicle', {}).get('props', {}).get('make_model', [{}])[0].get('make', 'Unknown'),
-        'vehicle_model': data.get('vehicle', {}).get('props', {}).get('make_model', [{}])[0].get('model', 'Unknown'),
-        'timestamp': data.get('timestamp', ''),
-        'raw_json': data # Full structure for logging
+        'plate': plate_data.get('plate', '').upper(),
+        'confidence': plate_data.get('score', 0),
+        'vehicle_type': plate_data.get('vehicle', {}).get('type', [{}])[0].get('type', 'mobil'),
+        'vehicle_color': plate_data.get('vehicle', {}).get('color', [{}])[0].get('color', 'unknown'),
+        'vehicle_make': plate_data.get('vehicle', {}).get('make', [{}])[0].get('make', ''),
+        'vehicle_model': plate_data.get('vehicle', {}).get('model', [{}])[0].get('model', ''),
+        'raw_json': json.dumps(data) # Store full response for logging
     }
 
     # If confidence is below threshold, skip sending to Laravel for Entry/Exit
@@ -48,6 +54,7 @@ def send_to_laravel(data, image_path=None):
         files = {'image': open(image_path, 'rb')}
 
     try:
+        # Use LARAVEL_API_URL which points to /api/anpr-detection
         response = requests.post(
             LARAVEL_API_URL,
             data=payload,

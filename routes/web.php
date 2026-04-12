@@ -110,14 +110,18 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
             if (!$user) return response()->json(['has_new' => false]);
 
             $latest = \App\Models\NotificationLog::where('user_id', $user->id)
-                ->where('created_at', '>', now()->subSeconds(30))
+                ->where('created_at', '>', now()->subSeconds(10)) // Only very fresh ones
                 ->where('status', 'success')
                 ->latest()
                 ->first();
 
+            if (!$latest) return response()->json(['has_new' => false]);
+
             return response()->json([
-                'has_new' => !!$latest,
-                'message' => $latest ? $latest->message : null
+                'has_new' => true,
+                'type' => $latest->type,
+                'message' => $latest->message,
+                'data' => json_decode($latest->data, true)
             ]);
         })->name('api.notifications.check');
 

@@ -42,6 +42,12 @@ class CameraController extends Controller
             'is_default' => 'nullable|boolean',
         ]);
 
+        // Auto-append /video if user only provides IP and Port for IP Webcam
+        $url = $data['url'];
+        if ($data['tipe'] === Camera::TIPE_SCANNER && strpos($url, '/', 8) === false) {
+            $data['url'] = rtrim($url, '/') . '/video';
+        }
+
         $data['is_default'] = $request->boolean('is_default');
 
         if ($data['is_default']) {
@@ -68,6 +74,12 @@ class CameraController extends Controller
             'tipe' => 'required|in:'.Camera::TIPE_SCANNER.','.Camera::TIPE_VIEWER,
             'is_default' => 'nullable|boolean',
         ]);
+
+        // Auto-append /video if user only provides IP and Port for IP Webcam
+        $url = $data['url'];
+        if ($data['tipe'] === Camera::TIPE_SCANNER && strpos($url, '/', 8) === false) {
+            $data['url'] = rtrim($url, '/') . '/video';
+        }
 
         $data['is_default'] = $request->boolean('is_default');
 

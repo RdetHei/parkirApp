@@ -203,12 +203,14 @@ class TransaksiController extends Controller
                 }
 
                 $biaya_total = $durasi_jam * $tarif->tarif_perjam;
+                $diskon = 0;
 
                 // Diskon 10% jika user memiliki rfid_uid (kartu member)
                 if ($transaksi->id_user) {
                     $user = $transaksi->user ?: User::find($transaksi->id_user);
                     if ($user && !empty($user->rfid_uid)) {
-                        $biaya_total = $biaya_total * 0.9;
+                        $diskon = $biaya_total * 0.1;
+                        $biaya_total = $biaya_total - $diskon;
                     }
                 }
 
@@ -217,6 +219,7 @@ class TransaksiController extends Controller
                     'waktu_keluar' => $waktu_keluar,
                     'durasi_jam' => $durasi_jam,
                     'biaya_total' => $biaya_total,
+                    'diskon' => $diskon,
                     'status' => 'keluar',
                     'status_pembayaran' => 'pending', // Status default saat checkout
                 ]);

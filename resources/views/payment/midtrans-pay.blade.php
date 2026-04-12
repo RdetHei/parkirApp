@@ -3,30 +3,73 @@
 @section('title', 'Bayar dengan Midtrans - NESTON')
 
 @section('content')
-<div class="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
-        <div class="text-center mb-6">
-            <h1 class="text-xl font-bold text-gray-800">Pembayaran Parkir</h1>
-            <p class="text-gray-500 text-sm mt-1">Plat {{ $transaksi->kendaraan->plat_nomor }} &middot; Rp {{ number_format($transaksi->biaya_total, 0, ',', '.') }}</p>
-        </div>
+<div class="relative z-10 min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    {{-- Ambient bg --}}
+    <div class="fixed top-0 left-1/4 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-[160px] pointer-events-none z-0"></div>
+    <div class="fixed bottom-0 right-0 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[140px] pointer-events-none z-0"></div>
 
-        <div id="snap-container" class="min-h-[400px] flex items-center justify-center">
-            <div class="text-center text-gray-500" id="loading-state">
-                <svg class="animate-spin h-10 w-10 text-green-600 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p>Memuat halaman pembayaran...</p>
+    <div class="w-full max-w-xl animate-fade-in relative z-10">
+        <div class="card-pro overflow-hidden border-white/5 backdrop-blur-xl bg-slate-900/40">
+            {{-- Header --}}
+            <div class="px-6 py-8 sm:px-10 border-b border-white/5 bg-white/[0.02] text-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-4"
+                     style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.18);">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.25em]">Secure Payment</span>
+                </div>
+                <h1 class="text-2xl font-black text-white uppercase tracking-tight">Pembayaran <span class="text-emerald-500">Parkir</span></h1>
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Selesaikan transaksi Anda melalui Midtrans</p>
+            </div>
+
+            {{-- Details --}}
+            <div class="p-6 sm:p-10">
+                <div class="bg-slate-950/50 rounded-3xl border border-white/5 p-6 mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-emerald-500">
+                                <i class="fa-solid fa-car text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-0.5">Plat Nomor</p>
+                                <p class="text-lg font-black text-white tracking-tight">{{ $transaksi->kendaraan->plat_nomor }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-0.5">Total Bayar</p>
+                            <p class="text-2xl font-black text-emerald-500 tracking-tighter">Rp {{ number_format($transaksi->biaya_total, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
+                        <div>
+                            <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Waktu Masuk</p>
+                            <p class="text-[10px] font-bold text-slate-300 uppercase">{{ \Carbon\Carbon::parse($transaksi->waktu_masuk)->format('H:i · d M Y') }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Durasi</p>
+                            <p class="text-[10px] font-bold text-slate-300 uppercase">{{ $transaksi->durasi_jam }} JAM</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Snap Container --}}
+                <div id="snap-container" class="min-h-[300px] flex items-center justify-center rounded-3xl bg-slate-950/30 border border-dashed border-white/10">
+                    <div class="text-center" id="loading-state">
+                        <div class="w-10 h-10 border-4 border-emerald-500/15 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Menyiapkan Gerbang Pembayaran...</p>
+                    </div>
+                </div>
+
+                @isset($cancelUrl)
+                    <div class="mt-8 text-center">
+                        <a href="{{ $cancelUrl }}" class="inline-flex items-center gap-2 text-[10px] font-black text-slate-500 hover:text-white uppercase tracking-widest transition-all">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Batalkan Pembayaran
+                        </a>
+                    </div>
+                @endisset
             </div>
         </div>
-
-        @isset($cancelUrl)
-            <div class="mt-6 text-center">
-                <a href="{{ $cancelUrl }}" class="text-sm text-gray-500 hover:text-gray-700">
-                    &larr; Kembali
-                </a>
-            </div>
-        @endisset
     </div>
 </div>
 

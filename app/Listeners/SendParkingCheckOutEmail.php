@@ -5,9 +5,10 @@ namespace App\Listeners;
 use App\Events\ParkingCheckedOut;
 use App\Mail\ParkingCheckOutMail;
 use App\Models\NotificationLog;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Mail;
 
-class SendParkingCheckOutEmail
+class SendParkingCheckOutEmail implements ShouldQueue
 {
     public function handle(ParkingCheckedOut $event): void
     {

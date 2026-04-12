@@ -31,7 +31,7 @@ class UserVehicleController extends Controller
 
         $data = $request->validate([
             'plat_nomor' => 'required|string|max:15',
-            'jenis_kendaraan' => 'required|string|max:20',
+            'jenis_kendaraan' => 'required|string|in:motor,mobil',
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
         ]);
@@ -62,14 +62,32 @@ class UserVehicleController extends Controller
             abort(403);
         }
 
+        // Cek apakah kendaraan sedang parkir (sesuaikan dengan tabel parking_logs)
+        $isParking = \App\Models\ParkingLog::where('id_kendaraan', $vehicle->id_kendaraan)
+            ->whereNull('checkout_time')
+            ->exists();
+
+        if ($isParking) {
+            return back()->with('error', 'Kendaraan sedang parkir. Data tidak dapat diubah.');
+        }
+
         $data = $request->validate([
             'plat_nomor' => 'required|string|max:15',
-            'jenis_kendaraan' => 'required|string|max:20',
+            'jenis_kendaraan' => 'required|string|in:motor,mobil',
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
         ]);
 
         $platNormalized = PlatNomorNormalizer::normalize($data['plat_nomor']);
+
+        // Jika plat nomor berubah, cek apakah sudah ada RFID terhubung
+        if ($platNormalized !== $vehicle->plat_nomor) {
+            $hasRfid = \App\Models\RfidTag::where('id_kendaraan', $vehicle->id_kendaraan)->exists();
+            if ($hasRfid) {
+                return back()->with('error', 'Plat nomor tidak dapat diubah karena sudah terhubung dengan kartu RFID. Silakan hubungi admin.');
+            }
+        }
+
         $exists = Kendaraan::where('id_user', $user->id)
             ->where('id_kendaraan', '!=', $vehicle->id_kendaraan)
             ->where('plat_nomor', $platNormalized)
@@ -93,6 +111,21 @@ class UserVehicleController extends Controller
         $user = Auth::user();
         if ((int) $vehicle->id_user !== (int) $user->id) {
             abort(403);
+        }
+
+        // Cek apakah kendaraan sedang parkir
+        $isParking = \App\Models\ParkingLog::where('id_kendaraan', $vehicle->id_kendaraan)
+            ->whereNull('checkout_time')
+            ->exists();
+
+        if ($isParking) {
+            return back()->with('error', 'Kendaraan sedang parkir. Data tidak dapat dihapus.');
+        }
+
+        // Cek apakah ada RFID terhubung
+        $hasRfid = \App\Models\RfidTag::where('id_kendaraan', $vehicle->id_kendaraan)->exists();
+        if ($hasRfid) {
+            return back()->with('error', 'Kendaraan tidak dapat dihapus karena sudah terhubung dengan kartu RFID. Silakan hubungi admin.');
         }
 
         $vehicle->delete();

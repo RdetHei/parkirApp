@@ -10,8 +10,13 @@ use Carbon\Carbon;
 
 class OwnerDashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $days = $request->query('days', 7);
+        if (!in_array($days, [7, 30, 90])) {
+            $days = 7;
+        }
+
         $totalPendapatan = Transaksi::where('status', 'keluar')
             ->where('status_pembayaran', 'berhasil')
             ->sum('biaya_total');
@@ -26,7 +31,7 @@ class OwnerDashboardController extends Controller
         $totalTerisi = $areaParkir->sum('terisi');
 
         $harian = [];
-        for ($i = 6; $i >= 0; $i--) {
+        for ($i = $days - 1; $i >= 0; $i--) {
             $tanggal = Carbon::today()->subDays($i);
             $harian[] = [
                 'label' => $tanggal->format('d/m'),
@@ -46,7 +51,8 @@ class OwnerDashboardController extends Controller
             'totalKapasitas',
             'totalTerisi',
             'areaParkir',
-            'harian'
+            'harian',
+            'days'
         ));
     }
 }

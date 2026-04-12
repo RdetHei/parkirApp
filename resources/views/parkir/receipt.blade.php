@@ -368,6 +368,12 @@
                         <div style="font-size:0.75rem; font-weight:600; margin-top:2px;">
                             {{ optional($transaksi->area)->nama_area ?? 'Area Utama' }}
                         </div>
+                        @if($transaksi->parkingMapSlot)
+                            <div class="row-label" style="margin-top: 8px;">Slot</div>
+                            <div style="font-size:1.1rem; font-weight:800; color:#111; font-family:'IBM Plex Mono';">
+                                {{ $transaksi->parkingMapSlot->code }}
+                            </div>
+                        @endif
                     </div>
                     <div style="text-align:right;">
                         <div class="row-label">No. Transaksi</div>
@@ -458,6 +464,14 @@
                     <span class="row-dots"></span>
                     <span class="row-value">{{ $transaksi->durasi_jam ?? 0 }} × tarif</span>
                 </div>
+
+                @if($transaksi->diskon > 0)
+                <div class="row" style="color: #059669;">
+                    <span class="row-label" style="color: #059669;">Diskon Member</span>
+                    <span class="row-dots" style="border-color: #a7f3d0;"></span>
+                    <span class="row-value mono">-Rp {{ number_format($transaksi->diskon, 0, ',', '.') }}</span>
+                </div>
+                @endif
 
                 <div class="total-box">
                     <div>

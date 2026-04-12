@@ -27,6 +27,7 @@ class Transaksi extends Model
         'status_pembayaran',
         'id_pembayaran',
         'midtrans_order_id',
+        'diskon',
     ];
 
     protected $casts = [

@@ -162,3 +162,39 @@
         </div>
     @endcomponent
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const idKendaraanSelect = document.getElementById('id_kendaraan');
+        
+        // Polling for ANPR detections every 3 seconds
+        setInterval(async () => {
+            try {
+                const response = await fetch('{{ route("api.notifications.check") }}');
+                const result = await response.json();
+                
+                if (result.has_new && result.type === 'anpr_detection' && result.data && result.data.plate) {
+                    const plate = result.data.plate;
+                    
+                    // Try to find and select the vehicle in the dropdown
+                    for (let i = 0; i < idKendaraanSelect.options.length; i++) {
+                        if (idKendaraanSelect.options[i].text.includes(plate)) {
+                            if (idKendaraanSelect.value !== idKendaraanSelect.options[i].value) {
+                                idKendaraanSelect.value = idKendaraanSelect.options[i].value;
+                                idKendaraanSelect.dispatchEvent(new Event('change'));
+                                
+                                // Show a small toast or notification
+                                alert('Kendaraan ' + plate + ' otomatis terdeteksi!');
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to check for ANPR notifications:', error);
+            }
+        }, 3000);
+    });
+</script>
+@endpush

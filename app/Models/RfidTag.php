@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class RfidTag extends Model
 {
-    protected $fillable = ['uid', 'vehicle_id', 'status'];
+    protected $fillable = ['uid', 'id_kendaraan', 'status'];
 
-    public function vehicle()
+    public function kendaraan()
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsTo(Kendaraan::class, 'id_kendaraan', 'id_kendaraan');
     }
 }

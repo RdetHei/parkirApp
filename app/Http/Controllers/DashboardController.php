@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Kendaraan;
 use App\Models\Transaksi;
 use App\Models\Pembayaran;
@@ -13,10 +14,15 @@ use Illuminate\Support\Facades\Auth; // Added
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             \Illuminate\Support\Facades\Log::info('DashboardController@index hit');
+
+            $days = $request->query('days', 7);
+            if (!in_array($days, [7, 30, 90])) {
+                $days = 7;
+            }
 
             // Added user and area filtering logic
             $user = Auth::user();
@@ -72,11 +78,14 @@ class DashboardController extends Controller
             $totalKapasitas = $areaParkir->sum('kapasitas'); // Global, no filter
             $totalTerisi = $areaParkir->sum('terisi'); // Global, no filter
 
-            // Data Grafik: Pendapatan 7 Hari Terakhir
-            $grafikPendapatan = [];
-            for ($i = 6; $i >= 0; $i--) {
+            // Data Grafik: Pendapatan Berdasarkan Range Hari
+            $grafikPendapatan = [
+                'labels' => [],
+                'data' => []
+            ];
+            for ($i = $days - 1; $i >= 0; $i--) {
                 $date = Carbon::today()->subDays($i);
-                $label = $date->translatedFormat('d M');
+                $label = $date->translatedFormat($days > 7 ? 'd M' : 'd M');
                 $valueQuery = Transaksi::where('status', 'keluar')
                     ->where('status_pembayaran', 'berhasil')
                     ->whereDate('waktu_keluar', $date);
@@ -95,12 +104,13 @@ class DashboardController extends Controller
             ];
             for ($h = 0; $h < 24; $h++) {
                 $jamSibukQuery = Transaksi::whereRaw('HOUR(waktu_masuk) = ?', [$h])
-                    ->whereDate('waktu_masuk', '>=', Carbon::today()->subDays(30)); // Rata-rata 30 hari terakhir
+                    ->whereDate('waktu_masuk', '>=', Carbon::today()->subDays($days)); 
                 if ($areaId) {
                     $jamSibukQuery->where('id_area', $areaId);
                 }
                 $grafikJamSibuk['labels'][] = sprintf('%02d:00', $h);
-                $grafikJamSibuk['data'][] = round($jamSibukQuery->count() / 30); // Modified to whole numbers
+                // Kita tampilkan total distribusi, bukan rata-rata harian agar pola lebih terlihat jelas
+                $grafikJamSibuk['data'][] = $jamSibukQuery->count();
             }
 
             // Analisis Pendapatan Per Jam (Heatmap Data)
@@ -166,7 +176,8 @@ class DashboardController extends Controller
                     'aktivitasTerbaru',
                     'revenueByHour',
                     'topAreas',
-                    'areaName' // Added
+                    'areaName',
+                    'days'
                 ));
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('DashboardController@index error: ' . $e->getMessage());

@@ -4,8 +4,9 @@ namespace App\Listeners;
 
 use App\Events\ParkingCheckedOut;
 use App\Services\WhatsAppGateway;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendParkingCheckOutWhatsApp
+class SendParkingCheckOutWhatsApp implements ShouldQueue
 {
     public function __construct(protected WhatsAppGateway $whatsapp) {}
 
