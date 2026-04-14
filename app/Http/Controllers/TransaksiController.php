@@ -373,11 +373,12 @@ class TransaksiController extends Controller
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
         $cameras = \App\Models\Camera::scanner()->orderBy('is_default', 'desc')->orderBy('id')->get();
+        $ipWebcamUrl = (string) optional($cameras->first())->url;
 
         /** @var \Illuminate\Support\Collection<int, array{id:int, code:string, id_area:int, occupied:bool}> $slots */
         $slots = $this->buildCheckInSlotsPayload();
 
-        return view('parkir.create', compact('kendaraans', 'tarifs', 'areas', 'cameras', 'slots'));
+        return view('parkir.create', compact('kendaraans', 'tarifs', 'areas', 'cameras', 'ipWebcamUrl', 'slots'));
     }
 
     /**

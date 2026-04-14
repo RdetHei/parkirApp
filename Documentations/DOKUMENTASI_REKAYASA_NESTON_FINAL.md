@@ -1,6 +1,6 @@
 # Dokumentasi Rekayasa Proyek NESTON
 ## Sistem Manajemen Parkir Berbasis Web
-### Periode: 14 Januari 2026 – 23 Februari 2026
+### Periode: 14 Januari 2026 – 13 April 2026
 
 ---
 
@@ -20,6 +20,10 @@
 12. [Diagram Alur Bisnis](#12-diagram-alur-bisnis)
 13. [Lampiran: Entity-Relationship Diagram (ERD)](#13-lampiran-entity-relationship-diagram-erd)
 14. [Lampiran: Lokasi File Penting](#14-lampiran-lokasi-file-penting)
+15. [Update Sistem Terkini (Maret–April 2026)](#15-update-sistem-terkini-maretapril-2026)
+16. [Entry Points & Fungsi Kode (Versi Runtime)](#16-entry-points--fungsi-kode-versi-runtime)
+17. [Lampiran Tabel Domain Terkini](#17-lampiran-tabel-domain-terkini)
+18. [Lampiran Lokasi File Terkini per Modul](#18-lampiran-lokasi-file-terkini-per-modul)
 
 ---
 
@@ -1327,3 +1331,207 @@ Transaksi (1) ---- Pembayaran (1)  [id_pembayaran, status_pembayaran]
 | **Views** | `resources/views/` |
 | **Components** | `resources/views/components/plate-scanner.blade.php` |
 | **Config** | `config/services.php`, `config/midtrans.php` |  
+
+---
+
+## 15. Update Sistem Terkini (Maret–April 2026)
+
+Bagian ini melengkapi fase-fase sebelumnya. Sistem NESTON saat ini **tidak hanya Midtrans**, tetapi sudah berkembang ke ekosistem operasional parkir yang lebih lengkap:
+
+### 15.1 Modul yang Ditambahkan / Diperluas
+
+1. **Kas Shift (Tunai Operasional)**
+   - Shift kas dibuka/ditutup per petugas dan area.
+   - Pembayaran tunai terikat ke `id_kas_shift`.
+   - Jika shift ditutup, pembayaran tunai pada shift tersebut terkunci dari perubahan.
+
+2. **Pembayaran Tunai (Intent + Confirm)**
+   - Dibuat status pending terlebih dahulu.
+   - Dikonfirmasi setelah uang diterima (`cash_received`, `cash_change`).
+   - Mencegah pengubahan data pasca shift closing.
+
+3. **Notifikasi Check-in/Check-out**
+   - Email dan WhatsApp dikirim otomatis lewat event-listener.
+   - Hasil kirim dicatat ke `notification_logs`.
+   - Proses berjalan asynchronous melalui queue worker.
+
+4. **RFID End-to-End**
+   - RFID login, identifikasi user, scan akses, dan scan operasi parkir.
+   - Dukungan tag RFID terpisah (`rfid_tags`) + histori transaksi RFID.
+
+5. **ANPR Scanner Reusable Component**
+   - Komponen `plate-scanner` mendukung kamera lokal, kamera CRUD, dan custom IP webcam.
+   - Dapat langsung mengisi target input form (`select` atau `text`).
+
+6. **Peta Parkir + Slot + Reservasi**
+   - Slot terikat area, status occupied tervalidasi.
+   - Reservasi aktif dipisah di tabel khusus + sinkron dengan transaksi.
+
+### 15.2 Koreksi Status Modul Pembayaran
+
+Dokumen awal menyebut "hanya Midtrans". Kondisi saat ini:
+- **Midtrans**: aktif
+- **Tunai (Cash)**: aktif (dengan kas shift)
+- **Saldo/NestonPay**: aktif
+
+### 15.3 Update Integrasi WhatsApp
+
+Konfigurasi gateway WhatsApp saat ini menggunakan:
+- `WHATSAPP_ENABLED`
+- `WHATSAPP_DRIVER`
+- `WHATSAPP_GATEWAY_URL`
+- `WHATSAPP_API_TOKEN`
+
+Mapping config berada di:
+- `config/services.php` bagian `services.whatsapp`.
+
+---
+
+## 16. Entry Points & Fungsi Kode (Versi Runtime)
+
+Bagian ini menjelaskan "kode ini untuk apa" dari sudut pandang alur request.
+
+### 16.1 `public/index.php`
+- Pintu masuk semua request HTTP.
+- Melakukan bootstrap framework Laravel.
+
+### 16.2 `bootstrap/app.php`
+- Mendaftarkan route file (`web.php`, `console.php`).
+- Mendaftarkan alias middleware (`role`, `verified`, `no-cache`, dll).
+- Menentukan middleware web global (contoh `SetLocaleMiddleware`).
+
+### 16.3 `routes/web.php`
+- Memetakan URL ke controller method.
+- Mengelompokkan akses berdasarkan role.
+- Menentukan endpoint inti:
+  - Operasional check-in/check-out
+  - ANPR, RFID, Payment, Kas Shift
+  - Dashboard & reporting
+
+### 16.4 Controller Layer (Contoh Penting)
+
+1. **`TransaksiController`**
+   - Core logic check-in/check-out
+   - Validasi kapasitas area
+   - Lock transaksi/slot untuk mencegah race condition
+
+2. **`PaymentController`**
+   - Alur Midtrans
+   - Callback notifikasi pembayaran
+   - Halaman success + fallback sinkronisasi
+
+3. **`CashPaymentController`**
+   - Open/close kas shift
+   - Intent tunai pending
+   - Konfirmasi tunai & update status transaksi
+
+4. **`ANPRController` & `Api/PlateRecognizerController`**
+   - Endpoint scan plat
+   - Integrasi OCR dengan alur parkir
+
+5. **`RfidParkingController`**
+   - Operasi parkir berbasis scan RFID
+
+### 16.5 Model Layer
+- `Transaksi`, `Pembayaran`, `KasShift`, `Kendaraan`, `AreaParkir`, `Tarif`, `RfidTag`, `NotificationLog`.
+- Fungsi: relasi data, query domain, casting/guarding data.
+
+### 16.6 Event-Driven Layer
+- `TransaksiObserver` mengamati perubahan transaksi.
+- Event: `ParkingCheckedIn`, `ParkingCheckedOut`.
+- Listener:
+  - email check-in/check-out
+  - WhatsApp check-in/check-out
+
+### 16.7 Service Layer
+- `PlateRecognizerService`: adapter OCR plate.
+- `WhatsAppGateway`: adapter provider WhatsApp + logging status kirim.
+
+### 16.8 View/Component Layer
+- Blade pages untuk tiap modul (`resources/views/...`).
+- Komponen reusable scanner:
+  - `resources/views/components/plate-scanner.blade.php`.
+
+---
+
+## 17. Lampiran Tabel Domain Terkini
+
+Selain tabel dasar yang sudah dijelaskan pada fase awal, sistem kini memakai tabel domain berikut:
+
+- `tb_user`
+- `tb_kendaraan`
+- `tb_tarif`
+- `tb_area_parkir`
+- `tb_transaksi`
+- `tb_pembayaran`
+- `tb_kas_shift`
+- `tb_kamera`
+- `tb_parking_map_slots`
+- `tb_parking_map_cameras`
+- `tb_parking_slot_reservations`
+- `tb_anpr_scans`
+- `tb_rfid_transactions`
+- `rfid_tags`
+- `parking_logs`
+- `tb_saldo_history`
+- `notification_logs`
+- `tb_log_aktivitas`
+- `tb_messages`
+
+---
+
+## 18. Lampiran Lokasi File Terkini per Modul
+
+### 18.1 Operasional Parkir
+- `app/Http/Controllers/TransaksiController.php`
+- `resources/views/parkir/create.blade.php`
+- `resources/views/transaksi/index.blade.php`
+
+### 18.2 Pembayaran & Kas Shift
+- `app/Http/Controllers/PaymentController.php`
+- `app/Http/Controllers/CashPaymentController.php`
+- `app/Http/Controllers/SaldoController.php`
+- `app/Models/Pembayaran.php`
+- `app/Models/KasShift.php`
+
+### 18.3 ANPR
+- `app/Http/Controllers/ANPRController.php`
+- `app/Http/Controllers/Api/PlateRecognizerController.php`
+- `app/Services/PlateRecognizerService.php`
+- `resources/views/anpr/index.blade.php`
+- `resources/views/components/plate-scanner.blade.php`
+
+### 18.4 RFID
+- `app/Http/Controllers/RfidParkingController.php`
+- `app/Http/Controllers/RfidLoginController.php`
+- `app/Http/Controllers/RfidAccessController.php`
+- `app/Http/Controllers/RfidAdminController.php`
+- `app/Models/RfidTag.php`
+- `app/Models/RfidTransaction.php`
+
+### 18.5 Notifikasi
+- `app/Observers/TransaksiObserver.php`
+- `app/Events/ParkingCheckedIn.php`
+- `app/Events/ParkingCheckedOut.php`
+- `app/Listeners/SendParkingCheckInEmail.php`
+- `app/Listeners/SendParkingCheckOutEmail.php`
+- `app/Listeners/SendParkingCheckInWhatsApp.php`
+- `app/Listeners/SendParkingCheckOutWhatsApp.php`
+- `app/Services/WhatsAppGateway.php`
+- `app/Models/NotificationLog.php`
+
+### 18.6 Infrastruktur Routing & Konfigurasi
+- `routes/web.php`
+- `bootstrap/app.php`
+- `config/services.php`
+- `.env`
+
+---
+
+### Catatan Operasional Update
+
+- Jika konfigurasi `.env` diubah, jalankan:
+  - `php artisan config:clear`
+  - `php artisan cache:clear`
+- Untuk notifikasi asynchronous, queue worker harus aktif:
+  - `php artisan queue:work`

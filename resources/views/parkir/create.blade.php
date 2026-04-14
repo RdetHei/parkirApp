@@ -26,6 +26,7 @@
                 <x-plate-scanner
                     target-input-id="plat_nomor"
                     target-input-type="text"
+                    :ip-webcam-url="$ipWebcamUrl ?? ''"
                     :cameras="$cameras ?? []"
                 />
             </div>
