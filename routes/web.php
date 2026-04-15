@@ -11,7 +11,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OwnerDashboardController;
 use App\Http\Controllers\PetugasDashboardController;
 use App\Http\Controllers\ParkingSlotController;
-use App\Http\Controllers\NfcController;
 use App\Http\Controllers\RfidParkingController;
 use App\Http\Controllers\RfidIdentifyController;
 use App\Http\Controllers\RfidAccessController;
@@ -106,9 +105,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
 
         // New ANPR Features
-        Route::get('/anpr', function () {
-            return view('anpr.index');
-        })->name('anpr.index');
+        Route::get('/anpr', [\App\Http\Controllers\CameraController::class, 'monitor'])->name('anpr.index');
         Route::post('/api/anpr/scan', [\App\Http\Controllers\ANPRController::class, 'scan'])->name('api.anpr.scan');
 
         // Kendaraan search (autocomplete)
@@ -188,11 +185,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::resource('log-aktivitas', \App\Http\Controllers\LogAktifitasController::class);
         Route::resource('kamera', \App\Http\Controllers\CameraController::class);
 
-        // User RFID Registration (Admin Only)
-        Route::get('/users/{id}/scan-rfid', [UserController::class, 'showScanPage'])->name('users.scan-rfid');
-        Route::post('/users/{id}/save-rfid', [UserController::class, 'saveRfid'])->name('users.save-rfid');
-
-        // RFID Management (Admin Only)
+        // RFID Management (Admin Only) - RFID now bound to vehicles
         Route::get('/admin/rfid', [RfidAdminController::class, 'index'])->name('admin.rfid.index');
         Route::post('/admin/rfid', [RfidAdminController::class, 'store'])->name('admin.rfid.store');
         Route::delete('/admin/rfid/{id}/unlink', [RfidAdminController::class, 'unlink'])->name('admin.rfid.unlink');
@@ -232,6 +225,7 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::get('/parkir/scan', [RfidParkingController::class, 'index'])->name('parkir.scan');
         Route::post('/api/parkir/rfid-scan', [RfidParkingController::class, 'processScan'])->name('api.parkir.rfid-scan')->middleware('throttle:40,1');
         Route::get('/rfid/history', [RfidParkingController::class, 'history'])->name('rfid.history');
+        Route::delete('/rfid/history/{id}', [RfidParkingController::class, 'destroyHistory'])->name('rfid.history.destroy');
 
         // Kamera: daftar perangkat (read-only untuk petugas)
         Route::get('/petugas/kamera', [\App\Http\Controllers\CameraController::class, 'index'])->name('petugas.kamera.index');

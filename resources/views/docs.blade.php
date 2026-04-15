@@ -318,7 +318,7 @@
                         </div>
                         <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
                             <i class="fa-solid fa-database text-3xl lg:text-4xl text-emerald-500 mb-4"></i>
-                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">SQLite</p>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">MYSQL</p>
                         </div>
                     </div>
                 </div>

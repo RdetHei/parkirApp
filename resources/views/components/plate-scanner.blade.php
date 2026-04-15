@@ -4,6 +4,7 @@
     'onScanSuccess' => null,
     'ipWebcamUrl' => '',
     'cameras' => [], // Daftar kamera dari CRUD (id, nama, url, is_default)
+    'scannerAreaName' => null,
 ])
 
 <div x-data="plateScanner('{{ $targetInputId }}', '{{ $targetInputType }}', {{ $onScanSuccess ? "'{$onScanSuccess}'" : 'null' }}, {{ json_encode($ipWebcamUrl) }}, {{ json_encode($cameras) }})" class="w-full">
@@ -21,6 +22,17 @@
                 </span>
                 <span class="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Live Stream</span>
             </div>
+        </div>
+
+        <div x-show="cameras.length === 0" class="mb-5 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+            <p class="text-[10px] font-black text-amber-300 uppercase tracking-widest">
+                <span>Area </span>
+                <span class="text-white">{{ $scannerAreaName ?: 'aktif' }}</span>
+                <span> tidak memiliki kamera scanner.</span>
+            </p>
+            <p class="text-[10px] text-slate-400 mt-2">
+                Input source otomatis menggunakan kamera lokal perangkat.
+            </p>
         </div>
 
         <!-- Pilih Kamera (jika ada data kamera dari CRUD) -->

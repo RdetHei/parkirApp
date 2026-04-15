@@ -211,39 +211,8 @@ class UserController extends Controller
         }
 
         return redirect()
-            ->route('users.scan-rfid', $user->id)
-            ->with('success', 'User berhasil dibuat. Silakan scan kartu RFID.');
-    }
-
-    public function showScanPage($id)
-    {
-        $user = User::findOrFail($id);
-        $title = 'Scan RFID';
-        return view('users.scan-rfid', compact('user', 'title'));
-    }
-
-    public function saveRfid(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-        $request->validate([
-            'rfid_uid' => ['required', 'string', 'max:128', Rule::unique('tb_user', 'rfid_uid')->ignore($user->id)],
-        ]);
-
-        $user->rfid_uid = $request->rfid_uid;
-        $user->save();
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'RFID berhasil didaftarkan.',
-                'redirect' => route('users.show', $user->id)
-            ]);
-        }
-
-        return redirect()
-            ->route('users.show', $user->id)
-            ->with('success', 'RFID berhasil didaftarkan.');
+            ->route('users.index')
+            ->with('success', 'User berhasil dibuat.');
     }
 
     public function show($id)

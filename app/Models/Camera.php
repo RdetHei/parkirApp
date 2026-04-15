@@ -55,4 +55,9 @@ class Camera extends Model
     {
         return $query->where('tipe', self::TIPE_VIEWER);
     }
+
+    public function mapAssignment()
+    {
+        return $this->hasOne(ParkingMapCamera::class, 'camera_id', 'id');
+    }
 }

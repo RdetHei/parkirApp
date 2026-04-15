@@ -132,7 +132,19 @@
                             </div>
                             <div class="p-3 bg-slate-900/40 rounded-xl border border-white/5">
                                 <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Assigned to</p>
-                                <p class="text-[10px] font-bold text-white">Neston Park <span class="text-slate-500 font-medium">#1</span></p>
+                                @php
+                                    $assignedArea = $item->mapAssignment?->areaParkir;
+                                @endphp
+                                <p class="text-[10px] font-bold text-white">
+                                    @if($assignedArea)
+                                        {{ $assignedArea->nama_area }}
+                                        @if(!empty($assignedArea->map_code))
+                                            <span class="text-slate-500 font-medium">({{ $assignedArea->map_code }})</span>
+                                        @endif
+                                    @else
+                                        <span class="text-slate-500">Belum ditugaskan</span>
+                                    @endif
+                                </p>
                             </div>
                         </div>
                     </div>

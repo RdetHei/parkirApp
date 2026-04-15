@@ -16,7 +16,7 @@
         <div class="flex items-center gap-3 sm:gap-4">
             <a href="{{ route('anpr.index') }}" class="flex-1 sm:flex-none group relative px-4 sm:px-6 py-3 bg-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-widest rounded-xl transition-all hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2">
                 <i class="fa-solid fa-camera-viewfinder text-sm"></i>
-                AI Scanner
+                Camera Monitor
             </a>
             <a href="{{ route('parkir.scan') }}" class="flex-1 sm:flex-none group relative px-4 sm:px-6 py-3 bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl border border-white/10 transition-all hover:bg-slate-700 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-id-card text-sm"></i>
@@ -36,7 +36,7 @@
             <div class="flex flex-col lg:flex-row lg:items-end gap-6 justify-between">
                 <div class="max-w-xl">
                     <h4 class="text-white font-black uppercase tracking-widest text-xs mb-2 text-amber-400">Kode peta diperlukan</h4>
-                    <p class="text-slate-400 text-sm leading-relaxed">Masukkan <strong class="text-white">Kode Peta</strong> dari admin — sama persis dengan kolom Kode Peta pada data Area Parkir. Tanpa ini, statistik dashboard, AI Scanner, dan auto slot di terminal RFID tidak terikat ke area Anda.</p>
+                    <p class="text-slate-400 text-sm leading-relaxed">Masukkan <strong class="text-white">Kode Peta</strong> dari admin — sama persis dengan kolom Kode Peta pada data Area Parkir. Tanpa ini, statistik dashboard, Camera Monitor, dan auto slot di terminal RFID tidak terikat ke area Anda.</p>
                 </div>
                 <form method="POST" action="{{ route('operational-area.set') }}" class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
                     @csrf

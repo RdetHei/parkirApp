@@ -4,12 +4,78 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Camera;
+use App\Models\AreaParkir;
+use App\Models\ParkingMapCamera;
+use Illuminate\Support\Facades\Auth;
 
 class CameraController extends Controller
 {
+    public function monitor()
+    {
+        $user = Auth::user();
+        $area = null;
+
+        if ($user && $user->role === 'petugas') {
+            $area = $this->resolveOperationalArea($user);
+        }
+
+        if ($user && $user->role === 'petugas') {
+            if (! $area) {
+                return view('kamera.monitor', [
+                    'title' => 'Camera Monitoring',
+                    'cameras' => collect(),
+                    'activeArea' => null,
+                    'needsOperationalArea' => true,
+                ]);
+            }
+
+            $cameraIds = ParkingMapCamera::query()
+                ->where('area_parkir_id', $area->id_area)
+                ->pluck('camera_id')
+                ->all();
+
+            $cameras = Camera::query()
+                ->whereIn('id', $cameraIds)
+                ->orderByDesc('is_default')
+                ->orderBy('tipe')
+                ->orderBy('nama')
+                ->get();
+        } else {
+            $cameras = Camera::query()
+                ->orderByDesc('is_default')
+                ->orderBy('tipe')
+                ->orderBy('nama')
+                ->get();
+        }
+
+        return view('kamera.monitor', [
+            'title' => 'Camera Monitoring',
+            'cameras' => $cameras,
+            'activeArea' => $area,
+            'needsOperationalArea' => false,
+        ]);
+    }
+
+    private function resolveOperationalArea($user): ?AreaParkir
+    {
+        if ($user->id_area) {
+            $area = AreaParkir::find($user->id_area);
+            if ($area) {
+                return $area;
+            }
+        }
+
+        $sessionId = session(PetugasDashboardController::SESSION_OPERATIONAL_AREA);
+        if ($sessionId) {
+            return AreaParkir::find($sessionId);
+        }
+
+        return null;
+    }
+
     public function index(Request $request)
     {
-        $query = Camera::query();
+        $query = Camera::query()->with(['mapAssignment.areaParkir']);
 
         if ($request->filled('q')) {
             $search = $request->q;

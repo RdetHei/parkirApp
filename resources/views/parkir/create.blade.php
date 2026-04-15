@@ -23,11 +23,23 @@
                     </div>
                     <h3 class="text-xs font-bold text-white uppercase tracking-widest">ANPR Scanner <span class="text-slate-500 font-medium lowercase ml-1">(optional)</span></h3>
                 </div>
+
+                @if(!empty($scannerRequiresArea))
+                    <div class="mb-5 p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-300 text-xs font-bold">
+                        Scanner area belum aktif. Masukkan kode peta terlebih dahulu agar sumber kamera mengikuti area operasional.
+                    </div>
+                @elseif(isset($scannerArea) && $scannerArea && empty($hasScannerCameras))
+                    <div class="mb-5 p-4 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-300 text-xs font-bold">
+                        Lokasi <span class="text-white">{{ $scannerArea->nama_area }}</span> tidak memiliki kamera scanner yang ditugaskan.
+                    </div>
+                @endif
+
                 <x-plate-scanner
                     target-input-id="plat_nomor"
                     target-input-type="text"
                     :ip-webcam-url="$ipWebcamUrl ?? ''"
                     :cameras="$cameras ?? []"
+                    :scanner-area-name="$scannerArea->nama_area ?? null"
                 />
             </div>
 

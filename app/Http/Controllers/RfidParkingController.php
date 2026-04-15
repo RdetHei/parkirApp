@@ -381,6 +381,14 @@ class RfidParkingController extends Controller
         ]);
     }
 
+    public function destroyHistory(int $id)
+    {
+        $item = RfidTransaction::query()->findOrFail($id);
+        $item->delete();
+
+        return back()->with('success', 'Riwayat RFID berhasil dihapus.');
+    }
+
     /**
      * Area check-in: sesi kode peta (wajib untuk petugas); admin bisa fallback id_area.
      */

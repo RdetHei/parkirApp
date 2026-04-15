@@ -111,24 +111,6 @@
                 @error('photo')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>
 
-            <div class="md:col-span-2 p-6 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-indigo-500/10 text-indigo-500 rounded-xl flex items-center justify-center border border-indigo-500/20 shadow-lg">
-                        <i class="fa-solid fa-id-card text-lg"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Status Kartu RFID</p>
-                        <p class="text-sm font-black {{ $user->rfid_uid ? 'text-emerald-500' : 'text-rose-500' }} tracking-tight">
-                            {{ $user->rfid_uid ? 'Active: ' . $user->rfid_uid : 'Offline / Unregistered' }}
-                        </p>
-                    </div>
-                </div>
-                <a href="{{ route('users.scan-rfid', $user->id) }}"
-                   class="px-6 py-3 bg-indigo-500 text-slate-950 text-[10px] font-black rounded-xl hover:bg-indigo-400 transition-all uppercase tracking-widest shadow-lg shadow-indigo-500/20">
-                    {{ $user->rfid_uid ? 'Update UID' : 'Pair New Card' }}
-                </a>
-            </div>
-
             <div class="space-y-2">
                 <label for="password" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Password Baru</label>
                 <div class="relative group">

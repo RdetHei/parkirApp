@@ -8,6 +8,8 @@ use App\Models\Kendaraan;
 use App\Models\Tarif;
 use App\Models\User;
 use App\Models\AreaParkir;
+use App\Models\Camera;
+use App\Models\ParkingMapCamera;
 use App\Models\ParkingMapSlot;
 use App\Models\ParkingSlotReservation;
 use Carbon\Carbon;
@@ -372,13 +374,59 @@ class TransaksiController extends Controller
         $kendaraans = Kendaraan::orderBy('plat_nomor')->get();
         $tarifs = Tarif::orderBy('jenis_kendaraan')->get();
         $areas = AreaParkir::orderBy('nama_area')->get();
-        $cameras = \App\Models\Camera::scanner()->orderBy('is_default', 'desc')->orderBy('id')->get();
+        $user = Auth::user();
+        $scannerArea = null;
+        $scannerRequiresArea = false;
+
+        if ($user && $user->role === 'petugas') {
+            $scannerArea = $this->resolveOperationalAreaForScanner($user);
+            $scannerRequiresArea = $scannerArea === null;
+        }
+
+        $camerasQuery = Camera::scanner();
+        if ($scannerArea) {
+            $cameraIds = ParkingMapCamera::query()
+                ->where('area_parkir_id', $scannerArea->id_area)
+                ->pluck('camera_id')
+                ->all();
+            $camerasQuery->whereIn('id', $cameraIds);
+        }
+
+        $cameras = $camerasQuery->orderBy('is_default', 'desc')->orderBy('id')->get();
+        $hasScannerCameras = $cameras->isNotEmpty();
         $ipWebcamUrl = (string) optional($cameras->first())->url;
 
         /** @var \Illuminate\Support\Collection<int, array{id:int, code:string, id_area:int, occupied:bool}> $slots */
         $slots = $this->buildCheckInSlotsPayload();
 
-        return view('parkir.create', compact('kendaraans', 'tarifs', 'areas', 'cameras', 'ipWebcamUrl', 'slots'));
+        return view('parkir.create', compact(
+            'kendaraans',
+            'tarifs',
+            'areas',
+            'cameras',
+            'ipWebcamUrl',
+            'slots',
+            'scannerArea',
+            'scannerRequiresArea',
+            'hasScannerCameras'
+        ));
+    }
+
+    private function resolveOperationalAreaForScanner(User $user): ?AreaParkir
+    {
+        if ($user->id_area) {
+            $area = AreaParkir::find($user->id_area);
+            if ($area) {
+                return $area;
+            }
+        }
+
+        $sessionId = session(PetugasDashboardController::SESSION_OPERATIONAL_AREA);
+        if ($sessionId) {
+            return AreaParkir::find($sessionId);
+        }
+
+        return null;
     }
 
     /**

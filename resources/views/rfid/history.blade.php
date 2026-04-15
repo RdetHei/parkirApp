@@ -24,6 +24,7 @@
                             <th class="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">User</th>
                             <th class="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Tipe</th>
                             <th class="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Nominal</th>
+                            <th class="px-5 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
@@ -40,10 +41,19 @@
                                 <td class="px-5 py-3 text-xs text-slate-300 font-semibold">
                                     {{ is_null($row->amount) ? '-' : 'Rp ' . number_format((float) $row->amount, 0, ',', '.') }}
                                 </td>
+                                <td class="px-5 py-3 text-right">
+                                    <form method="POST" action="{{ route('rfid.history.destroy', $row->id) }}" onsubmit="return confirm('Yakin ingin menghapus riwayat ini?');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-[10px] font-black uppercase tracking-widest text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-5 py-12 text-center text-xs font-black uppercase tracking-widest text-slate-600">Belum ada riwayat scan</td>
+                                <td colspan="5" class="px-5 py-12 text-center text-xs font-black uppercase tracking-widest text-slate-600">Belum ada riwayat scan</td>
                             </tr>
                         @endforelse
                     </tbody>
