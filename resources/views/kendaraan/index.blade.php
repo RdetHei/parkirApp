@@ -50,8 +50,9 @@
                 <select name="jenis" onchange="this.form.submit()"
                         class="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all min-w-[120px]">
                     <option value="" class="bg-slate-900">All Types</option>
-                    <option value="motor" class="bg-slate-900" {{ request('jenis') == 'motor' ? 'selected' : '' }}>Motor</option>
-                    <option value="mobil" class="bg-slate-900" {{ request('jenis') == 'mobil' ? 'selected' : '' }}>Mobil</option>
+                    @foreach($vehicleTypes as $type)
+                        <option value="{{ $type }}" class="bg-slate-900" {{ request('jenis') == $type ? 'selected' : '' }}>{{ ucfirst($type) }}</option>
+                    @endforeach
                 </select>
 
                 @if(request()->anyFilled(['q', 'jenis']))

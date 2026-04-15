@@ -19,7 +19,7 @@ class PlateRecognizerController extends Controller
     }
 
     /**
-     * Scan license plate from uploaded image
+     * Memindai plat nomor dari gambar yang diunggah
      *
      * @param Request $request
      * @return JsonResponse
@@ -27,13 +27,13 @@ class PlateRecognizerController extends Controller
     public function scanPlate(Request $request): JsonResponse
     {
         try {
-            // Validate image file
+            // Validasi file gambar
             $request->validate([
                 'image' => [
                     'required',
                     'image',
                     'mimes:jpg,jpeg,png',
-                    'max:5120', // 5MB in KB
+                    'max:5120', // 5MB dalam KB
                 ],
             ], [
                 'image.required' => 'Gambar wajib diunggah',
@@ -45,13 +45,14 @@ class PlateRecognizerController extends Controller
             $image = $request->file('image');
             $includeRawResponse = $request->boolean('debug', false);
 
-            // Scan plate using service
+            // Pindai plat nomor menggunakan layanan deteksi
             $result = $this->plateRecognizerService->scanPlate($image, $includeRawResponse);
 
-            // Return JSON response
+            // Mengembalikan respons JSON
             return response()->json([
                 'success' => true,
                 'plate_number' => $result['plate_number'],
+                'color' => $result['color'] ?? null,
                 'confidence' => $result['confidence'],
                 'valid' => $result['valid'],
                 'message' => $result['message'],

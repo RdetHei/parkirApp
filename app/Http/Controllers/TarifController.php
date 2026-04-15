@@ -45,7 +45,7 @@ class TarifController extends Controller
             $tarif,
             $data
         );
-        return redirect()->route('tarif.index')->with('success','Tarif added');
+        return redirect()->route('tarif.index')->with('success','Tarif berhasil ditambahkan');
     }
 
     public function edit($id)
@@ -70,7 +70,7 @@ class TarifController extends Controller
             $item,
             ['old' => $oldData, 'new' => $data]
         );
-        return redirect()->route('tarif.index')->with('success','Tarif updated');
+        return redirect()->route('tarif.index')->with('success','Tarif berhasil diperbarui');
     }
 
     public function destroy($id)
@@ -91,7 +91,7 @@ class TarifController extends Controller
 
         $tarif->delete();
 
-        return redirect()->route('tarif.index')->with('success','Tarif deleted');
+        return redirect()->route('tarif.index')->with('success','Tarif berhasil dihapus');
     }
 }
 

@@ -24,32 +24,6 @@
 
     <style>
         [x-cloak] { display: none !important; }
-    </style>
-    @stack('styles')
-</head>
-<body class="bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden"
-      x-data="{
-         sidebarOpen: false,
-         accountOpen: false,
-         desktopCollapsed: localStorage.getItem('parkirapp.sidebar') === 'collapsed',
-         isMobile: window.innerWidth < 1024
-      }"
-      x-init="
-         $watch('desktopCollapsed', val => {
-             localStorage.setItem('parkirapp.sidebar', val ? 'collapsed' : 'expanded');
-         });
-         window.addEventListener('resize', () => {
-             $data.isMobile = window.innerWidth < 1024;
-             if (!$data.isMobile) $data.sidebarOpen = false;
-         });
-      "
-      :data-sidebar="desktopCollapsed ? 'collapsed' : 'expanded'">
-    <!-- Background Accents -->
-    <div class="fixed inset-0 pro-grid opacity-20 pointer-events-none z-0"></div>
-    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-emerald-500/5 blur-[120px] pointer-events-none z-0"></div>
-
-    <style>
-        [x-cloak] { display: none !important; }
 
         :root {
             --bg-main: #020617;
@@ -58,7 +32,7 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-main) !important;
             color: #f8fafc !important;
         }
@@ -85,63 +59,55 @@
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
         }
-
-        [x-cloak] { display: none !important; }
     </style>
-        {{-- Layout wrapper: sidebar + main content --}}
-        <div class="h-screen flex relative bg-[#020617]">
-            <!-- Mobile Sidebar Backdrop -->
-            <div x-cloak
-                 x-show="sidebarOpen"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 @click="sidebarOpen = false"
-                 class="fixed inset-0 z-[65] bg-slate-950/60 lg:hidden transition-opacity duration-300"></div>
+    @stack('styles')
+</head>
+<body class="bg-[#020617] text-slate-100 antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden"
+      x-data="{
+         sidebarOpen: false,
+         accountOpen: false,
+         desktopCollapsed: localStorage.getItem('parkirapp.sidebar') === 'collapsed',
+         isMobile: window.innerWidth < 1024
+      }"
+      x-init="
+         $watch('desktopCollapsed', val => {
+             localStorage.setItem('parkirapp.sidebar', val ? 'collapsed' : 'expanded');
+         });
+         window.addEventListener('resize', () => {
+             $data.isMobile = window.innerWidth < 1024;
+             if (!$data.isMobile) $data.sidebarOpen = false;
+         });
+      "
+      :data-sidebar="desktopCollapsed ? 'collapsed' : 'expanded'">
+    <!-- Background Accents -->
+    <div class="fixed inset-0 pro-grid opacity-20 pointer-events-none z-0"></div>
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-emerald-500/5 blur-[120px] pointer-events-none z-0"></div>
 
-            @include('components.sidebar')
+    {{-- Layout wrapper: sidebar + main content --}}
+    <div class="h-screen flex relative bg-[#020617]">
+        <!-- Mobile Sidebar Backdrop -->
+        <div x-cloak
+             x-show="sidebarOpen"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarOpen = false"
+             class="fixed inset-0 z-[65] bg-slate-950/60 lg:hidden transition-opacity duration-300"></div>
 
-            <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ease-in-out">
-                @include('components.dheader')
+        @include('components.sidebar')
 
-                <main class="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
-                    @yield('content')
-                </main>
-            </div>
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ease-in-out">
+            @include('components.dheader')
+
+            <main class="flex-1 overflow-y-auto overflow-x-hidden w-full relative">
+                @yield('content')
+            </main>
         </div>
+    </div>
 
-        @stack('scripts')
-
-    <script>
-        // Check for notifications
-        async function checkNotifications() {
-            if (!window.Notification) return;
-
-            try {
-                const response = await fetch('{{ route('api.notifications.check') }}');
-                const data = await response.json();
-
-                if (data.has_new) {
-                    if (Notification.permission === "granted") {
-                        new Notification("Neston Update", {
-                            body: data.message || "Ada aktivitas parkir baru pada akun Anda.",
-                            icon: "/favicon.ico"
-                        });
-                    }
-                }
-            } catch (e) {
-                // Silently ignore errors for background checks
-            }
-        }
-
-        if (window.Notification && Notification.permission !== "granted" && Notification.permission !== "denied") {
-            Notification.requestPermission();
-        }
-
-        setInterval(checkNotifications, 15000);
-    </script>
+    @stack('scripts')
 </body>
 </html>

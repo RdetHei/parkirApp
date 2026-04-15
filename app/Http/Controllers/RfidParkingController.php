@@ -163,7 +163,7 @@ class RfidParkingController extends Controller
                     throw new \Exception("Area " . $area->nama_area . " sudah penuh! Tidak ada slot tersedia.");
                 }
 
-                return Transaksi::create([
+                $tx = Transaksi::create([
                     'id_user' => $user->id,
                     'id_kendaraan' => $kendaraan->id_kendaraan,
                     'id_area' => $area->id_area,
@@ -173,6 +173,9 @@ class RfidParkingController extends Controller
                     'status' => 'masuk',
                     'status_pembayaran' => 'pending',
                 ]);
+
+                $area->increment('terisi');
+                return $tx;
             });
 
             RfidTransaction::create([

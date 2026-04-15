@@ -18,6 +18,10 @@ class TarifSeeder extends Seeder
                 'jenis_kendaraan' => 'mobil',
                 'tarif_perjam' => 5000,
             ],
+            [
+                'jenis_kendaraan' => 'truk',
+                'tarif_perjam' => 10000,
+            ],
         ];
 
         foreach ($tarifs as $tarif) {

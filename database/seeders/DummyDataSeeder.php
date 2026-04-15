@@ -46,7 +46,7 @@ class DummyDataSeeder extends Seeder
         // 2. Tambah 100 Kendaraan (acak untuk 100 user tadi)
         $this->command->info('Membuat 100 Kendaraan...');
         $vehicles = [];
-        $jenis = ['motor', 'mobil'];
+        $jenis = $tarifs->pluck('jenis_kendaraan')->toArray();
         foreach ($users as $user) {
             $count = $faker->numberBetween(1, 2);
             for ($j = 0; $j < $count; $j++) {

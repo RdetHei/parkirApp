@@ -75,7 +75,7 @@
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600"> {{ __('INTELLIGENCE.') }}</span>
                 </h1>
                 <p class="text-lg text-slate-400 leading-relaxed mb-12 max-w-2xl mx-auto font-medium">
-                    {{ __('Automate vehicle tracking, payment processing, and space management with our AI-powered ecosystem. Secure, scalable, and built for modern infrastructure.') }}
+                    {{ __('Automate vehicle tracking, payment processing, and space management with our automated ecosystem. Secure, scalable, and built for modern infrastructure.') }}
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="{{ route('register') }}" class="btn-pro-primary !px-8 !py-4 text-sm uppercase tracking-widest hover:text-emerald-600 transition-colors">
@@ -234,15 +234,15 @@
                     <h2 class="text-[10px] lg:text-xs font-bold text-emerald-500 uppercase tracking-[0.3em] mb-4">{{ __('About Neston') }}</h2>
                     <h3 class="text-3xl lg:text-5xl font-extrabold text-white tracking-tight mb-8">{{ __('Ecosystem Parkir Pintar Masa Depan.') }}</h3>
                     <p class="text-slate-400 text-base lg:text-lg leading-relaxed mb-6">
-                        {{ __('Neston adalah solusi manajemen parkir terintegrasi yang menggabungkan kecerdasan buatan (AI) dengan sistem pembayaran digital yang mulus. Kami hadir untuk menyelesaikan masalah antrian panjang, kehilangan data kendaraan, dan ketidakefisienan operasional.') }}
+                        {{ __('Neston adalah solusi manajemen parkir terintegrasi yang menggabungkan sistem otomatis dengan sistem pembayaran digital yang mulus. Kami hadir untuk menyelesaikan masalah antrian panjang, kehilangan data kendaraan, dan ketidakefisienan operasional.') }}
                     </p>
                     <p class="text-slate-400 text-base lg:text-lg leading-relaxed mb-8">
-                        {{ __('Dengan teknologi ANPR (Automatic Number Plate Recognition) berbasis YOLOv8, sistem kami mampu mendeteksi plat nomor kendaraan secara real-time dengan akurasi yang sangat tinggi, bahkan dalam kondisi pencahayaan minim.') }}
+                        {{ __('Dengan teknologi ANPR (Automatic Number Plate Recognition) terbaru, sistem kami mampu mendeteksi plat nomor kendaraan secara real-time dengan akurasi yang sangat tinggi, bahkan dalam kondisi pencahayaan minim.') }}
                     </p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                         <div class="p-4 rounded-xl bg-white/5 border border-white/5">
                             <h4 class="text-white font-bold mb-2">{{ __('Visi Kami') }}</h4>
-                            <p class="text-slate-500 text-xs">{{ __('Mendigitalisasi infrastruktur parkir di seluruh Indonesia dengan AI.') }}</p>
+                            <p class="text-slate-500 text-xs">{{ __('Mendigitalisasi infrastruktur parkir di seluruh Indonesia dengan teknologi pintar.') }}</p>
                         </div>
                         <div class="p-4 rounded-xl bg-white/5 border border-white/5">
                             <h4 class="text-white font-bold mb-2">{{ __('Misi Kami') }}</h4>
@@ -254,7 +254,7 @@
                     <div class="aspect-square rounded-3xl bg-gradient-to-br from-emerald-500/20 to-indigo-500/20 border border-white/10 flex items-center justify-center p-8 lg:p-12">
                         <div class="text-center">
                             <i class="fa-solid fa-microchip text-5xl lg:text-7xl text-emerald-500 mb-6"></i>
-                            <p class="text-lg lg:text-xl font-bold text-white uppercase tracking-widest">Neural Network Core</p>
+                            <p class="text-lg lg:text-xl font-bold text-white uppercase tracking-widest">Core System Engine</p>
                         </div>
                     </div>
                     <!-- Glow -->
@@ -328,9 +328,9 @@
                     <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all duration-300">
                         <i class="fa-solid fa-camera text-sm"></i>
                     </div>
-                    <h4 class="text-lg font-bold text-white mb-3">AI Vision (ANPR)</h4>
+                    <h4 class="text-lg font-bold text-white mb-3">Visual Detection (ANPR)</h4>
                     <p class="text-slate-400 text-sm leading-relaxed font-medium">
-                        Proprietary YOLOv8 model for lightning-fast license plate recognition with near-perfect accuracy.
+                        Custom detection model for lightning-fast license plate recognition with near-perfect accuracy.
                     </p>
                 </div>
 

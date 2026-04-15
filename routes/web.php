@@ -23,6 +23,7 @@ use App\Http\Controllers\RfidAdminController;
 use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CashPaymentController;
+use App\Http\Controllers\IpWebcamProxyController;
 
 use App\Http\Controllers\LandingController;
 
@@ -103,27 +104,6 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
     Route::middleware(['role:admin,petugas,user'])->group(function () {
         // Plate Recognizer API
         Route::post('/scan-plate', [\App\Http\Controllers\Api\PlateRecognizerController::class, 'scanPlate'])->name('api.scan-plate');
-
-        // Notification Check API
-        Route::get('/api/notifications/check', function () {
-            $user = request()->user();
-            if (!$user) return response()->json(['has_new' => false]);
-
-            $latest = \App\Models\NotificationLog::where('user_id', $user->id)
-                ->where('created_at', '>', now()->subSeconds(10)) // Only very fresh ones
-                ->where('status', 'success')
-                ->latest()
-                ->first();
-
-            if (!$latest) return response()->json(['has_new' => false]);
-
-            return response()->json([
-                'has_new' => true,
-                'type' => $latest->type,
-                'message' => $latest->message,
-                'data' => json_decode($latest->data, true)
-            ]);
-        })->name('api.notifications.check');
 
         // New ANPR Features
         Route::get('/anpr', function () {
@@ -260,6 +240,10 @@ Route::middleware(['auth', 'verified', 'no-cache'])->group(function () {
         Route::get('/payment/select-transaction', [\App\Http\Controllers\PaymentController::class, 'selectTransaction'])->name('payment.select-transaction');
         Route::get('/payment/{id_parkir}', [\App\Http\Controllers\PaymentController::class, 'create'])->name('payment.create');
         Route::get('/payment-history', [\App\Http\Controllers\PaymentController::class, 'index'])->name('payment.index');
+
+        // IP Webcam snapshot proxy (avoid tainted canvas on capture)
+        Route::get('/proxy/ipwebcam/snapshot', [IpWebcamProxyController::class, 'snapshot'])
+            ->name('proxy.ipwebcam.snapshot');
     });
 
     // Transaksi: CRUD Full hanya untuk Admin

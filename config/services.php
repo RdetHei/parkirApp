@@ -24,9 +24,19 @@ return [
     ],
 
     'whatsapp' => [
-        'enabled' => filter_var(env('WHATSAPP_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'enabled' => filter_var(env('WHATSAPP_ENABLED', true), FILTER_VALIDATE_BOOL),
         'driver' => env('WHATSAPP_DRIVER', 'fonnte'),
         'url' => env('WHATSAPP_GATEWAY_URL', ''),
         'token' => env('WHATSAPP_API_TOKEN', ''),
+    ],
+
+    'plate_recognizer' => [
+        'key' => env('PLATE_RECOGNIZER_KEY'),
+    ],
+
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+        'is_production' => filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOL),
     ],
 ];

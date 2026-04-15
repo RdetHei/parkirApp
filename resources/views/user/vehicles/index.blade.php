@@ -70,8 +70,9 @@
                                     class="block w-full rounded-2xl border border-white/5 bg-slate-950/50 px-4 py-4 text-sm text-white focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 focus:outline-none transition-all font-bold"
                                     required>
                                 <option value="" class="bg-slate-900">Pilih...</option>
-                                <option value="motor" class="bg-slate-900">Motor</option>
-                                <option value="mobil" class="bg-slate-900">Mobil</option>
+                                @foreach($vehicleTypes as $type)
+                                    <option value="{{ $type }}" class="bg-slate-900">{{ ucfirst($type) }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div>

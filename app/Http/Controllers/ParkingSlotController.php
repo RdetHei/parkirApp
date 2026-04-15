@@ -213,6 +213,7 @@ class ParkingSlotController extends Controller
                 $areaName = $slot->areaParkir?->nama_area ?? null;
                 $transaksiId = null;
                 $isMineFlag = false;
+                $startTime = null;
 
                 if (isset($activeBySlot[$slot->id])) {
                     $tx = $activeBySlot[$slot->id];
@@ -225,6 +226,7 @@ class ParkingSlotController extends Controller
                     $vehiclePlate = $tx['vehicle_plate'] ?? null;
                     $transaksiId = $tx['transaksi_id'] ?? null;
                     $isMineFlag = $isMine;
+                    $startTime = isset($tx['start_time']) ? $tx['start_time']->toIso8601String() : null;
                 } elseif (isset($activeReservationsBySlot[$slot->id])) {
                     $rsv = $activeReservationsBySlot[$slot->id];
                     $isMine = $currentUserId && (int) $rsv['user_id'] === (int) $currentUserId;
@@ -232,6 +234,7 @@ class ParkingSlotController extends Controller
                     $vehiclePlate = $rsv['vehicle_plate'] ?? null;
                     $transaksiId = $rsv['reservation_id'] ?? null;
                     $isMineFlag = $isMine;
+                    $startTime = isset($rsv['start_time']) ? $rsv['start_time']->toIso8601String() : null;
                 }
 
                 $slots[] = [
@@ -250,6 +253,7 @@ class ParkingSlotController extends Controller
                     'meta' => $slot->meta,
                     'area_id' => $slot->area_parkir_id,
                     'transaksi_id' => $transaksiId,
+                    'start_time' => $startTime,
                 ];
 
                 $summary['total']++;
@@ -284,6 +288,7 @@ class ParkingSlotController extends Controller
             'slots' => $slots,
             'cameras' => $cameras,
             'summary' => $summary,
+            'server_time' => Carbon::now()->toIso8601String(),
         ]);
     }
 
@@ -312,6 +317,7 @@ class ParkingSlotController extends Controller
                 'vehicle_plate' => $tx->kendaraan?->plat_nomor ?? null,
                 'user_id' => $tx->id_user,
                 'transaksi_id' => $tx->id_parkir,
+                'start_time' => $tx->status === 'masuk' ? ($tx->waktu_masuk ?? $tx->created_at) : ($tx->bookmarked_at ?? $tx->created_at),
             ];
         }
         return $bySlot;
@@ -334,6 +340,7 @@ class ParkingSlotController extends Controller
                 'user_id' => $r->id_user,
                 'vehicle_plate' => $r->kendaraan?->plat_nomor ?? null,
                 'reservation_id' => $r->id,
+                'start_time' => $r->created_at,
             ];
         }
         return $bySlot;

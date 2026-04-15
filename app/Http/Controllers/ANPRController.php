@@ -46,12 +46,12 @@ class ANPRController extends Controller
             $plateNumber = PlatNomorNormalizer::normalize($request->plate);
             $confidence = $request->confidence;
 
-            // 1. Threshold check
+            // 1. Verifikasi ambang batas tingkat akurasi (confidence threshold)
             if ($confidence < 0.8) {
-                return response()->json(['error' => 'Confidence too low'], 422);
+                return response()->json(['error' => 'Tingkat akurasi deteksi terlalu rendah'], 422);
             }
 
-            // 2. Image handling
+            // 2. Pengunggahan dan pengelolaan gambar ke Cloudinary
             $fileName = null;
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
@@ -61,7 +61,7 @@ class ANPRController extends Controller
                 $fileName = $upload['secure_url'] ?? null;
             }
 
-            // 3. Vehicle & Transaction Logic
+            // 3. Logika Pencatatan Kendaraan & Transaksi Parkir
             $vehicleDisplayName = $request->vehicle_make ? ($request->vehicle_make . ' ' . $request->vehicle_model) : 'Guest';
             $vehicleType = $request->vehicle_type ?? 'mobil';
             $vehicleColor = $request->vehicle_color ?? 'unknown';
@@ -77,7 +77,7 @@ class ANPRController extends Controller
                     'id_user' => $adminUser->id,
                 ]);
             } else {
-                // Update vehicle details if generic
+                // Perbarui detail kendaraan jika data masih bersifat umum (generic)
                 if ($kendaraan->warna === 'unknown' || $kendaraan->pemilik === 'Guest') {
                     $kendaraan->update([
                         'warna' => $vehicleColor,
@@ -96,7 +96,7 @@ class ANPRController extends Controller
             $transaksi = null;
 
             if (!$activeTransaksi) {
-                // ENTRY LOGIC
+                // LOGIKA MASUK (ENTRY)
                 $statusAction = 'entry';
 
                 $currentUser = Auth::user();
@@ -111,7 +111,7 @@ class ANPRController extends Controller
                     $area = AreaParkir::find($currentUser->id_area);
                 }
 
-                // Fallback jika petugas tidak punya area atau tidak sedang login (scan via terminal mandiri)
+                // Fallback jika petugas tidak memiliki area atau tidak sedang login (scan melalui terminal mandiri)
                 if (!$area) {
                     $area = AreaParkir::where('is_default_map', true)->first() ?? AreaParkir::first();
                 }
@@ -119,50 +119,53 @@ class ANPRController extends Controller
                 $defaultTarif = Tarif::where('jenis_kendaraan', $vehicleType)->first() ?? Tarif::first();
                 $adminUser = User::where('role', 'admin')->first() ?? User::first();
 
-                // Gunakan Database Transaction untuk menjaga integritas data saat assign slot.
+                // Gunakan Transaksi Database untuk menjaga integritas data saat penentuan slot parkir.
                 $transaksi = DB::transaction(function () use ($kendaraan, $area, $defaultTarif, $adminUser) {
-                    // Cari slot tersedia secara otomatis
+                    // Cari slot yang tersedia secara otomatis di area tersebut
                     $slot = $area->findNextAvailableSlot();
 
                     if (!$slot) {
-                        // Jika area penuh, kita tetap catat transaksi tapi beri peringatan di log
-                        Log::warning("Area " . $area->nama_area . " penuh saat deteksi ANPR untuk plat: " . $kendaraan->plat_nomor);
+                        // Jika area parkir penuh, transaksi tetap dicatat namun muncul peringatan di log sistem
+                        Log::warning("Area " . $area->nama_area . " penuh saat deteksi otomatis untuk plat: " . $kendaraan->plat_nomor);
                     }
 
-                    return Transaksi::create([
+                    $tx = Transaksi::create([
                         'id_kendaraan' => $kendaraan->id_kendaraan,
                         'waktu_masuk' => now(),
                         'id_tarif' => $defaultTarif->id_tarif,
                         'id_area' => $area->id_area,
-                        'parking_map_slot_id' => $slot ? $slot->id : null, // Assign slot otomatis jika tersedia
+                        'parking_map_slot_id' => $slot ? $slot->id : null, // Penugasan slot otomatis jika tersedia
                         'status' => 'masuk',
                         'id_user' => $adminUser->id,
                         'status_pembayaran' => 'pending',
                     ]);
+
+                    $area->increment('terisi');
+                    return $tx;
                 });
 
                 $this->logActivity(
-                    "ANPR Detection (Entry): Kendaraan {$plateNumber} masuk",
+                    "Deteksi Otomatis (Masuk): Kendaraan {$plateNumber} masuk",
                     'transaksi',
                     $transaksi,
                     ['plate' => $plateNumber, 'confidence' => $confidence]
                 );
             } else {
-                // EXIT LOGIC (satu kali update: cegah event ganda + konsisten dengan petugas)
+                // LOGIKA KELUAR (EXIT) - Mencegah proses ganda dan menjaga konsistensi data
                 $statusAction = 'exit';
                 $this->applyCheckoutTotals($activeTransaksi, Carbon::now());
                 $activeTransaksi->area->decrement('terisi');
                 $transaksi = $activeTransaksi->fresh();
 
                 $this->logActivity(
-                    "ANPR Detection (Exit): Kendaraan {$plateNumber} keluar",
+                    "Deteksi Otomatis (Keluar): Kendaraan {$plateNumber} keluar",
                     'transaksi',
                     $transaksi,
                     ['plate' => $plateNumber, 'confidence' => $confidence]
                 );
             }
 
-            // 4. Logging
+            // 4. Pencatatan Log Riwayat Deteksi
             $rawJson = $request->raw_json;
             if (is_string($rawJson)) {
                 $rawJson = json_decode($rawJson, true);
@@ -177,7 +180,7 @@ class ANPRController extends Controller
                 'id_parkir' => $transaksi->id_parkir,
             ]);
 
-            // 5. Create Notification for real-time UI updates (via polling)
+            // 5. Buat Notifikasi untuk pembaruan UI secara real-time (melalui polling)
             \App\Models\NotificationLog::create([
                 'user_id' => $kendaraan->id_user,
                 'type' => 'anpr_detection',
@@ -196,7 +199,7 @@ class ANPRController extends Controller
                 'status' => 'success'
             ]);
 
-            // 6. Dispatch Event (for those using real-time broadcasting)
+            // 6. Jalankan Event (untuk fitur real-time broadcasting jika diaktifkan)
             event(new \App\Events\ANPRDetected([
                 'plate' => $plateNumber,
                 'action' => $statusAction,
@@ -222,8 +225,8 @@ class ANPRController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('ANPR YOLO API Error: ' . $e->getMessage());
-            return response()->json(['error' => 'Server Error'], 500);
+            Log::error('Kesalahan Sistem Deteksi Otomatis: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan pada server'], 500);
         }
     }
 

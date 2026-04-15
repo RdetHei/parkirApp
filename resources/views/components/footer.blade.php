@@ -8,7 +8,7 @@
                         <span class="text-lg font-bold tracking-tight text-white uppercase">NESTON</span>
                     </a>
                     <p class="text-slate-500 text-sm leading-relaxed max-w-xs mb-8 font-medium">
-                        Solusi ekosistem parkir modern berbasis AI untuk manajemen kendaraan yang lebih cerdas dan efisien.
+                        Solusi ekosistem parkir modern berbasis sistem pintar untuk manajemen kendaraan yang lebih cerdas dan efisien.
                     </p>
                     <div class="flex gap-4">
                         <a href="https://x.com/neston2026" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-slate-950 transition-all">

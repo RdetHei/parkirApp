@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Kendaraan;
 use App\Models\User;
+use App\Models\Tarif;
 use App\Support\PlatNomorNormalizer;
 
 class KendaraanController extends Controller
@@ -29,21 +30,26 @@ class KendaraanController extends Controller
         }
 
         $kendaraans = $query->orderBy('id_kendaraan', 'desc')->paginate(15)->withQueryString();
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
         $title = 'Data Kendaraan';
-        return view('kendaraan.index', compact('kendaraans', 'title'));
+        return view('kendaraan.index', compact('kendaraans', 'title', 'vehicleTypes'));
     }
 
     public function create()
     {
         $users = User::orderBy('name')->limit(50)->get();
-        return view('kendaraan.create', compact('users'));
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
+        return view('kendaraan.create', compact('users', 'vehicleTypes'));
     }
 
     public function store(Request $request)
     {
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
+        $typeIn = implode(',', $vehicleTypes);
+
         $data = $request->validate([
             'plat_nomor' => 'required|string|max:15',
-            'jenis_kendaraan' => 'required|string|max:20',
+            'jenis_kendaraan' => "required|string|in:{$typeIn}",
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
             'id_user' => 'nullable|exists:tb_user,id',
@@ -74,15 +80,19 @@ class KendaraanController extends Controller
     {
         $item = Kendaraan::findOrFail($id);
         $users = User::orderBy('name')->limit(50)->get();
-        return view('kendaraan.edit', compact('item','users'));
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
+        return view('kendaraan.edit', compact('item','users', 'vehicleTypes'));
     }
 
     public function update(Request $request, $id)
     {
         $item = Kendaraan::findOrFail($id);
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
+        $typeIn = implode(',', $vehicleTypes);
+
         $data = $request->validate([
             'plat_nomor' => 'required|string|max:15',
-            'jenis_kendaraan' => 'required|string|max:20',
+            'jenis_kendaraan' => "required|string|in:{$typeIn}",
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
             'id_user' => 'nullable|exists:tb_user,id',

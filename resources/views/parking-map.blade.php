@@ -5,7 +5,7 @@
 @section('content')
 <div class="p-4 lg:p-8 h-[calc(100vh-64px)] flex flex-col overflow-hidden">
     <div class="max-w-[1600px] mx-auto w-full flex-1 flex flex-col min-h-0 gap-6">
-        
+
         <!-- Header Section -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
             <div>
@@ -36,7 +36,7 @@
         <div class="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
             <!-- Main Map Canvas Area -->
             <div class="flex-1 min-h-0 card-pro !p-0 bg-slate-950 border-white/5 shadow-2xl relative overflow-hidden group flex flex-col">
-                
+
                 <!-- Map Controls Overlay -->
                 <div class="absolute top-6 right-6 z-20 flex flex-col gap-2">
                     <div class="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden flex flex-col shadow-2xl">
@@ -76,10 +76,10 @@
                          data-width="{{ $area->map_width ?: 1000 }}"
                          data-height="{{ $area->map_height ?: 800 }}"
                          data-id="{{ $area->id_area }}">
-                        
+
                         <!-- Map Image -->
                         <img id="map-bg-image" src="{{ $area->map_image_url }}" class="absolute inset-0 w-full h-full object-fill select-none pointer-events-none opacity-80" alt="Parking Map">
-                        
+
                         <!-- Dynamic Layers -->
                         <div id="slots-layer" class="absolute inset-0 pointer-events-none"></div>
                         <div id="cameras-layer" class="absolute inset-0 pointer-events-none"></div>
@@ -98,13 +98,13 @@
                         <div class="absolute inset-0 border-4 border-emerald-500/10 rounded-full"></div>
                         <div class="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
                     </div>
-                    <p class="text-[10px] font-black text-white uppercase tracking-[0.4em]">Optimizing Vision Engine</p>
+                    <p class="text-[10px] font-black text-white uppercase tracking-[0.4em]">Optimizing System Engine</p>
                 </div>
             </div>
 
             <!-- Stats Sidebar -->
             <div class="w-full lg:w-80 shrink-0 flex flex-col gap-6 overflow-y-auto lg:pr-1 custom-scrollbar min-h-0">
-                
+
                 <!-- Quick Stats -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="card-pro p-5 border-white/5 bg-white/[0.02] flex flex-col gap-3 group hover:border-emerald-500/30 transition-all">
@@ -135,7 +135,7 @@
                         <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
                         <h3 class="text-xs font-black text-white uppercase tracking-widest">Slot Inspector</h3>
                     </div>
-                    
+
                     <div id="inspector-empty" class="flex-1 flex flex-col items-center justify-center p-10 text-center opacity-30">
                         <i class="fa-solid fa-fingerprint text-5xl mb-6"></i>
                         <p class="text-[10px] font-black uppercase tracking-[0.2em]">Select a slot<br>to view details</p>
@@ -146,7 +146,7 @@
                             <h4 id="inspect-code" class="text-4xl font-black text-white tracking-tighter">--</h4>
                             <span id="inspect-status" class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border">--</span>
                         </div>
-                        
+
                         <div class="space-y-6">
                             <div class="space-y-1">
                                 <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Plate Number</p>
@@ -174,7 +174,7 @@
 
 <style>
     #map-viewport { touch-action: none; }
-    #map-canvas-wrapper { 
+    #map-canvas-wrapper {
         box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5);
         background-color: #020617;
     }
@@ -238,7 +238,7 @@
 <script>
     // Configuration from PHP
     const MAP_DATA_URL = "{{ route('api.parking.map.data') }}";
-    const CURRENT_MAP_ID = "{{ $area->id_area }}";
+    const CURRENT_MAP_ID = "{{ $area->id_area ?? '' }}";
 </script>
 <script src="{{ asset('js/parking-map-new.js') }}"></script>
 @endpush

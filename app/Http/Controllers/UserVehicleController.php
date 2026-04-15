@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kendaraan;
+use App\Models\Tarif;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Support\PlatNomorNormalizer;
@@ -16,7 +17,9 @@ class UserVehicleController extends Controller
             ->orderBy('plat_nomor')
             ->get();
 
-        return view('user.vehicles.index', compact('kendaraans', 'user'));
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
+
+        return view('user.vehicles.index', compact('kendaraans', 'user', 'vehicleTypes'));
     }
 
     public function store(Request $request)
@@ -29,9 +32,12 @@ class UserVehicleController extends Controller
             return back()->with('error', 'Anda hanya dapat mendaftarkan maksimal 2 kendaraan.');
         }
 
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
+        $typeIn = implode(',', $vehicleTypes);
+
         $data = $request->validate([
             'plat_nomor' => 'required|string|max:15',
-            'jenis_kendaraan' => 'required|string|in:motor,mobil',
+            'jenis_kendaraan' => "required|string|in:{$typeIn}",
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
         ]);
@@ -71,9 +77,12 @@ class UserVehicleController extends Controller
             return back()->with('error', 'Kendaraan sedang parkir. Data tidak dapat diubah.');
         }
 
+        $vehicleTypes = Tarif::pluck('jenis_kendaraan')->toArray();
+        $typeIn = implode(',', $vehicleTypes);
+
         $data = $request->validate([
             'plat_nomor' => 'required|string|max:15',
-            'jenis_kendaraan' => 'required|string|in:motor,mobil',
+            'jenis_kendaraan' => "required|string|in:{$typeIn}",
             'warna' => 'nullable|string|max:20',
             'pemilik' => 'nullable|string|max:100',
         ]);

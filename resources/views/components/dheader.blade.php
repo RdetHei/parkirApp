@@ -15,7 +15,7 @@
     } elseif (request()->routeIs('user.bookings')) {
         $headerTitle = __('Booking Slot');
     } elseif (request()->routeIs('anpr.index')) {
-        $headerTitle = 'AI Scanner';
+        $headerTitle = 'Smart Scanner';
     } elseif (request()->routeIs('transaksi.create-check-in')) {
         $headerTitle = __('Catat Masuk');
     } elseif (request()->routeIs('transaksi.parkir.index')) {
@@ -126,13 +126,6 @@
                 <a href="{{ route('lang.switch', 'id') }}" class="px-2 py-0.5 text-[9px] font-bold rounded {{ App::getLocale() == 'id' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 hover:text-white' }} transition-all uppercase tracking-tighter">ID</a>
                 <a href="{{ route('lang.switch', 'en') }}" class="px-2 py-0.5 text-[9px] font-bold rounded {{ App::getLocale() == 'en' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 hover:text-white' }} transition-all uppercase tracking-tighter">EN</a>
             </div>
-
-            <div class="h-6 w-px bg-white/10 mx-1 lg:mx-2"></div>
-
-            <button class="relative p-2 text-slate-400 hover:text-white transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#020617]"></span>
-            </button>
         </div>
     </div>
 </header>

@@ -20,7 +20,7 @@ class PlateRecognizerService
     }
 
     /**
-     * Scan license plate from image
+     * Memindai plat nomor dari gambar yang diunggah
      *
      * @param \Illuminate\Http\UploadedFile $image
      * @param bool $includeRawResponse
@@ -30,7 +30,7 @@ class PlateRecognizerService
     public function scanPlate($image, bool $includeRawResponse = false): array
     {
         if (empty($this->apiKey)) {
-            throw new \Exception('Plate Recognizer API key tidak dikonfigurasi. Pastikan PLATE_RECOGNIZER_KEY ada di .env');
+            throw new \Exception('Kunci API Deteksi Plat tidak dikonfigurasi. Pastikan PLATE_RECOGNIZER_KEY ada di file .env');
         }
 
         try {
@@ -41,22 +41,22 @@ class PlateRecognizerService
                 ->attach('upload', file_get_contents($image->getRealPath()), $image->getClientOriginalName())
                 ->post($this->apiUrl);
 
-            // Check if request failed
+            // Periksa apakah permintaan gagal
             if ($response->failed()) {
-                $errorMessage = $response->json('detail') ?? $response->json('message') ?? 'API request failed';
+                $errorMessage = $response->json('detail') ?? $response->json('message') ?? 'Permintaan API gagal';
                 $statusCode = $response->status();
                 
-                Log::error('Plate Recognizer API Error', [
+                Log::error('Kesalahan API Deteksi Plat', [
                     'status' => $statusCode,
                     'response' => $response->body(),
                 ]);
 
-                throw new \Exception("Plate Recognizer API error: {$errorMessage} (Status: {$statusCode})");
+                throw new \Exception("Kesalahan API Deteksi Plat: {$errorMessage} (Status: {$statusCode})");
             }
 
             $data = $response->json();
 
-            // Check if response is empty or has no results
+            // Periksa apakah respons kosong atau tidak ada hasil
             if (empty($data) || !isset($data['results']) || count($data['results']) === 0) {
                 return [
                     'plate_number' => null,
@@ -67,21 +67,25 @@ class PlateRecognizerService
                 ];
             }
 
-            // Get the first result (highest confidence)
+            // Ambil hasil pertama (dengan tingkat akurasi tertinggi)
             $firstResult = $data['results'][0];
             $plateNumber = $firstResult['plate'] ?? null;
             $confidence = floatval($firstResult['score'] ?? 0);
 
-            // Check confidence threshold
+            // Ekstrak warna jika tersedia
+            $color = $firstResult['vehicle']['color'][0]['label'] ?? ($firstResult['color'][0]['label'] ?? null);
+
+            // Periksa ambang batas tingkat akurasi (confidence threshold)
             $isValid = $confidence >= $this->confidenceThreshold;
 
             return [
                 'plate_number' => $plateNumber,
+                'color' => $color,
                 'confidence' => $confidence,
                 'valid' => $isValid,
                 'message' => $isValid 
                     ? 'Plat nomor berhasil dideteksi' 
-                    : 'Plat tidak valid (confidence di bawah 80%)',
+                    : 'Plat tidak valid (tingkat akurasi di bawah 80%)',
                 'raw_response' => $includeRawResponse ? $data : null,
             ];
 

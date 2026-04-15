@@ -3,9 +3,9 @@
 **NESTON** adalah sistem manajemen parkir pintar berbasis Laravel yang mengintegrasikan pengenalan plat nomor otomatis (ANPR), akses RFID, dan sistem pembayaran multi-kanal (Midtrans & Tunai).
 
 ## 🚀 Fitur Utama
-- **ANPR (Automatic Plate Number Recognition)**: Integrasi dengan *Plate Recognizer* untuk pemindaian plat nomor otomatis.
+- **ANPR (Automatic Plate Number Recognition)**: Sistem pengenalan plat nomor otomatis untuk pemindaian kendaraan.
 - **RFID Access Control**: Mendukung autentikasi dan pencatatan transaksi menggunakan kartu RFID.
-- **Multi-Channel Payment**: 
+- **Sistem Pembayaran Omni**: 
   - Pembayaran otomatis melalui **Midtrans** (Gopay, ShopeePay, VA, dll).
   - Pembayaran tunai melalui sistem kasir petugas.
   - Sistem saldo **NestonPay** untuk kemudahan transaksi internal.
@@ -19,7 +19,7 @@
 - **Frontend**: Blade, Tailwind CSS, Alpine.js, Leaflet.js
 - **Services**: 
   - Midtrans API (Payment Gateway)
-  - Plate Recognizer API (ANPR)
+  - Pengenalan Plat (ANPR)
   - Cloudinary (Image Hosting)
   - Fonnte / UltraMsg (WhatsApp Gateway)
 
@@ -65,7 +65,7 @@ MIDTRANS_SERVER_KEY=your_server_key
 MIDTRANS_CLIENT_KEY=your_client_key
 MIDTRANS_IS_PRODUCTION=false
 
-# Plate Recognizer (ANPR)
+# Pengenalan Plat (ANPR)
 PLATE_RECOGNIZER_KEY=your_api_key
 
 # WhatsApp Gateway
@@ -83,7 +83,7 @@ CLOUDINARY_URL=your_cloudinary_url
 - **Controllers**: [App\Http\Controllers](file:///c:/laragon/www/neston/app/Http/Controllers) (Logika bisnis per fitur).
 - **Services**: 
   - [WhatsAppGateway.php](file:///c:/laragon/www/neston/app/Services/WhatsAppGateway.php): Penanganan notifikasi WA.
-  - [PlateRecognizerService.php](file:///c:/laragon/www/neston/app/Services/PlateRecognizerService.php): Integrasi API ANPR.
+  - [PlateRecognizerService.php](file:///c:/laragon/www/neston/app/Services/PlateRecognizerService.php): Integrasi sistem pengenalan plat.
 - **Middleware**: 
   - [RoleMiddleware.php](file:///c:/laragon/www/neston/app/Http/Middleware/RoleMiddleware.php): Hak akses user.
   - [NoCacheMiddleware.php](file:///c:/laragon/www/neston/app/Http/Middleware/NoCacheMiddleware.php): Keamanan sesi pasca-logout.

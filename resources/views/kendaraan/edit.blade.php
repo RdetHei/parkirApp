@@ -33,8 +33,13 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-500 transition-colors">
                         <i class="fa-solid fa-car-side text-xs"></i>
                     </div>
-                    <input type="text" name="jenis_kendaraan" id="jenis_kendaraan" value="{{ old('jenis_kendaraan', $item->jenis_kendaraan) }}" required placeholder="Motor / Mobil / Lainnya"
-                           class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm @error('jenis_kendaraan') border-rose-500 @enderror">
+                    <select name="jenis_kendaraan" id="jenis_kendaraan" required
+                            class="block w-full pl-12 pr-4 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm appearance-none cursor-pointer @error('jenis_kendaraan') border-rose-500 @enderror">
+                        <option value="" class="bg-slate-900">-- Pilih Jenis --</option>
+                        @foreach($vehicleTypes as $type)
+                            <option value="{{ $type }}" {{ old('jenis_kendaraan', $item->jenis_kendaraan) == $type ? 'selected' : '' }} class="bg-slate-900">{{ ucfirst($type) }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 @error('jenis_kendaraan')<p class="mt-1 text-[11px] text-rose-400 font-medium ml-1">{{ $message }}</p>@enderror
             </div>

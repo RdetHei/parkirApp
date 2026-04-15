@@ -220,7 +220,15 @@
                 ></span>
             </div>
             <div class="flex flex-col gap-1">
-                <p class="text-3xl font-black text-white tracking-tighter uppercase" x-text="scanResult.plate_number || 'UNKNOWN'"></p>
+                <div class="flex items-center justify-between">
+                    <p class="text-3xl font-black text-white tracking-tighter uppercase" x-text="scanResult.plate_number || 'UNKNOWN'"></p>
+                    <template x-if="scanResult.color">
+                        <div class="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
+                            <i class="fa-solid fa-palette text-[10px] text-slate-500"></i>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest" x-text="scanResult.color"></span>
+                        </div>
+                    </template>
+                </div>
                 <div class="flex items-center gap-2 mt-2">
                     <div class="flex-1 h-1.5 bg-slate-900 rounded-full overflow-hidden">
                         <div class="h-full bg-emerald-500" :style="'width: ' + (scanResult.confidence * 100) + '%'"></div>
@@ -238,6 +246,7 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
     const defaultId = cameras.find(c => c.is_default)?.id || cameras[0]?.id;
     const fallbackUrl = (ipWebcamUrl || '').trim();
     return {
+        ipWebcamSnapshotProxy: @json(route('proxy.ipwebcam.snapshot')),
         cameras: cameras,
         selectedCameraId: defaultId || null,
         streamActive: false,
@@ -315,14 +324,10 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
                 const ctx = canvas.getContext('2d');
 
                 if (this.useIpWebcam && this.$refs.ipWebcamStream) {
-                    const img = this.$refs.ipWebcamStream;
-                    if (!img.complete || img.naturalWidth === 0) {
-                        this.errorMessage = 'Tunggu sebentar sampai stream IP Webcam siap.';
-                        return;
-                    }
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-                    ctx.drawImage(img, 0, 0);
+                    // IMPORTANT: drawing cross-origin <img> (e.g. localhost:8080) taints canvas,
+                    // so export (toDataURL) will throw. Use same-origin snapshot proxy instead.
+                    this.captureIpWebcamSnapshot();
+                    return;
                 } else {
                     const video = this.$refs.video;
                     if (!video || video.videoWidth === 0) {
@@ -341,6 +346,52 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
             } catch (e) {
                 console.error('Capture error:', e);
                 this.errorMessage = 'Gagal mengambil foto: ' + e.message;
+            }
+        },
+
+        async captureIpWebcamSnapshot() {
+            try {
+                const rawUrl = (this.ipWebcamUrl || '').trim();
+                if (!rawUrl) {
+                    this.errorMessage = 'URL IP Webcam kosong.';
+                    return;
+                }
+
+                this.isLoading = true;
+                this.errorMessage = '';
+
+                const proxyUrl = this.ipWebcamSnapshotProxy + '?url=' + encodeURIComponent(rawUrl);
+                const resp = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: { 'Accept': 'image/*' }
+                });
+
+                if (!resp.ok) {
+                    let msg = 'Gagal mengambil snapshot IP Webcam.';
+                    try {
+                        const j = await resp.json();
+                        msg = j.message || msg;
+                    } catch (_) {}
+                    throw new Error(msg);
+                }
+
+                const blob = await resp.blob();
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+
+                this.capturedImage = dataUrl;
+                if (this.$refs.capturedImage) {
+                    this.$refs.capturedImage.src = this.capturedImage;
+                }
+            } catch (e) {
+                console.error('IP Webcam snapshot error:', e);
+                this.errorMessage = 'Gagal mengambil foto: ' + (e?.message || 'Unknown error');
+            } finally {
+                this.isLoading = false;
             }
         },
 
@@ -394,6 +445,7 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
                 if (data.success) {
                     this.scanResult = {
                         plate_number: data.plate_number,
+                        color: data.color,
                         confidence: data.confidence,
                         valid: data.valid,
                         message: data.message
@@ -402,6 +454,11 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
                     if (data.valid && data.plate_number) {
                         this.successMessage = data.message || 'Plat nomor berhasil dideteksi!';
                         this.fillTargetInput(data.plate_number);
+
+                        // Auto-fill color if available
+                        if (data.color) {
+                            this.fillColorInput(data.color);
+                        }
 
                         // Call optional callback
                         if (onScanSuccess && typeof window[onScanSuccess] === 'function') {
@@ -450,6 +507,28 @@ function plateScanner(targetInputId, targetInputType, onScanSuccess, ipWebcamUrl
                 targetInput.value = plateNumber;
                 targetInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
+        },
+
+        fillColorInput(color) {
+            const colorInput = document.getElementById('warna') || document.querySelector('input[name="warna"]');
+            if (!colorInput) return;
+
+            // Simple translation map for common colors from Plate Recognizer
+            const colorMap = {
+                'black': 'Hitam',
+                'white': 'Putih',
+                'silver': 'Silver',
+                'grey': 'Abu-abu',
+                'red': 'Merah',
+                'blue': 'Biru',
+                'green': 'Hijau',
+                'yellow': 'Kuning',
+                'brown': 'Cokelat'
+            };
+
+            const translatedColor = colorMap[color.toLowerCase()] || color;
+            colorInput.value = translatedColor;
+            colorInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
     };
 }
