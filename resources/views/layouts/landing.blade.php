@@ -135,59 +135,46 @@
 
                         <div class="sm:col-span-2 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full min-h-[200px]">
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                                <div class="text-slate-200 text-sm font-medium">{{ __('Live Area Monitoring - Lantai 1') }}</div>
+                                <div class="text-slate-200 text-sm font-medium">{{ __('Live Area Monitoring - ') }} {{ $default_area->nama_area ?? 'Lantai 1' }}</div>
                                 <div class="flex gap-3 text-[10px]">
-                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-400"></div> {{ __('Kosong') }}</span>
-                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-rose-500"></div> {{ __('Terisi') }}</span>
+                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-emerald-400"></div> {{ __('Kosong') }}: {{ ($default_area->kapasitas ?? 0) - ($default_area->terisi ?? 0) }}</span>
+                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-rose-500"></div> {{ __('Terisi') }}: {{ $default_area->terisi ?? 0 }}</span>
                                 </div>
                             </div>
                             <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 flex-1">
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md relative flex items-center justify-center aspect-square lg:aspect-auto">
-                                    <div class="w-2 h-2 bg-rose-500 rounded-full animate-ping"></div>
-                                </div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
-
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
-                                <div class="bg-rose-500/20 border border-rose-500/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                @php
+                                    $kapasitas = $default_area->kapasitas ?? 16;
+                                    $terisi = $default_area->terisi ?? 0;
+                                @endphp
+                                @for ($i = 0; $i < $kapasitas; $i++)
+                                    @if ($i < $terisi)
+                                        <div class="bg-rose-500/20 border border-rose-500/30 rounded-md relative flex items-center justify-center aspect-square lg:aspect-auto">
+                                            @if($i == 0) <div class="w-2 h-2 bg-rose-500 rounded-full animate-ping"></div> @endif
+                                        </div>
+                                    @else
+                                        <div class="bg-emerald-400/20 border border-emerald-400/30 rounded-md aspect-square lg:aspect-auto"></div>
+                                    @endif
+                                    @if($i >= 15) @break @endif {{-- Limit to 16 for UI grid --}}
+                                @endfor
                             </div>
                         </div>
 
                         <div class="sm:col-span-2 lg:col-span-1 rounded-xl bg-white/5 border border-white/10 p-5 flex flex-col backdrop-blur-sm shadow-lg h-full">
                             <div class="text-slate-200 text-sm font-medium mb-4">{{ __('Aktivitas Terakhir (ANPR)') }}</div>
                             <div class="space-y-3">
-                                <div class="flex justify-between items-center pb-2 border-b border-white/5">
-                                    <div>
-                                        <div class="text-[10px] font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">B 1234 XYZ</div>
-                                        <div class="text-[9px] text-emerald-400 mt-1">{{ __('Masuk - Gate 1') }}</div>
+                                @forelse($recent_activities as $activity)
+                                    <div class="flex justify-between items-center pb-2 border-b border-white/5 last:border-0">
+                                        <div>
+                                            <div class="text-[10px] font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">{{ $activity->kendaraan->plat_nomor ?? 'B 1234 XYZ' }}</div>
+                                            <div class="text-[9px] {{ $activity->status == 'masuk' ? 'text-emerald-400' : 'text-rose-400' }} mt-1">
+                                                {{ $activity->status == 'masuk' ? __('Masuk') : __('Keluar') }} - {{ $activity->area->nama_area ?? 'Gate' }}
+                                            </div>
+                                        </div>
+                                        <div class="text-[9px] text-slate-500">{{ $activity->updated_at->diffForHumans() }}</div>
                                     </div>
-                                    <div class="text-[9px] text-slate-500">{{ __('Baru saja') }}</div>
-                                </div>
-                                <div class="flex justify-between items-center pb-2 border-b border-white/5">
-                                    <div>
-                                        <div class="text-[10px] font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">D 5678 ABC</div>
-                                        <div class="text-[9px] text-rose-400 mt-1">{{ __('Keluar - Gate 2') }}</div>
-                                    </div>
-                                    <div class="text-[9px] text-slate-500">2 {{ __('mnt lalu') }}</div>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <div class="text-[10px] font-bold tracking-wider text-white bg-slate-800 border border-slate-700 px-2 py-0.5 rounded">L 9999 OP</div>
-                                        <div class="text-[9px] text-emerald-400 mt-1">{{ __('Masuk - Gate 1') }}</div>
-                                    </div>
-                                    <div class="text-[9px] text-slate-500">5 {{ __('mnt lalu') }}</div>
-                                </div>
+                                @empty
+                                    <div class="text-center text-slate-500 text-xs py-4">{{ __('Belum ada aktivitas') }}</div>
+                                @endforelse
                             </div>
                         </div>
 

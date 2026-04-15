@@ -306,7 +306,7 @@
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-12">
                         <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
                             <i class="fa-brands fa-laravel text-3xl lg:text-4xl text-[#FF2D20] mb-4"></i>
-                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">Laravel 11</p>
+                            <p class="text-[10px] lg:text-xs font-black text-white uppercase tracking-widest">Laravel 12</p>
                         </div>
                         <div class="p-6 lg:p-8 bg-white/[0.03] rounded-3xl border border-white/5 text-center group">
                             <i class="fa-brands fa-js text-3xl lg:text-4xl text-[#F7DF1E] mb-4"></i>
@@ -336,8 +336,8 @@
                                 <i class="fa-solid fa-user-tie text-2xl lg:text-3xl"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg lg:text-xl font-black text-white mb-1 uppercase tracking-tight">Lead Developer</h3>
-                                <p class="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-widest">Architect & Backend</p>
+                                <h3 class="text-lg lg:text-xl font-black text-white mb-1 uppercase tracking-tight">Restu Rudiansyah</h3>
+                                <p class="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-widest">Lead Developer / Architect</p>
                             </div>
                         </div>
                         <div class="p-8 lg:p-10 bg-white/[0.03] rounded-[2.5rem] lg:rounded-[3rem] border border-white/5 flex items-center gap-6 lg:gap-8 group">
@@ -345,8 +345,8 @@
                                 <i class="fa-solid fa-pen-nib text-2xl lg:text-3xl"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg lg:text-xl font-black text-white mb-1 uppercase tracking-tight">UI Designer</h3>
-                                <p class="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-widest">Visual & Experience</p>
+                                <h3 class="text-lg lg:text-xl font-black text-white mb-1 uppercase tracking-tight">Restu Rudiansyah</h3>
+                                <p class="text-slate-500 text-[9px] lg:text-[10px] font-black uppercase tracking-widest">UI Designer / Visual</p>
                             </div>
                         </div>
                     </div>
