@@ -1,0 +1,63 @@
+# Documentation for Email and WhatsApp System
+
+## Overview
+This document outlines the structure, file locations, and flow of the Email and WhatsApp system integrated within the project.
+
+---
+
+## File Structure
+
+```
+project_root/
+├── src/
+│   ├── email/
+│   │   ├── email_service.js              # Service handling email operations
+│   │   ├── email_routes.js                # API routes for email
+│   │   └── email_templates/
+│   │       ├── welcome_email.html         # Template for welcome emails
+│   │       └── notification_email.html    # Template for notifications
+│   ├── whatsapp/
+│   │   ├── whatsapp_service.js            # Service handling WhatsApp operations
+│   │   └── whatsapp_routes.js              # API routes for WhatsApp
+│   └── index.js                           # Main application file
+├── logs/
+│   ├── email_logs.log                     # Logs for email transactions
+│   └── whatsapp_logs.log                   # Logs for WhatsApp messages
+├── config/
+│   └── env.js                             # Environment variables
+└── README.md                              # Project documentation
+```
+
+---
+
+## Flow of the System
+1. **User Interaction**: Users can trigger email or WhatsApp notifications.
+2. **API Requests**: Requests are sent to either `/api/email` or `/api/whatsapp` routes defined in the application.
+3. **Service Layer**: The respective service files (email_service.js or whatsapp_service.js) process the requests and handle the logic.
+4. **Template Rendering**:  For emails, appropriate templates are fetched from the `email_templates` directory.
+5. **Logging**: All transactions are logged in the corresponding logs under the `logs` directory for monitoring.
+6. **Completion**: Responses are sent back to the user indicating success or failure.
+
+---
+
+## Key Configuration
+- Ensure to set the relevant API keys and secrets in `config/env.js` for email and WhatsApp services to work properly.
+
+### Email Configuration:
+- SMTP Server: smtp.example.com
+- Port: 587
+- User: your-email@example.com
+- Password: your-email-password
+
+### WhatsApp Configuration:
+- Twilio Account SID: your_account_sid
+- Twilio Auth Token: your_auth_token
+
+---
+
+## Conclusion
+This documentation serves as a comprehensive guide to the Email and WhatsApp system within the project. For further questions or clarifications, please refer to our support channels.
+
+---
+
+**Date of Documentation:** 2026-04-16 03:34:39 (UTC)
